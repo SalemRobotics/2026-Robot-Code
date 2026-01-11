@@ -16,27 +16,27 @@
 package com.frc6324.robot2026;
 
 import com.frc6324.lib.UninstantiableClass;
-
 import edu.wpi.first.wpilibj.RobotBase;
 
 @UninstantiableClass
 public final class Constants {
-    /** The mode that should be run when the robot is being simulated. */
-    public static final Mode SIM_MODE = Mode.SIM;
-    /** The current mode being run. */
-    public static final Mode CURRENT_MODE = RobotBase.isReal() ? Mode.REAL : SIM_MODE;
+  /** The mode that should be run when the robot is being simulated. */
+  public static final Mode SIM_MODE = Mode.SIM;
 
-    private Constants() {
-        throw new IllegalAccessError();
-    }
+  /** The current mode being run. */
+  public static final Mode CURRENT_MODE = RobotBase.isReal() ? Mode.REAL : SIM_MODE;
 
-    /** Represents a type of robot being run. */
-    public static enum Mode {
-        /** Running on the real robot. */
-        REAL,
-        /** Running a robot simulation. */
-        SIM,
-        /** Replaying from a log file. */
-        REPLAY
-    }
+  private Constants() {
+    throw new IllegalAccessError();
+  }
+
+  /** Represents a type of robot being run. */
+  public static enum Mode {
+    /** Running on the real robot. */
+    REAL,
+    /** Running a robot simulation. */
+    SIM,
+    /** Replaying from a log file. */
+    REPLAY
+  }
 }

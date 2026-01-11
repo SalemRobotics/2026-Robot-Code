@@ -21,20 +21,20 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Extensions for the {@link Pose2d} class for use with {@link lombok.experimental.ExtensionMethod ExtensionMethod}.
+ * Extensions for the {@link Pose2d} class for use with {@link lombok.experimental.ExtensionMethod
+ * ExtensionMethod}.
  */
 @UninstantiableClass
 public final class PoseExtensions {
-    @Contract(" -> fail")
-    private PoseExtensions() {
-        // Throw an Error since this means a reflection attack took place.
-        throw new IllegalAccessError();
-    }
+  @Contract(" -> fail")
+  private PoseExtensions() {
+    // Throw an Error since this means a reflection attack took place.
+    throw new IllegalAccessError();
+  }
 
-    @Contract("_, _ -> new")
-    public static @NotNull Pose2d plus(@NotNull Pose2d lhs, @NotNull Pose2d rhs) {
-        return new Pose2d(
-                lhs.getTranslation().plus(rhs.getTranslation()),
-                lhs.getRotation().plus(rhs.getRotation()));
-    }
+  @Contract("_, _ -> new")
+  public static @NotNull Pose2d plus(@NotNull Pose2d lhs, @NotNull Pose2d rhs) {
+    return new Pose2d(
+        lhs.getTranslation().plus(rhs.getTranslation()), lhs.getRotation().plus(rhs.getRotation()));
+  }
 }

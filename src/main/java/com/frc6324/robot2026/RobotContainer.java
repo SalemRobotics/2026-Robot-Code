@@ -16,7 +16,6 @@
 package com.frc6324.robot2026;
 
 import com.frc6324.lib.PoseExtensions;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import lombok.experimental.ExtensionMethod;
@@ -27,9 +26,7 @@ public class RobotContainer {
     configureBindings();
   }
 
-  private void configureBindings() {
-
-   }
+  private void configureBindings() {}
 
   public Command getAutonomousCommand() {
     return Commands.print("No autonomous command configured");

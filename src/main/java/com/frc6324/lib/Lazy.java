@@ -32,7 +32,8 @@ public class Lazy<T> implements Supplier<T> {
   /**
    * Creates a new lazily-initialized value.
    *
-   * @param supplier The initializer for the value. This will stop being called by this class once it returns a nonnull value.
+   * @param supplier The initializer for the value. This will stop being called by this class once
+   *     it returns a nonnull value.
    */
   @Contract(pure = true)
   public Lazy(Supplier<T> supplier) {

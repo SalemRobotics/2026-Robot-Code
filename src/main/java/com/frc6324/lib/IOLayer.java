@@ -19,34 +19,35 @@ import org.jetbrains.annotations.Contract;
 
 @UninstantiableClass
 public final class IOLayer {
-    @Contract(" -> fail")
-    private IOLayer() {
-        // Throw an Error since this means a reflection attack took place.
-        throw new IllegalAccessError();
-    }
+  @Contract(" -> fail")
+  private IOLayer() {
+    // Throw an Error since this means a reflection attack took place.
+    throw new IllegalAccessError();
+  }
 
-    /**
-     * A replay implementation for an I/O layer. This only works if the I/O interface is a {@link java.lang.FunctionalInterface functional interface}.
-     *
-     * <p>an example of proper usage looks like:
-     *
-     * <pre>
-     * {@code new ExampleSubsystem(IOLayer::replay)}
-     * </pre>
-     *
-     * <p>Use of this function is preferable to something like:
-     *
-     * <pre>
-     * {@code new ExampleSubsystem(new ExampleIOLayer() {}) }
-     * </pre>
-     *
-     * @implNote This function does not actually do anything and is functionally equivalent to
-     *     <pre>{@code (inputs) -> {}}</pre>
-     *     However, this allows us to avoid allocating multiple lambda objects.
-     * @param <T> The type of the loggable inputs
-     * @param value The inputs a real or simulated I/O abstraction would modify; these are ignored in
-     *     replay so they can accurately be restored from a log file.
-     */
-    @Contract(pure = true)
-    public static <T> void replay(T value) {}
+  /**
+   * A replay implementation for an I/O layer. This only works if the I/O interface is a {@link
+   * java.lang.FunctionalInterface functional interface}.
+   *
+   * <p>an example of proper usage looks like:
+   *
+   * <pre>
+   * {@code new ExampleSubsystem(IOLayer::replay)}
+   * </pre>
+   *
+   * <p>Use of this function is preferable to something like:
+   *
+   * <pre>
+   * {@code new ExampleSubsystem(new ExampleIOLayer() {}) }
+   * </pre>
+   *
+   * @implNote This function does not actually do anything and is functionally equivalent to
+   *     <pre>{@code (inputs) -> {}}</pre>
+   *     However, this allows us to avoid allocating multiple lambda objects.
+   * @param <T> The type of the loggable inputs
+   * @param value The inputs a real or simulated I/O abstraction would modify; these are ignored in
+   *     replay so they can accurately be restored from a log file.
+   */
+  @Contract(pure = true)
+  public static <T> void replay(T value) {}
 }

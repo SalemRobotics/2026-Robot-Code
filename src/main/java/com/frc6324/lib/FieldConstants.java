@@ -21,14 +21,15 @@ import edu.wpi.first.math.util.Units;
 import org.jetbrains.annotations.Contract;
 
 @UninstantiableClass
-public class FieldConstants {
-    @Contract(" -> fail")
-    private FieldConstants() {
-        // Throw an Error since this means a reflection attack took place.
-        throw new IllegalAccessError();
-    }
+public final class FieldConstants {
+  @Contract(" -> fail")
+  private FieldConstants() {
+    // Throw an Error since this means a reflection attack took place.
+    throw new IllegalAccessError();
+  }
 
-    public static final double FIELD_LENGTH_METERS = Units.inchesToMeters(651.2);
-    public static final double FIELD_WIDTH_METERS = Units.inchesToMeters(317.7);
-    public static final Translation2d FIELD_CENTER = new Translation2d(FIELD_LENGTH_METERS / 2, FIELD_WIDTH_METERS / 2);
+  public static final double FIELD_LENGTH_METERS = Units.inchesToMeters(651.2);
+  public static final double FIELD_WIDTH_METERS = Units.inchesToMeters(317.7);
+  public static final Translation2d FIELD_CENTER =
+      new Translation2d(FIELD_LENGTH_METERS / 2, FIELD_WIDTH_METERS / 2);
 }
