@@ -14,22 +14,28 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.frc6324.lib;
+package com.frc6324.lib.util;
 
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.util.Units;
+import com.frc6324.lib.UninstantiableClass;
+import edu.wpi.first.math.geometry.Pose2d;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
+/**
+ * Extensions for the {@link Pose2d} class for use with {@link lombok.experimental.ExtensionMethod
+ * ExtensionMethod}.
+ */
 @UninstantiableClass
-public final class FieldConstants {
+public final class PoseExtensions {
   @Contract(" -> fail")
-  private FieldConstants() {
+  private PoseExtensions() {
     // Throw an Error since this means a reflection attack took place.
     throw new IllegalAccessError();
   }
 
-  public static final double FIELD_LENGTH_METERS = Units.inchesToMeters(651.2);
-  public static final double FIELD_WIDTH_METERS = Units.inchesToMeters(317.7);
-  public static final Translation2d FIELD_CENTER =
-      new Translation2d(FIELD_LENGTH_METERS / 2, FIELD_WIDTH_METERS / 2);
+  @Contract("_, _ -> new")
+  public static @NotNull Pose2d plus(@NotNull Pose2d lhs, @NotNull Pose2d rhs) {
+    return new Pose2d(
+        lhs.getTranslation().plus(rhs.getTranslation()), lhs.getRotation().plus(rhs.getRotation()));
+  }
 }

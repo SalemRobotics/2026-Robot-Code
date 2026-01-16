@@ -14,15 +14,16 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.frc6324.lib;
+package com.frc6324.lib.util;
 
+import com.frc6324.lib.UninstantiableClass;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-/** */
+/** A utility class for flipping geometry onto the other side of the field. */
 @UninstantiableClass
 public final class AllianceFlipUtil {
   @Contract(" -> fail")

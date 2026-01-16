@@ -1,8 +1,8 @@
 package com.frc6324.robot2026.commands;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
-import com.frc6324.lib.PoseExtensions;
 import com.frc6324.lib.UninstantiableClass;
+import com.frc6324.lib.util.PoseExtensions;
 import com.frc6324.robot2026.subsystems.drive.SwerveDrive;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.lib.BLine.FollowPath;
 import frc.robot.lib.BLine.Path;
 import lombok.experimental.ExtensionMethod;
 import org.jetbrains.annotations.Contract;
@@ -57,11 +58,11 @@ public final class DriveCommands {
   }
 
   public static Command driveToPose(SwerveDrive drive, Pose2d pose) {
-    var builder = drive.getBLineBuilder();
+    FollowPath.Builder builder = drive.getBLineBuilder();
 
     return drive.defer(
         () -> {
-          var target = new Path.Waypoint(pose, true);
+          Path.Waypoint target = new Path.Waypoint(pose, true);
           Path path = new Path(target);
 
           return builder.build(path);
@@ -70,7 +71,7 @@ public final class DriveCommands {
 
   public static Command drivePointingTowards(
       SwerveDrive drive, XboxController controller, Pose2d target) {
-    var request =
+    SwerveRequest.FieldCentricFacingAngle request =
         new SwerveRequest.FieldCentricFacingAngle()
             .withDriveRequestType(SwerveDrive.DRIVE_REQUEST)
             .withSteerRequestType(SwerveDrive.STEER_REQUEST)
@@ -85,9 +86,9 @@ public final class DriveCommands {
           linearVelocity = linearVelocity.times(SwerveDrive.getMaxLinearSpeed());
 
           // Calculate the translation difference to the target
-          var diff = target.getTranslation().minus(drive.getPose().getTranslation());
+          Translation2d diff = target.getTranslation().minus(drive.getPose().getTranslation());
           // Calculate the angle that delta needs
-          var facing = new Rotation2d(diff.getX(), diff.getY());
+          Rotation2d facing = new Rotation2d(diff.getX(), diff.getY());
 
           // Send the request to the drivetrain
           drive.setControl(
@@ -106,7 +107,7 @@ public final class DriveCommands {
    * @return The drive command.
    */
   public static Command joystickDrive(SwerveDrive drive, XboxController controller) {
-    var request =
+    SwerveRequest.FieldCentric request =
         new SwerveRequest.FieldCentric()
             .withDriveRequestType(SwerveDrive.DRIVE_REQUEST)
             .withSteerRequestType(SwerveDrive.STEER_REQUEST)

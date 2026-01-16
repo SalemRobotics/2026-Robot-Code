@@ -231,7 +231,7 @@ public final class SwerveDrive extends SubsystemBase {
    * @return The maximum robot velocity, as a measure.
    */
   public static LinearVelocity getMaxLinearSpeedMeasure() {
-    var voltage = RobotController.getBatteryVoltage();
+    double voltage = RobotController.getBatteryVoltage();
     return TunerConstants.kSpeedAt12Volts.times(voltage / 12);
   }
 

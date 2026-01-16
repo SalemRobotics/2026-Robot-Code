@@ -2,7 +2,7 @@ package com.frc6324.robot2026.subsystems.drive;
 
 import static com.frc6324.robot2026.subsystems.drive.DrivetrainConstants.ODOMETRY_PERIOD;
 
-import com.frc6324.lib.DeltaTimeCalculator;
+import com.frc6324.lib.util.DeltaTimeCalculator;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 
@@ -16,7 +16,7 @@ public final class DriveIOSim extends DriveIOCTRE {
     notifier =
         new Notifier(
             () -> {
-              var delta = deltaCalculator.get();
+              double delta = deltaCalculator.get();
 
               updateSimState(delta, RobotController.getBatteryVoltage());
             });

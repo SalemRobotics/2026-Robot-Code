@@ -8,6 +8,7 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
+import com.ctre.phoenix6.swerve.SwerveModule;
 import com.frc6324.robot2026.generated.TunerConstants;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -72,7 +73,7 @@ public sealed class DriveIOCTRE extends SwerveDrivetrain<TalonFX, TalonFX, CANco
     gyroscopeSignals.setUpdateFrequencyForAll(100);
 
     // Set the odometry thread's priority to very high
-    getOdometryThread().setThreadPriority(99);
+    getOdometryThread().setThreadPriority(98);
   }
 
   @Override
@@ -84,8 +85,8 @@ public sealed class DriveIOCTRE extends SwerveDrivetrain<TalonFX, TalonFX, CANco
 
     for (int i = 0; i < 4; i++) {
       // Get the current module and its name
-      var module = getModule(i);
-      var name = MODULE_NAMES[i];
+      SwerveModule<?, ?, CANcoder> module = getModule(i);
+      String name = MODULE_NAMES[i];
 
       // Log steering information
       Logger.recordOutput(
@@ -119,12 +120,12 @@ public sealed class DriveIOCTRE extends SwerveDrivetrain<TalonFX, TalonFX, CANco
     inputs.YawVelocity = yawVelocity.getValue();
 
     // Get all of the other gyro values we care about
-    var roll = rollSignal.getValue();
-    var pitch = pitchSignal.getValue();
-    var rollVelocity = rollVelocitySignal.getValue();
-    var pitchVelocity = pitchVelocitySignal.getValue();
-    var accelX = accelerationX.getValue();
-    var accelY = accelerationY.getValue();
+    Angle roll = rollSignal.getValue();
+    Angle pitch = pitchSignal.getValue();
+    AngularVelocity rollVelocity = rollVelocitySignal.getValue();
+    AngularVelocity pitchVelocity = pitchVelocitySignal.getValue();
+    LinearAcceleration accelX = accelerationX.getValue();
+    LinearAcceleration accelY = accelerationY.getValue();
 
     // Send all of the tilt values to the driving safety util
     DrivingUtils.updateTilt(roll, pitch, rollVelocity, pitchVelocity, accelX, accelY);

@@ -14,27 +14,25 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.frc6324.lib;
+package com.frc6324.lib.util;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import org.jetbrains.annotations.Contract;
+import static edu.wpi.first.units.Units.Seconds;
+
+import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.wpilibj.RobotController;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Extensions for the {@link Pose2d} class for use with {@link lombok.experimental.ExtensionMethod
- * ExtensionMethod}.
- */
-@UninstantiableClass
-public final class PoseExtensions {
-  @Contract(" -> fail")
-  private PoseExtensions() {
-    // Throw an Error since this means a reflection attack took place.
-    throw new IllegalAccessError();
+public final class DeltaTimeCalculator {
+  private double lastTimestamp = RobotController.getFPGATime() / 1e6;
+
+  public double get() {
+    double newTimestamp = RobotController.getFPGATime() / 1e6;
+    double delta = newTimestamp - lastTimestamp;
+    lastTimestamp = newTimestamp;
+    return delta;
   }
 
-  @Contract("_, _ -> new")
-  public static @NotNull Pose2d plus(@NotNull Pose2d lhs, @NotNull Pose2d rhs) {
-    return new Pose2d(
-        lhs.getTranslation().plus(rhs.getTranslation()), lhs.getRotation().plus(rhs.getRotation()));
+  public @NotNull Time getMeasure() {
+    return Seconds.of(get());
   }
 }

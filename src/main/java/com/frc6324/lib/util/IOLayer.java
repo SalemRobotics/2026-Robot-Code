@@ -13,8 +13,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-package com.frc6324.lib;
+package com.frc6324.lib.util;
 
+import com.frc6324.lib.UninstantiableClass;
 import org.jetbrains.annotations.Contract;
 
 @UninstantiableClass

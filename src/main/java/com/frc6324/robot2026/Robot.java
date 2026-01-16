@@ -16,15 +16,23 @@
 package com.frc6324.robot2026;
 
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import lombok.val;
+
+import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGReader;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 public class Robot extends LoggedRobot {
-  private Command m_autonomousCommand;
+  private Command autonomousCommand;
 
-  private final RobotContainer m_robotContainer;
+  private final RobotContainer robotContainer;
+  private final Runtime runtime = Runtime.getRuntime();
 
   public static void main(String... args) {
     RobotBase.startRobot(Robot::new);
@@ -45,61 +53,115 @@ public class Robot extends LoggedRobot {
           default -> "Unknown";
         });
 
-    // Set up data recievers and replace source
+    // Set up data recievers and replay source
+    switch (Constants.CURRENT_MODE) {
+      case REAL -> {
+        // Real robot, publish to logs and NT
+        Logger.addDataReceiver(new WPILOGWriter());
+        Logger.addDataReceiver(new NT4Publisher());
+      }
+      case SIM -> {
+        // Sim, only publish to NT
+        Logger.addDataReceiver(new NT4Publisher());
+      }
+      case REPLAY -> {
+        // Disable timing to run as fast as possible
+        setUseTiming(false);
+        String logPath = LogFileUtil.findReplayLog();
 
-    m_robotContainer = new RobotContainer();
+        // Replaing a log, set up replay source and log to a file
+        Logger.setReplaySource(new WPILOGReader(logPath));
+        Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
+      }
+    }
+
+    // Start the akit logger
+    Logger.start();
+
+    // Initialize the robot container
+    robotContainer = new RobotContainer();
   }
 
   @Override
   public void robotPeriodic() {
+    Logger.runEveryN(
+        25,
+        () -> {
+          val totalMemory = runtime.totalMemory();
+          val usedMemory = totalMemory - runtime.freeMemory();
+          val utilization = ((double) (usedMemory)) / ((double) (totalMemory));
+
+          Logger.recordOutput("Robot/Used Memory %", utilization * 100);
+        });
+
+    // Set thread to highest priority to improve performance
+    Threads.setCurrentThreadPriority(true, 99);
+
+    // Runs the command scheduler
     CommandScheduler.getInstance().run();
+  
+    // Set the thread to low priority to let other things run (such as NT)
+    Threads.setCurrentThreadPriority(false, 10);
   }
 
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+  }
 
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+  }
 
   @Override
-  public void disabledExit() {}
+  public void disabledExit() {
+  }
 
   @Override
   public void autonomousInit() {
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+    // Get the new autonomous command that is selected
+    autonomousCommand = robotContainer.getAutonomousCommand();
 
-    if (m_autonomousCommand != null) {
-      CommandScheduler.getInstance().schedule(m_autonomousCommand);
+    // Schedule the auto command
+    if (autonomousCommand != null) {
+      CommandScheduler.getInstance().schedule(autonomousCommand);
     }
   }
 
   @Override
-  public void autonomousPeriodic() {}
+  public void autonomousPeriodic() {
+  }
 
   @Override
-  public void autonomousExit() {}
+  public void autonomousExit() {
+  }
 
   @Override
   public void teleopInit() {
-    if (m_autonomousCommand != null) {
-      m_autonomousCommand.cancel();
+    // If an auto command is running, cancel it
+    if (autonomousCommand != null) {
+      autonomousCommand.cancel();
     }
   }
 
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+  }
 
   @Override
-  public void teleopExit() {}
+  public void teleopExit() {
+  }
 
   @Override
   public void testInit() {
+    // Cancel all scheduled commands during test
     CommandScheduler.getInstance().cancelAll();
   }
 
   @Override
-  public void testPeriodic() {}
+  public void testPeriodic() {
+  }
 
   @Override
-  public void testExit() {}
+  public void testExit() {
+  }
 }

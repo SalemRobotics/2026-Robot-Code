@@ -2,10 +2,10 @@ package com.frc6324.robot2026.subsystems.drive;
 
 import static edu.wpi.first.units.Units.*;
 
-import com.frc6324.lib.Elastic;
-import com.frc6324.lib.Elastic.Notification;
-import com.frc6324.lib.Elastic.NotificationLevel;
 import com.frc6324.lib.UninstantiableClass;
+import com.frc6324.lib.util.Elastic;
+import com.frc6324.lib.util.Elastic.Notification;
+import com.frc6324.lib.util.Elastic.NotificationLevel;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;

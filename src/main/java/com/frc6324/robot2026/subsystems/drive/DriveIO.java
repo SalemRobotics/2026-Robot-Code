@@ -103,7 +103,7 @@ public interface DriveIO {
       ModuleStates = new SwerveModuleState[4];
       ModuleTargets = new SwerveModuleState[4];
 
-      var state = new SwerveModuleState();
+      SwerveModuleState state = new SwerveModuleState();
       Arrays.fill(ModuleStates, state);
       Arrays.fill(ModuleTargets, state);
     }
