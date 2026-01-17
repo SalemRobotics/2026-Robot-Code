@@ -40,6 +40,8 @@ public class AprilTagVision extends SubsystemBase {
               "AprilTag camera '" + CAMERA_NAMES[i] + "' is disconnected.", AlertType.kWarning);
       inputs[i] = new VisionInputsAutoLogged();
     }
+
+    VisionUpdateThread.start();
   }
 
   @Override
@@ -60,10 +62,15 @@ public class AprilTagVision extends SubsystemBase {
       Logger.processInputs(logKey, currentInputs);
 
       Logger.recordOutput(logKey + "/Visible Tag IDs", currentInputs.tagsSeen);
+
       for (final VisionEstimation estimation : currentInputs.estimations) {
         final int numTagsUsed = estimation.numTagsUsed();
         final Pose2d robotPose = estimation.robotPose().toPose2d();
 
+        // Determine whether to reject pose if:
+        // 1. The update (somehow) uses 0 tags (should be impossible)
+        // 2. The update has too high of an ambiguity and is single-tag
+        // 3. The pose is outside of the field border
         final boolean rejectPose =
             numTagsUsed == 0
                 || (numTagsUsed == 1 && estimation.ambiguity() > MAX_AMBIGUITY)
@@ -93,6 +100,7 @@ public class AprilTagVision extends SubsystemBase {
         final double angularStddev =
             ANGULAR_STDDEV_BASELINE * stddevFactor * CAMERA_STDDEV_FACTORS[cameraIndex];
 
+        // Send the update to all consumers
         consumers.forEach(
             c ->
                 c.addVisionMeasurement(
@@ -101,14 +109,48 @@ public class AprilTagVision extends SubsystemBase {
                     VecBuilder.fill(linearStddev, linearStddev, angularStddev)));
       }
 
+      // Log camera summary data
+      Logger.recordOutput(logKey + "/Summary/RobotPoses", robotPoses.toArray(Pose2d[]::new));
+      Logger.recordOutput(
+          logKey + "/Summary/RobotPosesAccepted", robotPosesAccepted.toArray(Pose2d[]::new));
+      Logger.recordOutput(
+          logKey + "/Summary/RobotPosesRejected", robotPosesRejected.toArray(Pose2d[]::new));
+
+      // Add summary data to global summary cache
       allRobotPoses.addAll(robotPoses);
       allRobotPosesAccepted.addAll(robotPosesAccepted);
       allRobotPosesRejected.addAll(robotPosesRejected);
     }
+
+    // Log vision summary data
+    Logger.recordOutput("Vision/AprilTag/Summary/RobotPoses", allRobotPoses.toArray(Pose2d[]::new));
+    Logger.recordOutput(
+        "Vision/AprilTag/Summary/RobotPosesAccepted", allRobotPosesAccepted.toArray(Pose2d[]::new));
+    Logger.recordOutput(
+        "Vision/AprilTag/Summary/RobotPosesRejected", allRobotPosesRejected.toArray(Pose2d[]::new));
   }
 
+  /**
+   * Adds a consumer that will accept updates deemed acceptable from vision odometry.
+   *
+   * @param consumer The consumer to add.
+   * @return This subsystem for easier method chaining.
+   */
+  public AprilTagVision withConsumer(VisionConsumer consumer) {
+    consumers.add(consumer);
+    return this;
+  }
+
+  /** Marks a consumer of vision data. */
   @FunctionalInterface
   public interface VisionConsumer {
+    /**
+     * Adds a vision measurement to this consumer.
+     *
+     * @param robotPose The calculated robot pose.
+     * @param timestamp The timestamp of the pose measurement.
+     * @param stddevs The calculated standard deviations of robot pose calculations.
+     */
     public void addVisionMeasurement(Pose2d robotPose, double timestamp, Matrix<N3, N1> stddevs);
   }
 }

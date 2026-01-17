@@ -11,7 +11,9 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstants.ClosedLoopOutputType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.ApplyRobotSpeeds;
 import com.ctre.phoenix6.swerve.SwerveRequest.SwerveDriveBrake;
+import com.frc6324.lib.util.PoseExtensions.PoseSupplier;
 import com.frc6324.robot2026.generated.TunerConstants;
+import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagVision.VisionConsumer;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -29,7 +31,7 @@ import frc.robot.lib.BLine.FollowPath;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-public final class SwerveDrive extends SubsystemBase {
+public final class SwerveDrive extends SubsystemBase implements VisionConsumer, PoseSupplier {
   /** The type of request to use for a drive motor. */
   public static final DriveRequestType DRIVE_REQUEST = DriveRequestType.Velocity;
 
@@ -106,7 +108,7 @@ public final class SwerveDrive extends SubsystemBase {
     return run(() -> setControl(request));
   }
 
-  // TODO: add @Override when Vision subsystem is implemented
+  @Override
   public void addVisionMeasurement(Pose2d robotPose, double timestamp, Matrix<N3, N1> stddevs) {
     io.addVisionMeasurement(robotPose, timestamp, stddevs);
   }

@@ -1,7 +1,6 @@
 package com.frc6324.robot2026.subsystems.vision.objdetect;
 
-import static com.frc6324.robot2026.subsystems.vision.objdetect.ObjectDetectionConstants.CAMERA_NAMES;
-import static edu.wpi.first.units.Units.Radians;
+import static com.frc6324.robot2026.subsystems.vision.objdetect.ObjectDetectionConstants.*;
 
 import com.frc6324.robot2026.subsystems.vision.objdetect.ObjDetectIO.ObjDetectInputs;
 import com.frc6324.robot2026.subsystems.vision.objdetect.ObjDetectIO.VisibleGamePiece;
@@ -9,21 +8,13 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.ArrayList;
 import java.util.Comparator;
-import lombok.Getter;
-import lombok.Setter;
+
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public final class ObjectDetection extends SubsystemBase {
   private final ObjDetectIO[] io;
   private final ObjDetectInputsAutoLogged[] inputs;
-  private double mostOptimalHeadingRadians = 0;
-
-  /**
-   * Whether or not this subsystem is allowed to calculate the most optimal path for intaking. This
-   * should be disabled when the driver has full control and isn't planning on using automated
-   * functionality.
-   */
-  @Getter @Setter private boolean optimalPathCalculationEnabled = true;
 
   public ObjectDetection(ObjDetectIO... io) {
     this.io = io;
@@ -38,7 +29,7 @@ public final class ObjectDetection extends SubsystemBase {
    * Calculates the new "most optimal" path, that is the path at which we can intake the most game
    * pieces.
    */
-  private void calculateOptimalPath() {
+  public double calculateOptimalPath() {
     // Create some lists so we don't have to keep the inputs locked for long
     final ArrayList<RangeEvent> events = new ArrayList<>();
     final ArrayList<VisibleGamePiece> allPieces = new ArrayList<>();
@@ -138,7 +129,7 @@ public final class ObjectDetection extends SubsystemBase {
       }
     }
 
-    mostOptimalHeadingRadians = (bestStart + bestEnd) / 2;
+    return (bestStart + bestEnd) / 2;
   }
 
   /**
@@ -146,8 +137,9 @@ public final class ObjectDetection extends SubsystemBase {
    *
    * @return The robot-relative target heading of the robot.
    */
+  @AutoLogOutput(key = "Vision/Object Detection/Most Optimal Direction")
   public Rotation2d getMostOptimalHeadingRadians() {
-    return Rotation2d.fromRadians(mostOptimalHeadingRadians);
+    return Rotation2d.fromRadians(calculateOptimalPath());
   }
 
   @Override
@@ -158,16 +150,11 @@ public final class ObjectDetection extends SubsystemBase {
       io[i].updateInputs(currentInputs);
       Logger.processInputs("Vision/Object Detection/" + CAMERA_NAMES[i], currentInputs);
     }
-
-    if (optimalPathCalculationEnabled) {
-      calculateOptimalPath();
-
-      Logger.recordOutput(
-          "Vision/Object Detection/MostOptimalHeading", mostOptimalHeadingRadians, Radians);
-    } else {
-      Logger.recordOutput("Vision/Object Detection/MostOptimalHeading", 0, Radians);
-    }
   }
 
+  /**
+   * Represents a simple "event" (the beginning or end of a game piece's range) for use in finding a
+   * most optimal path.
+   */
   record RangeEvent(int pieceIndex, double angle, int delta) {}
 }

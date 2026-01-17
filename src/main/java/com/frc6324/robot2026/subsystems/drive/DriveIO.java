@@ -39,11 +39,13 @@ import org.littletonrobotics.junction.AutoLog;
  */
 public interface DriveIO {
   /**
-   * Updates the drivetrain's loggable inputs.
+   * Adds a vision measurement to the pose estimator.
    *
-   * @param inputs The inputs to modify.
+   * @param pose The measured pose.
+   * @param timestamp The timestamp at which the measurement was taken by the camera.
+   * @param stddevs The standard deviations of the measurement.
    */
-  void updateInputs(DriveInputs inputs);
+  void addVisionMeasurement(Pose2d pose, double timestamp, Matrix<N3, N1> stddevs);
 
   /**
    * Logs the module states.
@@ -67,13 +69,11 @@ public interface DriveIO {
   void setControl(SwerveRequest request);
 
   /**
-   * Adds a vision measurement to the pose estimator.
+   * Updates the drivetrain's loggable inputs.
    *
-   * @param pose The measured pose.
-   * @param timestamp The timestamp at which the measurement was taken by the camera.
-   * @param stddevs The standard deviations of the measurement.
+   * @param inputs The inputs to modify.
    */
-  void addVisionMeasurement(Pose2d pose, double timestamp, Matrix<N3, N1> stddevs);
+  void updateInputs(DriveInputs inputs);
 
   /** Inputs for the drivetrain. */
   @AutoLog

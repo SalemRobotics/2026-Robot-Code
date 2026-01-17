@@ -8,5 +8,5 @@ public final class ObjectDetectionConstants {
     throw new IllegalAccessError();
   }
 
-  public static final String[] CAMERA_NAMES = {};
+  public static final String[] CAMERA_NAMES = {""};
 }

@@ -15,14 +15,64 @@
  */
 package com.frc6324.robot2026;
 
+import com.frc6324.lib.util.IOLayer;
 import com.frc6324.lib.util.PoseExtensions;
+import com.frc6324.robot2026.subsystems.drive.DriveIO.DriveIOReplay;
+import com.frc6324.robot2026.subsystems.drive.DriveIOCTRE;
+import com.frc6324.robot2026.subsystems.drive.DriveIOSim;
+import com.frc6324.robot2026.subsystems.drive.SwerveDrive;
+import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagIOPhoton;
+import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagIOSim;
+import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagVision;
+import com.frc6324.robot2026.subsystems.vision.objdetect.ObjectDetection;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import lombok.experimental.ExtensionMethod;
 
 @ExtensionMethod(PoseExtensions.class)
 public class RobotContainer {
+  private final SwerveDrive drive;
+  private final AprilTagVision visionOdometry;
+  private final ObjectDetection objectDetection;
+
   public RobotContainer() {
+    switch (Constants.CURRENT_MODE) {
+      case REAL -> {
+        final DriveIOCTRE realDrive = new DriveIOCTRE();
+
+        drive = new SwerveDrive(realDrive);
+
+        visionOdometry =
+            new AprilTagVision(
+                    new AprilTagIOPhoton(realDrive::samplePoseAt),
+                    new AprilTagIOPhoton(realDrive::samplePoseAt),
+                    new AprilTagIOPhoton(realDrive::samplePoseAt),
+                    new AprilTagIOPhoton(realDrive::samplePoseAt))
+                .withConsumer(drive);
+
+        objectDetection = new ObjectDetection();
+      }
+      case SIM -> {
+        final DriveIOSim simDrive = new DriveIOSim();
+
+        drive = new SwerveDrive(simDrive);
+
+        visionOdometry =
+            new AprilTagVision(
+                new AprilTagIOSim(simDrive::samplePoseAt, drive),
+                new AprilTagIOSim(simDrive::samplePoseAt, drive),
+                new AprilTagIOSim(simDrive::samplePoseAt, drive),
+                new AprilTagIOSim(simDrive::samplePoseAt, drive));
+        objectDetection = new ObjectDetection();
+      }
+      default -> {
+        drive = new SwerveDrive(new DriveIOReplay());
+        visionOdometry =
+            new AprilTagVision(IOLayer::replay, IOLayer::replay, IOLayer::replay, IOLayer::replay);
+        objectDetection = new ObjectDetection(IOLayer::replay);
+      }
+    }
+
     configureBindings();
   }
 

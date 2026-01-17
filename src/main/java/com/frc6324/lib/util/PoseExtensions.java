@@ -38,4 +38,9 @@ public final class PoseExtensions {
     return new Pose2d(
         lhs.getTranslation().plus(rhs.getTranslation()), lhs.getRotation().plus(rhs.getRotation()));
   }
+
+  @FunctionalInterface
+  public interface PoseSupplier {
+    public Pose2d getPose();
+  }
 }

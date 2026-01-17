@@ -16,11 +16,11 @@ public interface ObjDetectIO {
   class ObjDetectInputs {
     public boolean connected = false;
 
-    /** The list of visual */
+    /** The list of visible game pieces */
     public VisibleGamePiece[] visiblePieces = new VisibleGamePiece[0];
   }
 
-  /** Represents a game piece that is visible to */
+  /** Represents a game piece that is visible to the camera. */
   record VisibleGamePiece(
       double timestamp,
       double ambiguity,

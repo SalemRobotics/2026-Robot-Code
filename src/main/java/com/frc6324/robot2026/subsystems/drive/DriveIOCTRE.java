@@ -10,6 +10,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import com.ctre.phoenix6.swerve.SwerveModule;
 import com.frc6324.robot2026.generated.TunerConstants;
+import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagIOPhoton.OdometryPoseGetter;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearAcceleration;
@@ -17,7 +18,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 import org.littletonrobotics.junction.Logger;
 
 public sealed class DriveIOCTRE extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
-    implements DriveIO permits DriveIOSim {
+    implements DriveIO, OdometryPoseGetter permits DriveIOSim {
   private final StatusSignalCollection gyroscopeSignals;
   private final StatusSignal<AngularVelocity> pitchVelocitySignal;
   private final StatusSignal<AngularVelocity> rollVelocitySignal;
