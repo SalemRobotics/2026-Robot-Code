@@ -7,12 +7,11 @@ import frc.robot.lib.BLine.FollowPath;
 import frc.robot.lib.BLine.Path;
 
 /**
- * Executes a set of listed commands in sequential order, while also allowing
- * "junction" commands to run in between them.
+ * Executes a set of listed commands in sequential order, while also allowing "junction" commands to
+ * run in between them.
  *
- * <p>
- * This is essentially a wrapper over {@link SequentialCommandGroup}, however it
- * offers a more intuitive builder API.
+ * <p>This is essentially a wrapper over {@link SequentialCommandGroup}, however it offers a more
+ * intuitive builder API.
  *
  * @see SequentialCommandGroup
  * @see Command
@@ -24,6 +23,7 @@ public final class PathGroup extends Command {
 
   /**
    * Creates a new path group, using the specified builder.
+   *
    * @param builder The builder to build BLine paths with.
    */
   public PathGroup(FollowPath.Builder builder) {
@@ -31,7 +31,9 @@ public final class PathGroup extends Command {
   }
 
   /**
-   * Creates a new path group using the specified builder, adding the given subsystems as requirements.
+   * Creates a new path group using the specified builder, adding the given subsystems as
+   * requirements.
+   *
    * @param builder The builder to build BLine paths with.
    * @param requirements The requirements to add to this command.
    */
@@ -43,7 +45,9 @@ public final class PathGroup extends Command {
 
   /**
    * Adds a path to this path group.
-   * @param path The path to add. This will be loaded from the file {@code deploy/autos/paths/<path>.json}.
+   *
+   * @param path The path to add. This will be loaded from the file {@code
+   *     deploy/autos/paths/<path>.json}.
    * @return This group for easier method chaining.
    */
   public PathGroup nextPath(String path) {
@@ -52,6 +56,7 @@ public final class PathGroup extends Command {
 
   /**
    * Adds an already-constructed path to this path group.
+   *
    * @param path The path to add.
    * @return This group for easier method chaining.
    */
@@ -64,6 +69,7 @@ public final class PathGroup extends Command {
 
   /**
    * Adds a command to be executed in this group after all previous paths and commands.
+   *
    * @param command The command to add to the group.
    * @return This group for easier method chaining.
    */
@@ -73,6 +79,7 @@ public final class PathGroup extends Command {
 
   /**
    * Adds a group of commands to be executed in this group after all previous paths and commands.
+   *
    * @param commands The commands to add to the group.
    * @return This group for easier method chaining.
    */

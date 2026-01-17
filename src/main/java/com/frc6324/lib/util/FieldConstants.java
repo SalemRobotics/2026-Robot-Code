@@ -21,6 +21,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import org.jetbrains.annotations.Contract;
 
+/** A collection of constants that describe the 2026 Rebuilt field. */
 @UninstantiableClass
 public final class FieldConstants {
   @Contract(" -> fail")
@@ -29,8 +30,13 @@ public final class FieldConstants {
     throw new IllegalAccessError();
   }
 
+  /** The length of the field, in meters. */
   public static final double FIELD_LENGTH_METERS = Units.inchesToMeters(651.2);
+
+  /** The width of the field, in meters. */
   public static final double FIELD_WIDTH_METERS = Units.inchesToMeters(317.7);
+
+  /** The translation component of the center of the field. */
   public static final Translation2d FIELD_CENTER =
       new Translation2d(FIELD_LENGTH_METERS / 2, FIELD_WIDTH_METERS / 2);
 }

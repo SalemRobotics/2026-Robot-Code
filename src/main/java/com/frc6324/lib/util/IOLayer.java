@@ -18,6 +18,10 @@ package com.frc6324.lib.util;
 import com.frc6324.lib.UninstantiableClass;
 import org.jetbrains.annotations.Contract;
 
+/**
+ * A utility class for interacting with I/O interfaces that are annotated with {@link
+ * java.lang.FunctionalInterface FunctionalInterface}.
+ */
 @UninstantiableClass
 public final class IOLayer {
   @Contract(" -> fail")

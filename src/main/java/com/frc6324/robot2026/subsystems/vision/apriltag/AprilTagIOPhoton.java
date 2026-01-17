@@ -1,6 +1,6 @@
-package com.frc6324.robot2026.subsystems.vision;
+package com.frc6324.robot2026.subsystems.vision.apriltag;
 
-import static com.frc6324.robot2026.subsystems.vision.VisionConstants.*;
+import static com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagConstants.*;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -21,7 +21,7 @@ import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
-public class VisionIOPhoton implements VisionIO {
+public class AprilTagIOPhoton implements AprilTagIO {
   private static int cameraIndex = 0;
 
   protected final int index = cameraIndex++;
@@ -35,13 +35,13 @@ public class VisionIOPhoton implements VisionIO {
   private final PhotonPoseEstimator poseEstimator = new PhotonPoseEstimator(APRILTAG_LAYOUT, null);
   private final ArrayList<VisionEstimation> estimations = new ArrayList<>();
 
-  public VisionIOPhoton(DoubleFunction<Optional<Pose2d>> robotPoseBufferGetter) {
+  public AprilTagIOPhoton(DoubleFunction<Optional<Pose2d>> robotPoseBufferGetter) {
     robotPoseEstimationBuffer = robotPoseBufferGetter;
   }
 
   @Override
   public void updateInputs(VisionInputs inputs) {
-    boolean connected = camera.isConnected();
+    final boolean connected = camera.isConnected();
     inputs.connected = connected;
 
     estimations.clear();
@@ -49,7 +49,7 @@ public class VisionIOPhoton implements VisionIO {
 
     // If the camera isn't connected, skip
     if (!connected) {
-      inputs.estimations = NO_ESTIMATIONS;
+      inputs.estimations = new VisionEstimation[0];
       inputs.tagsSeen = new int[0];
       return;
     }
@@ -65,12 +65,12 @@ public class VisionIOPhoton implements VisionIO {
     }
 
     // Go over all of the
-    for (PhotonPipelineResult result : camera.getAllUnreadResults()) {
+    for (final PhotonPipelineResult result : camera.getAllUnreadResults()) {
       EstimatedRobotPose estimatedPose;
-      double timestamp = result.getTimestampSeconds();
+      final double timestamp = result.getTimestampSeconds();
 
       // If the result doesn't have targets or is stale, skip
-      if (!result.hasTargets() || Timer.getFPGATimestamp() - timestamp > MAX_LATENCY) {
+      if (!result.hasTargets() || Timer.getFPGATimestamp() - timestamp > MAX_LATENCY_SECS) {
         continue;
       }
 
@@ -80,11 +80,12 @@ public class VisionIOPhoton implements VisionIO {
       // 3. Average targets (using ambiguity as weight)
 
       // Try to estimate using multitag
-      Optional<EstimatedRobotPose> multitagOpt = poseEstimator.estimateCoprocMultiTagPose(result);
+      final Optional<EstimatedRobotPose> multitagOpt =
+          poseEstimator.estimateCoprocMultiTagPose(result);
       if (multitagOpt.isPresent()) {
         estimatedPose = multitagOpt.get();
       } else {
-        Optional<Pose2d> odomPoseOpt = robotPoseEstimationBuffer.apply(timestamp);
+        final Optional<Pose2d> odomPoseOpt = robotPoseEstimationBuffer.apply(timestamp);
         Optional<EstimatedRobotPose> constrainedSolvePNPOpt = Optional.empty();
 
         if (cameraMatrix != null && distCoeffs != null && odomPoseOpt.isPresent()) {
@@ -108,8 +109,8 @@ public class VisionIOPhoton implements VisionIO {
         }
       }
 
-      List<PhotonTrackedTarget> targetsUsed = estimatedPose.targetsUsed;
-      int numTags = targetsUsed.size();
+      final List<PhotonTrackedTarget> targetsUsed = estimatedPose.targetsUsed;
+      final int numTags = targetsUsed.size();
 
       double totalAmbiguity = 0;
       double totalDistance = 0;

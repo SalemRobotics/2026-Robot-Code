@@ -22,9 +22,15 @@ import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.RobotController;
 import org.jetbrains.annotations.NotNull;
 
+/** A utility class for calculating accurate time deltas. */
 public final class DeltaTimeCalculator {
   private double lastTimestamp = RobotController.getFPGATime() / 1e6;
 
+  /**
+   * Gets the delta from now to the last time this method was called.
+   *
+   * @return The amount of time (in seconds) since the last time this method was called.
+   */
   public double get() {
     double newTimestamp = RobotController.getFPGATime() / 1e6;
     double delta = newTimestamp - lastTimestamp;
@@ -32,6 +38,13 @@ public final class DeltaTimeCalculator {
     return delta;
   }
 
+  /**
+   * Equivalent to {@link #get}, but returns a measure in the Units API.
+   *
+   * @return A measure of time since the last time this method or {@link #get} was called.
+   * @see #get()
+   * @see Time
+   */
   public @NotNull Time getMeasure() {
     return Seconds.of(get());
   }

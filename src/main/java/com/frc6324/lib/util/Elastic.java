@@ -8,11 +8,15 @@ package com.frc6324.lib.util;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.frc6324.lib.UninstantiableClass;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.networktables.StringTopic;
+import org.jetbrains.annotations.Contract;
 
+/** A utility class for interacting with the Elastic dashboard. */
+@UninstantiableClass
 public final class Elastic {
   private static final StringTopic notificationTopic =
       NetworkTableInstance.getDefault().getStringTopic("/Elastic/RobotNotifications");
@@ -23,6 +27,11 @@ public final class Elastic {
   private static final StringPublisher selectedTabPublisher =
       selectedTabTopic.publish(PubSubOption.keepDuplicates(true));
   private static final ObjectMapper objectMapper = new ObjectMapper();
+
+  @Contract(" -> fail")
+  private Elastic() {
+    throw new IllegalAccessError();
+  }
 
   /**
    * Represents the possible levels of notifications for the Elastic dashboard. These levels are
