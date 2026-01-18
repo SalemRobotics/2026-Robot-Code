@@ -15,11 +15,20 @@
  */
 package com.frc6324.robot2026;
 
+import com.ctre.phoenix6.CANBus;
 import com.frc6324.lib.UninstantiableClass;
 import edu.wpi.first.wpilibj.RobotBase;
 
+/**
+ * Constants for the whole robot.
+ */
 @UninstantiableClass
 public final class Constants {
+  public static final CANBus RIO_BUS = new CANBus("rio");
+  public static final CANBus CANIVORE = new CANBus("canivore0");
+
+  public static final int DRIVER_CONTROLLER_PORT = 0;
+
   /** The mode that should be run when the robot is being simulated. */
   public static final Mode SIM_MODE = Mode.SIM;
 

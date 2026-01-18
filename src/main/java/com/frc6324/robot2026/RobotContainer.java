@@ -15,9 +15,14 @@
  */
 package com.frc6324.robot2026;
 
+import static com.frc6324.robot2026.Constants.*;
+
 import com.frc6324.lib.util.IOLayer;
-import com.frc6324.lib.util.PoseExtensions;
 import com.frc6324.robot2026.subsystems.drive.DriveIO.DriveIOReplay;
+import com.frc6324.robot2026.commands.DriveCommands;
+import com.frc6324.robot2026.subsystems.climber.Climber;
+import com.frc6324.robot2026.subsystems.climber.ClimberIOSim;
+import com.frc6324.robot2026.subsystems.climber.ClimberIOTalonFX;
 import com.frc6324.robot2026.subsystems.drive.DriveIOCTRE;
 import com.frc6324.robot2026.subsystems.drive.DriveIOSim;
 import com.frc6324.robot2026.subsystems.drive.SwerveDrive;
@@ -25,21 +30,28 @@ import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagIOPhoton;
 import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagIOSim;
 import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagVision;
 import com.frc6324.robot2026.subsystems.vision.objdetect.ObjectDetection;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import lombok.experimental.ExtensionMethod;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
-@ExtensionMethod(PoseExtensions.class)
 public class RobotContainer {
+  private final Climber climber;
   private final SwerveDrive drive;
+
+  @SuppressWarnings("unused")
   private final AprilTagVision visionOdometry;
+  @SuppressWarnings("unused")
   private final ObjectDetection objectDetection;
 
-  public RobotContainer() {
+  private final CommandXboxController controller = new CommandXboxController(DRIVER_CONTROLLER_PORT);
+  
+  public RobotContainer() {    
     switch (Constants.CURRENT_MODE) {
       case REAL -> {
-        final DriveIOCTRE realDrive = new DriveIOCTRE();
+        climber = new Climber(new ClimberIOTalonFX());
 
+        final DriveIOCTRE realDrive = new DriveIOCTRE();
         drive = new SwerveDrive(realDrive);
 
         visionOdometry =
@@ -53,8 +65,9 @@ public class RobotContainer {
         objectDetection = new ObjectDetection();
       }
       case SIM -> {
-        final DriveIOSim simDrive = new DriveIOSim();
+        climber = new Climber(new ClimberIOSim());
 
+        final DriveIOSim simDrive = new DriveIOSim();
         drive = new SwerveDrive(simDrive);
 
         visionOdometry =
@@ -66,6 +79,7 @@ public class RobotContainer {
         objectDetection = new ObjectDetection();
       }
       default -> {
+        climber = new Climber(IOLayer::replay);
         drive = new SwerveDrive(new DriveIOReplay());
         visionOdometry =
             new AprilTagVision(IOLayer::replay, IOLayer::replay, IOLayer::replay, IOLayer::replay);
@@ -76,7 +90,13 @@ public class RobotContainer {
     configureBindings();
   }
 
-  private void configureBindings() {}
+  private void configureBindings() {
+    drive.setDefaultCommand(DriveCommands.joystickDrive(drive, controller.getHID()));
+    // Bind climber commands to the D-pad
+
+    controller.povUp().whileTrue(climber.stow()).onFalse(climber.stop());
+    controller.povDown().whileTrue(climber.deploy()).onFalse(climber.stop());
+  }
 
   public Command getAutonomousCommand() {
     return Commands.print("No autonomous command configured");
