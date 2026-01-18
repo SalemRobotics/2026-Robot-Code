@@ -13,8 +13,13 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public final class ObjectDetection extends SubsystemBase {
+  private static final RangeEventComparator RANGE_EVENT_COMPARATOR = new RangeEventComparator();
+
   private final ObjDetectIO[] io;
   private final ObjDetectInputsAutoLogged[] inputs;
+
+  private final ArrayList<RangeEvent> events = new ArrayList<>(32);
+  private final ArrayList<VisibleGamePiece> allPieces = new ArrayList<>(32);
 
   public ObjectDetection(ObjDetectIO... io) {
     this.io = io;
@@ -30,9 +35,8 @@ public final class ObjectDetection extends SubsystemBase {
    * pieces.
    */
   public double calculateOptimalPath() {
-    // Create some lists so we don't have to keep the inputs locked for long
-    final ArrayList<RangeEvent> events = new ArrayList<>();
-    final ArrayList<VisibleGamePiece> allPieces = new ArrayList<>();
+    events.clear();
+    allPieces.clear();
 
     // Get all of the game pieces from all of the cameras
     for (final ObjDetectInputs input : inputs) {
@@ -74,7 +78,7 @@ public final class ObjectDetection extends SubsystemBase {
     }
 
     // Sort the events in ascending order (required for the algorithm to work)
-    events.sort(Comparator.comparingDouble(e -> e.angle));
+    events.sort(RANGE_EVENT_COMPARATOR);
 
     // Keep track of details about the "best" range
     int bestCount = 0;
@@ -102,6 +106,11 @@ public final class ObjectDetection extends SubsystemBase {
         currentTotalDistance -= pieceDistance;
       } else {
         currentTotalDistance += pieceDistance;
+      }
+
+      // Skip if the current number of targets is zero
+      if (currentCount == 0) {
+        continue;
       }
 
       // Compute the average distance
@@ -157,4 +166,11 @@ public final class ObjectDetection extends SubsystemBase {
    * most optimal path.
    */
   record RangeEvent(int pieceIndex, double angle, int delta) {}
+
+  private static class RangeEventComparator implements Comparator<RangeEvent> {
+    @Override
+    public int compare(RangeEvent o1, RangeEvent o2) {
+      return Double.compare(o1.angle, o2.angle);
+    }
+  }
 }
