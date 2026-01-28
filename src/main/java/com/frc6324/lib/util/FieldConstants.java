@@ -7,6 +7,7 @@
 
 package com.frc6324.lib.util;
 
+import com.frc6324.lib.UninstantiableClass;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -24,7 +25,8 @@ import lombok.RequiredArgsConstructor;
  * <p>NOTE: All constants are defined relative to the field coordinate system, and from the
  * perspective of the blue alliance station
  */
-public class FieldConstants {
+@UninstantiableClass
+public final class FieldConstants {
   public static final FieldType FIELD_TYPE = FieldType.WELDED;
 
   // AprilTag related constants
@@ -36,6 +38,10 @@ public class FieldConstants {
   public static final double FIELD_LENGTH =
       AprilTagLayoutType.OFFICIAL.getLayout().getFieldLength();
   public static final double FIELD_WIDTH = AprilTagLayoutType.OFFICIAL.getLayout().getFieldWidth();
+
+  private FieldConstants() {
+    throw new IllegalAccessError();
+  }
 
   /**
    * Officially defined and relevant vertical lines found on the field (defined by X-axis offset)
@@ -339,7 +345,7 @@ public class FieldConstants {
                       "apriltags",
                       FIELD_TYPE.getJsonFolder(),
                       name + ".json");
-              layout = new AprilTagFieldLayout(p);
+              this.layout = layout = new AprilTagFieldLayout(p);
             } catch (IOException e) {
               throw new RuntimeException(e);
             }
