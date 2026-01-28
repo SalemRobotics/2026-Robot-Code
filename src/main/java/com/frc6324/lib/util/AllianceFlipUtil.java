@@ -40,7 +40,7 @@ public final class AllianceFlipUtil {
    */
   @Contract(pure = true)
   public static double applyXUnchecked(double x) {
-    return FieldConstants.FIELD_LENGTH_METERS - x;
+    return FieldConstants.FIELD_LENGTH - x;
   }
 
   /**
@@ -62,7 +62,7 @@ public final class AllianceFlipUtil {
    */
   @Contract(pure = true)
   public static double applyYUnchecked(double y) {
-    return FieldConstants.FIELD_WIDTH_METERS - y;
+    return FieldConstants.FIELD_WIDTH - y;
   }
 
   /**

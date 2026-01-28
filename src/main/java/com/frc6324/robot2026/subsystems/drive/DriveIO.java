@@ -81,8 +81,6 @@ public interface DriveIO {
     /** The angle of the robot as reported by the gyroscope. */
     public Rotation2d GyroAngle = Rotation2d.kZero;
 
-    public double VelocityTimestamp = 0;
-
     public Angle Roll = Radians.zero();
     public Angle Pitch = Radians.zero();
     public AngularVelocity RollVelocity = RadiansPerSecond.zero();

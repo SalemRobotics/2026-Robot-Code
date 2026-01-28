@@ -201,6 +201,8 @@ createVersionFile.dependsOn(eventDeploy)
 // Spotless formatting
 project.compileJava.dependsOn(spotlessApply)
 spotless {
+    enforceCheck = true
+
     java {
         target fileTree(".") {
             include "**/*.java"

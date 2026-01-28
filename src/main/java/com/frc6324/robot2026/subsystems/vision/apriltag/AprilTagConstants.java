@@ -3,16 +3,12 @@ package com.frc6324.robot2026.subsystems.vision.apriltag;
 import static edu.wpi.first.units.Units.Hertz;
 
 import com.frc6324.lib.UninstantiableClass;
-import com.frc6324.lib.util.Statics;
+import com.frc6324.lib.util.FieldConstants;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Frequency;
-import edu.wpi.first.wpilibj.Filesystem;
-import java.io.File;
-import java.nio.file.Path;
 
 @UninstantiableClass
 public final class AprilTagConstants {
@@ -21,15 +17,7 @@ public final class AprilTagConstants {
   }
 
   public static final AprilTagFieldLayout APRILTAG_LAYOUT =
-      Statics.initOrDefault(
-          () -> {
-            final File deployDirectory = Filesystem.getDeployDirectory();
-            final Path layout =
-                Path.of(deployDirectory.getAbsolutePath(), "apriltags", "welded.json");
-
-            return new AprilTagFieldLayout(layout);
-          },
-          () -> AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded));
+      FieldConstants.DEFAULT_APRILTAG_TYPE.getLayout();
 
   public static final String[] CAMERA_NAMES = {
     "Front Left", "Back Left", "Front Right", "Back Right"
