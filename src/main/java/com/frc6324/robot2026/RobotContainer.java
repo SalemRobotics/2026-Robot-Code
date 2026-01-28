@@ -18,11 +18,11 @@ package com.frc6324.robot2026;
 import static com.frc6324.robot2026.Constants.*;
 
 import com.frc6324.lib.util.IOLayer;
-import com.frc6324.robot2026.subsystems.drive.DriveIO.DriveIOReplay;
 import com.frc6324.robot2026.commands.DriveCommands;
 import com.frc6324.robot2026.subsystems.climber.Climber;
 import com.frc6324.robot2026.subsystems.climber.ClimberIOSim;
 import com.frc6324.robot2026.subsystems.climber.ClimberIOTalonFX;
+import com.frc6324.robot2026.subsystems.drive.DriveIO.DriveIOReplay;
 import com.frc6324.robot2026.subsystems.drive.DriveIOCTRE;
 import com.frc6324.robot2026.subsystems.drive.DriveIOSim;
 import com.frc6324.robot2026.subsystems.drive.SwerveDrive;
@@ -30,7 +30,6 @@ import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagIOPhoton;
 import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagIOSim;
 import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagVision;
 import com.frc6324.robot2026.subsystems.vision.objdetect.ObjectDetection;
-
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -41,12 +40,14 @@ public class RobotContainer {
 
   @SuppressWarnings("unused")
   private final AprilTagVision visionOdometry;
+
   @SuppressWarnings("unused")
   private final ObjectDetection objectDetection;
 
-  private final CommandXboxController controller = new CommandXboxController(DRIVER_CONTROLLER_PORT);
-  
-  public RobotContainer() {    
+  private final CommandXboxController controller =
+      new CommandXboxController(DRIVER_CONTROLLER_PORT);
+
+  public RobotContainer() {
     switch (Constants.CURRENT_MODE) {
       case REAL -> {
         climber = new Climber(new ClimberIOTalonFX());

@@ -17,15 +17,14 @@ package com.frc6324.robot2026;
 
 import com.ctre.phoenix6.CANBus;
 import com.frc6324.lib.UninstantiableClass;
+import com.frc6324.robot2026.generated.TunerConstants;
 import edu.wpi.first.wpilibj.RobotBase;
 
-/**
- * Constants for the whole robot.
- */
+/** Constants for the whole robot. */
 @UninstantiableClass
 public final class Constants {
-  public static final CANBus RIO_BUS = new CANBus("rio");
-  public static final CANBus CANIVORE = new CANBus("canivore0");
+  public static final CANBus RIO_BUS = CANBus.roboRIO();
+  public static final CANBus CANIVORE = TunerConstants.kCANBus;
 
   public static final int DRIVER_CONTROLLER_PORT = 0;
 

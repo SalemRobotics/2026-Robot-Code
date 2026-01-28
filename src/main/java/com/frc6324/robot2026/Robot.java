@@ -15,6 +15,8 @@
  */
 package com.frc6324.robot2026;
 
+import com.ctre.phoenix6.SignalLogger;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -73,6 +75,10 @@ public class Robot extends LoggedRobot {
         Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
       }
     }
+
+    // Silence warnings for disconnected joysticks
+    DriverStation.silenceJoystickConnectionWarning(true);
+    SignalLogger.enableAutoLogging(false);
 
     // Start the akit logger
     Logger.start();

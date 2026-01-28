@@ -9,37 +9,36 @@ package com.frc6324.lib.util;
 
 import com.ctre.phoenix6.StatusCode;
 import com.frc6324.lib.UninstantiableClass;
-
 import edu.wpi.first.wpilibj.DriverStation;
 import java.util.function.Supplier;
 
 @UninstantiableClass
 public final class PhoenixUtil {
-    private PhoenixUtil() {
-        throw new IllegalAccessError();
+  private PhoenixUtil() {
+    throw new IllegalAccessError();
+  }
+
+  /** Attempts to run the command until no error is produced. */
+  public static void tryUntilOk(int maxAttempts, Supplier<StatusCode> command, String message) {
+    StatusCode error = StatusCode.StatusCodeNotInitialized;
+
+    for (int i = 0; i < maxAttempts; i++) {
+      error = command.get();
+
+      if (error.isOK()) {
+        return;
+      }
     }
 
-    /** Attempts to run the command until no error is produced. */
-    public static void tryUntilOk(int maxAttempts, Supplier<StatusCode> command, String message) {
-        StatusCode error = StatusCode.StatusCodeNotInitialized;
+    DriverStation.reportError(message + error.getDescription(), false);
+  }
 
-        for (int i = 0; i < maxAttempts; i++) {
-            error = command.get();
-            
-            if (error.isOK()) {
-                return;
-            }
-        }
-
-        DriverStation.reportError(message + error.getDescription(), false);
+  public static void tryUntilOk(int maxAttempts, Supplier<StatusCode> command) {
+    for (int i = 0; i < maxAttempts; i++) {
+      final StatusCode status = command.get();
+      if (status.isOK()) {
+        break;
+      }
     }
-
-    public static void tryUntilOk(int maxAttempts, Supplier<StatusCode> command) {
-        for (int i = 0; i < maxAttempts; i++) {
-            final StatusCode status = command.get();
-            if (status.isOK()) {
-                break;
-            }
-        }
-    }
+  }
 }

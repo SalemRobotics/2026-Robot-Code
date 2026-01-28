@@ -2,6 +2,10 @@ package com.frc6324.robot2026.subsystems.drive;
 
 import static edu.wpi.first.units.Units.*;
 
+import org.ironmaple.simulation.drivesims.COTS;
+import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
+import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
+
 import com.frc6324.lib.UninstantiableClass;
 import com.frc6324.robot2026.generated.TunerConstants;
 import edu.wpi.first.math.VecBuilder;
@@ -11,6 +15,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.MomentOfInertia;
@@ -41,7 +46,24 @@ public final class DrivetrainConstants {
 
   public static final Mass ROBOT_MASS = Pounds.of(140);
   public static final MomentOfInertia ROBOT_MOI = KilogramSquareMeters.of(6);
-  public static final double WHEEL_COF = 1.43;
+  public static final double WHEEL_COF = 1.6;
+
+  public static final DriveTrainSimulationConfig MAPLE_SIM_CONFIG = DriveTrainSimulationConfig.Default()
+    .withRobotMass(ROBOT_MASS)
+    .withBumperSize(Inches.of(27), Inches.of(27))
+    .withCustomModuleTranslations(MODULE_TRANSLATIONS)
+    .withGyro(COTS.ofPigeon2())
+    .withSwerveModule(
+      new SwerveModuleSimulationConfig(
+        DCMotor.getKrakenX60Foc(1), 
+        DCMotor.getKrakenX44Foc(1), 
+        6.03, 
+        287 / 11,
+        Volts.of(0.1), 
+        Volts.of(0.2), 
+        Inches.of(2), 
+        KilogramSquareMeters.of(0.03), 
+        WHEEL_COF));
 
   public static final Pose2d STARTING_POSE = new Pose2d(3, 3, Rotation2d.kZero);
 

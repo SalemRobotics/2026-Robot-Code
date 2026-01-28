@@ -11,6 +11,8 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Frequency;
 import edu.wpi.first.wpilibj.Filesystem;
+import java.io.File;
+import java.nio.file.Path;
 
 @UninstantiableClass
 public final class AprilTagConstants {
@@ -20,11 +22,14 @@ public final class AprilTagConstants {
 
   public static final AprilTagFieldLayout APRILTAG_LAYOUT =
       Statics.initOrDefault(
-          () ->
-              new AprilTagFieldLayout(
-                  Filesystem.getDeployDirectory().getAbsolutePath() + "/apriltags.json"),
-          // TODO: Make this load 2026 field when it is released
-          () -> AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField));
+          () -> {
+            final File deployDirectory = Filesystem.getDeployDirectory();
+            final Path layout =
+                Path.of(deployDirectory.getAbsolutePath(), "apriltags", "welded.json");
+
+            return new AprilTagFieldLayout(layout);
+          },
+          () -> AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded));
 
   public static final String[] CAMERA_NAMES = {
     "Front Left", "Back Left", "Front Right", "Back Right"
