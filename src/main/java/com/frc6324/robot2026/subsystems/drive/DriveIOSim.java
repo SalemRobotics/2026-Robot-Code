@@ -28,7 +28,7 @@ public final class DriveIOSim extends DriveIOCTRE {
 
     registerTelemetry(state -> state.Pose = simulation.getSimulatedDriveTrainPose());
 
-    Notifier.setHALThreadPriority(true, 90);
+    // Notifier.setHALThreadPriority(true, 90);
 
     notifier.setName("Simulation Thread");
     notifier.startPeriodic(ODOMETRY_PERIOD.in(Seconds));

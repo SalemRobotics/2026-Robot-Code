@@ -18,7 +18,6 @@ package com.frc6324.robot2026;
 import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import lombok.val;
@@ -100,13 +99,13 @@ public class Robot extends LoggedRobot {
         });
 
     // Set thread to highest priority to improve performance
-    Threads.setCurrentThreadPriority(true, 99);
+    // Threads.setCurrentThreadPriority(true, 99);
 
     // Runs the command scheduler
     CommandScheduler.getInstance().run();
 
     // Set the thread to low priority to let other things run (such as NT)
-    Threads.setCurrentThreadPriority(false, 10);
+    // Threads.setCurrentThreadPriority(false, 10);
   }
 
   @Override

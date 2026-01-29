@@ -70,11 +70,7 @@ public sealed class DriveIOCTRE extends SwerveDrivetrain<TalonFX, TalonFX, CANco
             accelerationX, accelerationY);
 
     // Set signal update frequencies
-    yawVelocity.setUpdateFrequency(ODOMETRY_UPDATE_FREQUENCY);
     gyroscopeSignals.setUpdateFrequencyForAll(100);
-
-    // Set the odometry thread's priority to very high
-    getOdometryThread().setThreadPriority(98);
   }
 
   @Override
