@@ -1,31 +1,33 @@
 package com.frc6324.robot2026.mechanisms;
 
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
+import com.frc6324.lib.LazySingleton;
+import edu.wpi.first.math.util.Units;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
 
+@LazySingleton
 public final class IntakeMechanism {
-    private static IntakeMechanism mechanism = null;
+  private static IntakeMechanism instance = null;
 
-    // TODO: used LoggedMechanism2d instead(?)
-    private final Mechanism2d mech = new Mechanism2d(100, 60);
-    private final MechanismRoot2d intakeRoot = mech.getRoot("Intake Root", 0, 0);
-    private final MechanismLigament2d intake = intakeRoot.append(new MechanismLigament2d("Intake", 0, 0));
-    
-    public static IntakeMechanism getInstance() {
-        if (mechanism == null) {
-            mechanism = new IntakeMechanism();
-        }
+  private final LoggedMechanism2d mechanism =
+      new LoggedMechanism2d(Units.inchesToMeters(27), Units.inchesToMeters(22.5));
+  private final LoggedMechanismLigament2d intake =
+      mechanism.getRoot("Intake Root", 0, 0).append(new LoggedMechanismLigament2d("Intake", 0, 0));
 
-        return mechanism;
+  public static IntakeMechanism getInstance() {
+    if (instance == null) {
+      instance = new IntakeMechanism();
     }
 
-    public void setExtension(double extensionDistanceMeters) {
-        // TODO: is this right????
-        intake.setLength(extensionDistanceMeters);
-    }
+    return instance;
+  }
 
-    public void log() {
-        // TODO: How?
-    }
+  public void log() {
+    Logger.recordOutput("Intake/Mechanism", mechanism);
+  }
+
+  public void setExtension(double extensionMeters) {
+    intake.setLength(extensionMeters);
+  }
 }

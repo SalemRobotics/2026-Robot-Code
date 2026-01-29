@@ -1,32 +1,40 @@
 {
-    "name": "TestBot",
-    "isFTC": false,
-    "disableSimplification": false,
-    "rotations": [
+  "name": "TestBot",
+  "isFTC": false,
+  "disableSimplification": false,
+  "rotations": [
+    {
+      "axis": "x",
+      "degrees": 90.0
+    },
+    {
+      "axis": "y",
+      "degrees": 0.0
+    },
+    {
+      "axis": "z",
+      "degrees": 0.0
+    }
+  ],
+  "position": [
+    0,
+    0,
+    0
+  ],
+  "cameras": [],
+  "components": [
+    {
+      "zeroedRotations": [
         {
-            "axis": "x",
-            "degrees": 90.0
-        },
-        {
-            "axis": "y",
-            "degrees": 0.0
-        },
-        {
-            "axis": "z",
-            "degrees": 0.0
+          "axis": "x",
+          "degrees": 90.0
         }
-    ],
-    "position": [0, 0, 0],
-    "cameras": [],
-    "components": [
-        {
-            "zeroedRotations": [
-                {
-                    "axis": "x",
-                    "degrees": 90.0
-                }
-            ],
-            "zeroedPosition": [0, 0, 0]
-        }
-    ]
+      ],
+      "zeroedPosition": [
+        0,
+        0,
+        0
+      ]
+    }
+  ]
 }

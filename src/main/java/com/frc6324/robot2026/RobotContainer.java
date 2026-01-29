@@ -26,6 +26,9 @@ import com.frc6324.robot2026.subsystems.drive.DriveIO.DriveIOReplay;
 import com.frc6324.robot2026.subsystems.drive.DriveIOCTRE;
 import com.frc6324.robot2026.subsystems.drive.DriveIOSim;
 import com.frc6324.robot2026.subsystems.drive.SwerveDrive;
+import com.frc6324.robot2026.subsystems.intake.Intake;
+import com.frc6324.robot2026.subsystems.intake.IntakeIOSim;
+import com.frc6324.robot2026.subsystems.intake.IntakeIOTalonFX;
 import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagIOPhoton;
 import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagIOSim;
 import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagVision;
@@ -37,6 +40,9 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 public class RobotContainer {
   private final Climber climber;
   private final SwerveDrive drive;
+
+  @SuppressWarnings("unused")
+  private final Intake intake;
 
   @SuppressWarnings("unused")
   private final AprilTagVision visionOdometry;
@@ -62,7 +68,7 @@ public class RobotContainer {
                     new AprilTagIOPhoton(realDrive::samplePoseAt),
                     new AprilTagIOPhoton(realDrive::samplePoseAt))
                 .withConsumer(drive);
-
+        intake = new Intake(new IntakeIOTalonFX());
         objectDetection = new ObjectDetection();
       }
       case SIM -> {
@@ -77,6 +83,7 @@ public class RobotContainer {
                 new AprilTagIOSim(simDrive::samplePoseAt, drive),
                 new AprilTagIOSim(simDrive::samplePoseAt, drive),
                 new AprilTagIOSim(simDrive::samplePoseAt, drive));
+        intake = new Intake(new IntakeIOSim());
         objectDetection = new ObjectDetection();
       }
       default -> {
@@ -85,6 +92,7 @@ public class RobotContainer {
         visionOdometry =
             new AprilTagVision(IOLayer::replay, IOLayer::replay, IOLayer::replay, IOLayer::replay);
         objectDetection = new ObjectDetection(IOLayer::replay);
+        intake = new Intake(IOLayer::replay);
       }
     }
 

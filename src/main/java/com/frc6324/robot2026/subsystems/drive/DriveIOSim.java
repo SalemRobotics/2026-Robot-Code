@@ -46,7 +46,7 @@ public final class DriveIOSim extends DriveIOCTRE {
   public void updateInputs(DriveInputs inputs) {
     super.updateInputs(inputs);
 
-    var arena = SimulatedArena.getInstance();
+    final SimulatedArena arena = SimulatedArena.getInstance();
     Logger.recordOutput("FieldSimulation/Algae", arena.getGamePiecesArrayByType("Algae"));
     Logger.recordOutput("FieldSimulation/Coral", arena.getGamePiecesArrayByType("Coral"));
   }
