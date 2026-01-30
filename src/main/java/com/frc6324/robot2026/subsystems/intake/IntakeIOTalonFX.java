@@ -13,64 +13,66 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+/**
+ * A hardware implementation of Intake I/O procedures.
+ */
 public sealed class IntakeIOTalonFX implements IntakeIO permits IntakeIOSim {
-  protected final TalonFX extensionTalon = new TalonFX(EXTENSION_MOTOR_ID, INTAKE_CAN_BUS);
-  protected final TalonFX spinLeaderTalon = new TalonFX(SPIN_LEADER_MOTOR_ID, INTAKE_CAN_BUS);
-  protected final TalonFX spinFollowerTalon = new TalonFX(SPIN_FOLLOWER_MOTOR_ID, INTAKE_CAN_BUS);
+  // Hardware instances for the intake.
+  protected final TalonFX deployTalon = new TalonFX(INTAKE_DEPLOY_MOTOR_ID, INTAKE_CAN_BUS);
+  protected final TalonFX rollerLeaderTalon = new TalonFX(INTAKE_ROLLER_LEADER_ID, INTAKE_CAN_BUS);
+  protected final TalonFX rollerFollowerTalon = new TalonFX(INTAKE_ROLLER_FOLLOWER_ID, INTAKE_CAN_BUS);
 
-  private final MotionMagicTorqueCurrentFOC extensionRequest =
-      new MotionMagicTorqueCurrentFOC(0).withSlot(0);
-  private final MotionMagicTorqueCurrentFOC springRequest =
-      new MotionMagicTorqueCurrentFOC(Rotations.of(1)).withSlot(1);
+  // Control requests for the intake motors
+  private final Follower followerRequest = new Follower(INTAKE_ROLLER_LEADER_ID, INTAKE_ROLLER_MOTOR_ALIGNMENT);
+  private final MotionMagicTorqueCurrentFOC deployRequest = new MotionMagicTorqueCurrentFOC(0).withSlot(0);
+  private final MotionMagicTorqueCurrentFOC springRequest = new MotionMagicTorqueCurrentFOC(Rotations.of(1)).withSlot(1);
+  private final TorqueCurrentFOC rollerRequest = new TorqueCurrentFOC(Amps.of(600));
 
-  private final TorqueCurrentFOC spinRequest = new TorqueCurrentFOC(Amps.of(600));
-
+  /**
+   * Creates an instance of I/O for a real intake.
+   */
   public IntakeIOTalonFX() {
-    tryUntilOk(5, () -> extensionTalon.getConfigurator().apply(EXTENSION_MOTOR_CONFIG, 0.25));
-    tryUntilOk(5, () -> extensionTalon.setPosition(0, 0.25));
-    tryUntilOk(5, () -> extensionTalon.setNeutralMode(NeutralModeValue.Coast));
+    // Set configurations for the deploy motor
+    tryUntilOk(5, () -> deployTalon.getConfigurator().apply(INTAKE_DEPLOY_MOTOR_CONFIG, 0.25));
+    tryUntilOk(5, () -> deployTalon.setNeutralMode(NeutralModeValue.Coast));
 
-    tryUntilOk(5, () -> spinLeaderTalon.getConfigurator().apply(SPIN_LEADER_MOTOR_CONFIG, 0.25));
-    tryUntilOk(5, () -> spinLeaderTalon.setPosition(0, 0.25));
-    tryUntilOk(5, () -> spinLeaderTalon.setNeutralMode(NeutralModeValue.Brake, 0.25));
+    // Set configurations for the roller motors
+    tryUntilOk(5, () -> rollerLeaderTalon.getConfigurator().apply(INTAKE_ROLLER_MOTOR_CONFIG, 0.25));
+    tryUntilOk(5, () -> rollerLeaderTalon.setNeutralMode(NeutralModeValue.Brake, 0.25));
+    tryUntilOk(5, () -> rollerFollowerTalon.getConfigurator().apply(INTAKE_ROLLER_MOTOR_CONFIG, 0.25));
+    tryUntilOk(5, () -> rollerFollowerTalon.setNeutralMode(NeutralModeValue.Brake));
 
-    final Follower followerRequest =
-        new Follower(SPIN_LEADER_MOTOR_ID, MotorAlignmentValue.Opposed)
-            .withUpdateFreqHz(Hertz.of(1000));
-    tryUntilOk(
-        5, () -> spinFollowerTalon.getConfigurator().apply(SPIN_FOLLOWER_MOTOR_CONFIG, 0.25));
-    tryUntilOk(5, () -> spinFollowerTalon.setPosition(0, 0.25));
-    tryUntilOk(5, () -> spinFollowerTalon.setNeutralMode(NeutralModeValue.Brake));
-    tryUntilOk(5, () -> spinFollowerTalon.setControl(followerRequest));
+    // Apply the follower control for the roller follower 
+    tryUntilOk(5, () -> rollerFollowerTalon.setControl(followerRequest));
   }
 
   @Override
   public void deploy() {
-    extensionTalon.setControl(extensionRequest.withPosition(1));
+    deployTalon.setControl(deployRequest.withPosition(INTAKE_DEPLOYED_POSITION));
   }
 
   @Override
   public void runRollers() {
-    spinLeaderTalon.setControl(spinRequest);
+    rollerLeaderTalon.setControl(rollerRequest);
   }
 
   @Override
   public void spring() {
-    extensionTalon.setControl(springRequest);
+    deployTalon.setControl(springRequest);
   }
 
   @Override
   public void stopRollers() {
-    spinLeaderTalon.stopMotor();
+    rollerLeaderTalon.stopMotor();
   }
 
   @Override
   public void stow() {
-    extensionTalon.setControl(extensionRequest.withPosition(0));
+    deployTalon.setControl(deployRequest.withPosition(INTAKE_STOWED_POSITION));
   }
 
   @Override
   public void updateInputs(IntakeInputs inputs) {
-    // TODO: implement this !
+    // TODO: implement this!
   }
 }
