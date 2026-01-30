@@ -3,14 +3,12 @@ package com.frc6324.robot2026.subsystems.intake;
 import static com.frc6324.robot2026.subsystems.intake.IntakeConstants.*;
 import static edu.wpi.first.units.Units.Inches;
 
-import org.littletonrobotics.junction.Logger;
-
 import com.frc6324.robot2026.mechanisms.IntakeMechanism;
-
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.littletonrobotics.junction.Logger;
 
 public final class Intake extends SubsystemBase {
   private final IntakeIO io;
@@ -22,7 +20,17 @@ public final class Intake extends SubsystemBase {
   }
 
   public Command deploy() {
-    return Commands.parallel(Commands.sequence(runOnce(io::deploy), idle().until(() -> inputs.deployPosition.isNear(INTAKE_DEPLOYED_POSITION, INTAKE_DEPLOY_TOLERANCE)), runOnce(io::spring), idle()).finallyDo(io::stopDeploy));
+    return Commands.parallel(
+        Commands.sequence(
+                runOnce(io::deploy),
+                idle()
+                    .until(
+                        () ->
+                            inputs.deployPosition.isNear(
+                                INTAKE_DEPLOYED_POSITION, INTAKE_DEPLOY_TOLERANCE)),
+                runOnce(io::spring),
+                idle())
+            .finallyDo(io::stopDeploy));
   }
 
   @Override
@@ -30,7 +38,8 @@ public final class Intake extends SubsystemBase {
     io.updateInputs(inputs);
     Logger.processInputs("Intake", inputs);
 
-    extensionDistance = INTAKE_EXTENSION.times(INTAKE_DEPLOYED_POSITION.div(inputs.deployPosition).magnitude());
+    extensionDistance =
+        INTAKE_EXTENSION.times(INTAKE_DEPLOYED_POSITION.div(inputs.deployPosition).magnitude());
   }
 
   @Override
@@ -48,6 +57,6 @@ public final class Intake extends SubsystemBase {
 
   public Command stow() {
     return startEnd(io::stow, io::stopDeploy)
-      .until(() -> inputs.deployPosition.isNear(INTAKE_STOWED_POSITION, INTAKE_DEPLOY_TOLERANCE));
+        .until(() -> inputs.deployPosition.isNear(INTAKE_STOWED_POSITION, INTAKE_DEPLOY_TOLERANCE));
   }
 }

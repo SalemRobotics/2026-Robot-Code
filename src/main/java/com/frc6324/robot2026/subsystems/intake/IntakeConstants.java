@@ -35,7 +35,8 @@ public final class IntakeConstants {
   // TalonFX configurations
   public static final TalonFXConfiguration INTAKE_DEPLOY_MOTOR_CONFIG = new TalonFXConfiguration();
   public static final TalonFXConfiguration INTAKE_ROLLER_MOTOR_CONFIG = new TalonFXConfiguration();
-  public static final MotorAlignmentValue INTAKE_ROLLER_MOTOR_ALIGNMENT = MotorAlignmentValue.Opposed;
+  public static final MotorAlignmentValue INTAKE_ROLLER_MOTOR_ALIGNMENT =
+      MotorAlignmentValue.Opposed;
 
   // Simulation constants for the extension/retraction motor
   public static final double INTAKE_DEPLOY_MOI = 0.2;

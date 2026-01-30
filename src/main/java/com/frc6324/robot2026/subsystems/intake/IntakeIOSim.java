@@ -4,7 +4,6 @@ import static com.frc6324.robot2026.subsystems.intake.IntakeConstants.*;
 
 import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.frc6324.lib.util.DeltaTimeCalculator;
-
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
@@ -12,18 +11,28 @@ import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 
 public final class IntakeIOSim extends IntakeIOTalonFX {
   private final TalonFXSimState deploySimState = deployTalon.getSimState();
-  private final DCMotorSim deploySimulation = new DCMotorSim(LinearSystemId.createDCMotorSystem(INTAKE_DEPLOY_GEARBOX, INTAKE_DEPLOY_MOI, INTAKE_DEPLOY_REDUCTION), INTAKE_DEPLOY_GEARBOX);
+  private final DCMotorSim deploySimulation =
+      new DCMotorSim(
+          LinearSystemId.createDCMotorSystem(
+              INTAKE_DEPLOY_GEARBOX, INTAKE_DEPLOY_MOI, INTAKE_DEPLOY_REDUCTION),
+          INTAKE_DEPLOY_GEARBOX);
 
   private final TalonFXSimState rollerLeaderSimState = rollerLeaderTalon.getSimState();
   private final TalonFXSimState rollerFollowerSimState = rollerFollowerTalon.getSimState();
-  private final FlywheelSim rollerLeaderSimulation = new FlywheelSim(LinearSystemId.createFlywheelSystem(INTAKE_ROLLER_GEARBOX, INTAKE_ROLLER_MOI, INTAKE_ROLLER_REDUCTION), INTAKE_ROLLER_GEARBOX);
-  private final FlywheelSim rollerFollowerSimulation = new FlywheelSim(LinearSystemId.createFlywheelSystem(INTAKE_ROLLER_GEARBOX, INTAKE_ROLLER_MOI, INTAKE_ROLLER_REDUCTION), INTAKE_ROLLER_GEARBOX);
+  private final FlywheelSim rollerLeaderSimulation =
+      new FlywheelSim(
+          LinearSystemId.createFlywheelSystem(
+              INTAKE_ROLLER_GEARBOX, INTAKE_ROLLER_MOI, INTAKE_ROLLER_REDUCTION),
+          INTAKE_ROLLER_GEARBOX);
+  private final FlywheelSim rollerFollowerSimulation =
+      new FlywheelSim(
+          LinearSystemId.createFlywheelSystem(
+              INTAKE_ROLLER_GEARBOX, INTAKE_ROLLER_MOI, INTAKE_ROLLER_REDUCTION),
+          INTAKE_ROLLER_GEARBOX);
 
   private final DeltaTimeCalculator deltaTime = new DeltaTimeCalculator();
 
-  /**
-   * Creates a new sim implementation of the intake.
-   */
+  /** Creates a new sim implementation of the intake. */
   public IntakeIOSim() {
     deploySimState.setMotorType(INTAKE_DEPLOY_MOTOR_TYPE);
 
