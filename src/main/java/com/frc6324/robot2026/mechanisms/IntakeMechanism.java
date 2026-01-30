@@ -15,6 +15,10 @@ public final class IntakeMechanism {
   private final LoggedMechanismLigament2d intake =
       mechanism.getRoot("Intake Root", 0, 0).append(new LoggedMechanismLigament2d("Intake", 0, 0));
 
+  private IntakeMechanism() {
+    throw new IllegalAccessError();
+  }
+
   public static IntakeMechanism getInstance() {
     if (instance == null) {
       instance = new IntakeMechanism();
