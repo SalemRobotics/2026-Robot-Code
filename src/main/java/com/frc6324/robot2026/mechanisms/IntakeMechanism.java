@@ -2,6 +2,8 @@ package com.frc6324.robot2026.mechanisms;
 
 import com.frc6324.lib.LazySingleton;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Distance;
+
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
 import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
@@ -31,7 +33,7 @@ public final class IntakeMechanism {
     Logger.recordOutput("Intake/Mechanism", mechanism);
   }
 
-  public void setExtension(double extensionMeters) {
+  public void setExtension(Distance extensionMeters) {
     intake.setLength(extensionMeters);
   }
 }

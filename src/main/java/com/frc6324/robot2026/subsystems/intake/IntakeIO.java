@@ -22,6 +22,8 @@ public interface IntakeIO {
 
   default void spring() {}
 
+  default void stopDeploy() {}
+
   default void stopRollers() {}
 
   default void stow() {}

@@ -113,6 +113,11 @@ public sealed class IntakeIOTalonFX implements IntakeIO permits IntakeIOSim {
   }
 
   @Override
+  public void stopDeploy() {
+    deployTalon.stopMotor();
+  }
+
+  @Override
   public void stopRollers() {
     rollerLeaderTalon.stopMotor();
   }
