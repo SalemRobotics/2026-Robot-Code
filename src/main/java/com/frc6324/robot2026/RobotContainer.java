@@ -19,9 +19,6 @@ import static com.frc6324.robot2026.Constants.*;
 
 import com.frc6324.lib.util.IOLayer;
 import com.frc6324.robot2026.commands.DriveCommands;
-import com.frc6324.robot2026.subsystems.climber.Climber;
-import com.frc6324.robot2026.subsystems.climber.ClimberIOSim;
-import com.frc6324.robot2026.subsystems.climber.ClimberIOTalonFX;
 import com.frc6324.robot2026.subsystems.drive.DriveIO.DriveIOReplay;
 import com.frc6324.robot2026.subsystems.drive.DriveIOCTRE;
 import com.frc6324.robot2026.subsystems.drive.DriveIOSim;
@@ -38,7 +35,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 public class RobotContainer {
-  private final Climber climber;
+  // private final Climber climber;
   private final SwerveDrive drive;
 
   @SuppressWarnings("unused")
@@ -56,7 +53,7 @@ public class RobotContainer {
   public RobotContainer() {
     switch (Constants.CURRENT_MODE) {
       case REAL -> {
-        climber = new Climber(new ClimberIOTalonFX());
+        // climber = new Climber(new ClimberIOTalonFX());
 
         final DriveIOCTRE realDrive = new DriveIOCTRE();
         drive = new SwerveDrive(realDrive);
@@ -72,7 +69,7 @@ public class RobotContainer {
         objectDetection = new ObjectDetection();
       }
       case SIM -> {
-        climber = new Climber(new ClimberIOSim());
+        // climber = new Climber(new ClimberIOSim());
 
         final DriveIOSim simDrive = new DriveIOSim();
         drive = new SwerveDrive(simDrive);
@@ -87,7 +84,7 @@ public class RobotContainer {
         objectDetection = new ObjectDetection();
       }
       default -> {
-        climber = new Climber(IOLayer::replay);
+        // climber = new Climber(IOLayer::replay);
         drive = new SwerveDrive(new DriveIOReplay());
         visionOdometry =
             new AprilTagVision(IOLayer::replay, IOLayer::replay, IOLayer::replay, IOLayer::replay);
@@ -103,8 +100,8 @@ public class RobotContainer {
     drive.setDefaultCommand(DriveCommands.joystickDrive(drive, controller.getHID()));
     // Bind climber commands to the D-pad
 
-    controller.povUp().whileTrue(climber.stow()).onFalse(climber.stop());
-    controller.povDown().whileTrue(climber.deploy()).onFalse(climber.stop());
+    // controller.povUp().whileTrue(climber.stow()).onFalse(climber.stop());
+    // controller.povDown().whileTrue(climber.deploy()).onFalse(climber.stop());
   }
 
   public Command getAutonomousCommand() {
