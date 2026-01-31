@@ -126,7 +126,7 @@ public final class DriveCommands {
           // Apply the deadband to the rotational input
           omega = MathUtil.applyDeadband(omega, DEADBAND);
           // Raise the rotational input to a higher power for finer control
-          omega = Math.pow(omega, CONTROLLER_INPUT_EXP);
+          omega = Math.copySign(Math.pow(omega, CONTROLLER_INPUT_EXP), omega);
           // Multiply rotational input by max speed
           omega *= SwerveDrive.getMaxAngularSpeed();
 

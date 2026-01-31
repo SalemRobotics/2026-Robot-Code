@@ -46,7 +46,6 @@ deploy {
                     jvmArgs.add("-XX:MaxGCPauseMillis=50")
                     jvmArgs.add("-XX:+TieredCompilation")
                     jvmArgs.add("-XX:+UseStringDeduplication")
-                    jvmArgs.add("-XX:+UseCompressedOops")
                     jvmArgs.add("-XX:CICompilerCount=2")
 
                     // The options below may improve performance, but should only be enabled on the RIO 2
