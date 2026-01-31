@@ -2,6 +2,10 @@ package com.frc6324.robot2026.subsystems.intake;
 
 import static com.frc6324.robot2026.subsystems.intake.IntakeConstants.*;
 
+import org.ironmaple.simulation.IntakeSimulation;
+import org.ironmaple.simulation.IntakeSimulation.IntakeSide;
+import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
+
 import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.frc6324.lib.util.DeltaTimeCalculator;
 import edu.wpi.first.math.system.plant.LinearSystemId;
@@ -31,13 +35,34 @@ public final class IntakeIOSim extends IntakeIOTalonFX {
           INTAKE_ROLLER_GEARBOX);
 
   private final DeltaTimeCalculator deltaTime = new DeltaTimeCalculator();
+  private final IntakeSimulation intakeSimulation;
 
   /** Creates a new sim implementation of the intake. */
-  public IntakeIOSim() {
+  public IntakeIOSim(AbstractDriveTrainSimulation drivetrainSimulation) {
+    intakeSimulation = IntakeSimulation.OverTheBumperIntake(
+      "Fuel", 
+      drivetrainSimulation, 
+      INTAKE_WIDTH, 
+      INTAKE_EXTENSION, 
+      IntakeSide.FRONT,
+      50);
+    
     deploySimState.setMotorType(INTAKE_DEPLOY_MOTOR_TYPE);
 
     rollerLeaderSimState.setMotorType(INTAKE_ROLLER_MOTOR_TYPE);
     rollerFollowerSimState.setMotorType(INTAKE_ROLLER_MOTOR_TYPE);
+  }
+
+  @Override
+  public void runRollers() {
+    intakeSimulation.startIntake();
+    super.runRollers();
+  }
+
+  @Override
+  public void stopRollers() {
+    intakeSimulation.stopIntake();
+    super.stopRollers();
   }
 
   @Override

@@ -7,12 +7,15 @@ import com.frc6324.robot2026.generated.TunerConstants;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.Timer;
+import lombok.Getter;
+
 import org.ironmaple.simulation.SimulatedArena;
 import org.littletonrobotics.junction.Logger;
 
 public final class DriveIOSim extends DriveIOCTRE {
+  @Getter
   @SuppressWarnings("unchecked")
-  private final MapleSimDriveBase simulation =
+  private final MapleSimDriveBase driveSimulation =
       new MapleSimDriveBase(
           getPigeon2(),
           getModules(),
@@ -21,12 +24,12 @@ public final class DriveIOSim extends DriveIOCTRE {
           TunerConstants.BackLeft,
           TunerConstants.BackRight);
 
-  private final Notifier notifier = new Notifier(simulation::update);
+  private final Notifier notifier = new Notifier(driveSimulation::update);
 
   public DriveIOSim() {
     super();
 
-    registerTelemetry(state -> state.Pose = simulation.getSimulatedDriveTrainPose());
+    registerTelemetry(state -> state.Pose = driveSimulation.getSimulatedDriveTrainPose());
 
     // Notifier.setHALThreadPriority(true, 90);
 
@@ -36,7 +39,7 @@ public final class DriveIOSim extends DriveIOCTRE {
 
   @Override
   public void resetPose(Pose2d pose) {
-    simulation.setSimulationWorldPose(pose);
+    driveSimulation.setSimulationWorldPose(pose);
     Timer.delay(0.05);
 
     super.resetPose(pose);
@@ -47,7 +50,6 @@ public final class DriveIOSim extends DriveIOCTRE {
     super.updateInputs(inputs);
 
     final SimulatedArena arena = SimulatedArena.getInstance();
-    Logger.recordOutput("FieldSimulation/Algae", arena.getGamePiecesArrayByType("Algae"));
-    Logger.recordOutput("FieldSimulation/Coral", arena.getGamePiecesArrayByType("Coral"));
+    Logger.recordOutput("FieldSimulation/Fuel", arena.getGamePiecesArrayByType("Fuel"));
   }
 }

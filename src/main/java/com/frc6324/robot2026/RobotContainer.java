@@ -83,7 +83,7 @@ public class RobotContainer {
                 new AprilTagIOSim(simDrive::samplePoseAt, drive),
                 new AprilTagIOSim(simDrive::samplePoseAt, drive),
                 new AprilTagIOSim(simDrive::samplePoseAt, drive));
-        intake = new Intake(new IntakeIOSim());
+        intake = new Intake(new IntakeIOSim(simDrive.getDriveSimulation()));
         objectDetection = new ObjectDetection();
       }
       default -> {
