@@ -1,7 +1,7 @@
 package com.frc6324.robot2026.subsystems.intake;
 
 import static com.frc6324.robot2026.subsystems.intake.IntakeConstants.*;
-import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.*;
 
 import com.frc6324.robot2026.mechanisms.IntakeMechanism;
 import edu.wpi.first.units.measure.Distance;

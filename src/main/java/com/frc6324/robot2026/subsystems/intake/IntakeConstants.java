@@ -8,8 +8,7 @@ import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
 import com.frc6324.lib.UninstantiableClass;
 import com.frc6324.robot2026.Constants;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.*;
 
 @UninstantiableClass
 public final class IntakeConstants {

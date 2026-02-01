@@ -2,7 +2,7 @@ package com.frc6324.robot2026.subsystems.intake;
 
 import static com.frc6324.lib.util.PhoenixUtil.tryUntilOk;
 import static com.frc6324.robot2026.subsystems.intake.IntakeConstants.*;
-import static edu.wpi.first.units.Units.Hertz;
+import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
@@ -10,10 +10,7 @@ import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.frc6324.robot2026.Constants;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.units.measure.*;
 
 public class IntakeIOTalonFX implements IntakeIO {
   protected final TalonFX talon = new TalonFX(INTAKE_MOTOR_ID, INTAKE_CAN_BUS);

@@ -1,6 +1,6 @@
 package com.frc6324.robot2026.subsystems.climber;
 
-import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;

@@ -1,12 +1,8 @@
 package com.frc6324.robot2026.subsystems.climber;
 
-import static edu.wpi.first.units.Units.Amps;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.Volts;
+import static edu.wpi.first.units.Units.*;
 
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.units.measure.*;
 import org.littletonrobotics.junction.AutoLog;
 
 @FunctionalInterface

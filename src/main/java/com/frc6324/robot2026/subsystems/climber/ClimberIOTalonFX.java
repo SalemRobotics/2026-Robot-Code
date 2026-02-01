@@ -8,9 +8,7 @@ import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.frc6324.lib.util.PhoenixUtil;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.units.measure.*;
 
 /** A real-world implementation of the climber's I/O using a TalonFX motor controller. */
 public class ClimberIOTalonFX implements ClimberIO {
