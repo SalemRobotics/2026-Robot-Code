@@ -7,6 +7,7 @@ import static edu.wpi.first.units.Units.Hertz;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.StatusSignalCollection;
+import com.ctre.phoenix6.controls.CoastOut;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.TorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.ParentDevice;
@@ -21,6 +22,7 @@ public class RollerIOTalonFX implements RollerIO {
 
   private final Follower followerRequest = new Follower(ROLLER_LEADER_ID, ROLLER_ALIGNMENT);
   private final TorqueCurrentFOC spinRequest = new TorqueCurrentFOC(ROLLER_SPIN_CURRENT);
+  private final CoastOut coast = new CoastOut();
 
   private final StatusSignal<AngularVelocity> leaderVelocity = leader.getVelocity();
   private final StatusSignal<AngularAcceleration> leaderAcceleration = leader.getAcceleration();
@@ -68,6 +70,12 @@ public class RollerIOTalonFX implements RollerIO {
     // Configure the motors to brake when stopped
     tryUntilOk(5, () -> leader.setNeutralMode(NeutralModeValue.Brake, 0.25));
     tryUntilOk(5, () -> follower.setNeutralMode(NeutralModeValue.Brake, 0.25));
+  }
+
+  @Override
+  public void coast() {
+    leader.setControl(coast);
+    follower.setControl(coast);
   }
 
   @Override

@@ -26,9 +26,10 @@ public final class LEDs extends SubsystemBase {
       LED_ESTOP_PATTERN.applyTo(buffer);
     } else if (RobotController.isBrownedOut()) {
       LED_BROWNOUT_PATTERN.applyTo(buffer);
-    } else switch (currentState) {
-      case INACTIVE -> LED_DEFAULT_PATTERN.applyTo(buffer);
-    }
+    } else
+      switch (currentState) {
+        case INACTIVE -> LED_DEFAULT_PATTERN.applyTo(buffer);
+      }
   }
 
   /**
