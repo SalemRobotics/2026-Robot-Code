@@ -13,6 +13,7 @@ import com.ctre.phoenix6.sim.Pigeon2SimState;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.ctre.phoenix6.swerve.SwerveModule;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
@@ -21,6 +22,7 @@ import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.drivesims.SwerveModuleSimulation;
 import org.ironmaple.simulation.motorsims.SimulatedBattery;
 import org.ironmaple.simulation.motorsims.SimulatedMotorController;
+import org.ironmaple.simulation.seasonspecific.rebuilt2026.Arena2026Rebuilt;
 
 public final class MapleSimDriveBase extends SwerveDriveSimulation {
   private final Pigeon2SimState pigeonSim;
@@ -43,34 +45,40 @@ public final class MapleSimDriveBase extends SwerveDriveSimulation {
 
     SimulatedArena.overrideSimulationTimings(ODOMETRY_PERIOD, 1);
     SimulatedArena.getInstance().addDriveTrainSimulation(this);
+    if (SimulatedArena.getInstance() instanceof Arena2026Rebuilt rebuilt) {
+      rebuilt.setEfficiencyMode(false);
+    }
     SimulatedArena.getInstance().resetFieldForAuto();
   }
 
   public void update() {
     SimulatedArena.getInstance().simulationPeriodic();
     pigeonSim.setRawYaw(getSimulatedDriveTrainPose().getRotation().getMeasure());
-    pigeonSim.setAngularVelocityZ(
-        RadiansPerSecond.of(
-            getDriveTrainSimulatedChassisSpeedsRobotRelative().omegaRadiansPerSecond));
+
+    final ChassisSpeeds robotSpeeds = getDriveTrainSimulatedChassisSpeedsRobotRelative();
+    pigeonSim.setAngularVelocityZ(RadiansPerSecond.of(robotSpeeds.omegaRadiansPerSecond));
   }
 
-  /**
-   *
-   *
-   * <h1>Represents the simulation of a single {@link SwerveModule}.</h1>
-   */
+  /** Represents a simulation of a single {@link SwerveModule}. */
   protected static class SimSwerveModule {
     public final SwerveModuleConstants<
             TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
-        moduleConstant;
+        moduleConstants;
     public final SwerveModuleSimulation moduleSimulation;
 
+    /**
+     * Creates a new {@link SwerveModule} simulation.
+     *
+     * @param moduleConstants
+     * @param moduleSimulation
+     * @param module
+     */
     public SimSwerveModule(
         SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
-            moduleConstant,
+            moduleConstants,
         SwerveModuleSimulation moduleSimulation,
         SwerveModule<TalonFX, TalonFX, CANcoder> module) {
-      this.moduleConstant = moduleConstant;
+      this.moduleConstants = moduleConstants;
       this.moduleSimulation = moduleSimulation;
       moduleSimulation.useDriveMotorController(
           new TalonFXMotorControllerSim(module.getDriveMotor()));

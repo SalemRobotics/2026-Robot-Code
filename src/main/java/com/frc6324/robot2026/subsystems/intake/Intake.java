@@ -20,26 +20,23 @@ public final class Intake extends SubsystemBase {
   }
 
   public Command deploy() {
-    return Commands.parallel(
-        Commands.sequence(
-                runOnce(io::deploy),
-                idle()
-                    .until(
-                        () ->
-                            inputs.deployPosition.isNear(
-                                INTAKE_DEPLOYED_POSITION, INTAKE_DEPLOY_TOLERANCE)),
-                runOnce(io::spring),
-                idle())
-            .finallyDo(io::stopDeploy));
+    return Commands.sequence(
+        runOnce(io::deploy),
+        idle()
+            .until(
+                () ->
+                    inputs.motorPosition.isNear(INTAKE_DEPLOYED_POSITION, INTAKE_DEPLOY_TOLERANCE)),
+        runOnce(io::spring),
+        idle());
   }
 
   @Override
   public void periodic() {
     io.updateInputs(inputs);
-    Logger.processInputs("Intake", inputs);
+    Logger.processInputs("Intake/Deploy", inputs);
 
     extensionDistance =
-        INTAKE_EXTENSION.times(INTAKE_DEPLOYED_POSITION.div(inputs.deployPosition).magnitude());
+        INTAKE_EXTENSION.times(INTAKE_DEPLOYED_POSITION.div(inputs.motorPosition).magnitude());
   }
 
   @Override
@@ -47,16 +44,7 @@ public final class Intake extends SubsystemBase {
     IntakeMechanism.getInstance().setExtension(extensionDistance);
   }
 
-  public Command startRollers() {
-    return runOnce(io::runRollers);
-  }
-
-  public Command stopRollers() {
-    return runOnce(io::stopRollers);
-  }
-
   public Command stow() {
-    return startEnd(io::stow, io::stopDeploy)
-        .until(() -> inputs.deployPosition.isNear(INTAKE_STOWED_POSITION, INTAKE_DEPLOY_TOLERANCE));
+    return runOnce(io::stow).andThen(idle());
   }
 }

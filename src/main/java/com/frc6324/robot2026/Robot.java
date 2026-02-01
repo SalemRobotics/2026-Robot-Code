@@ -89,7 +89,7 @@ public class Robot extends LoggedRobot {
   @Override
   public void robotPeriodic() {
     Logger.runEveryN(
-        25,
+        (int) (1 / defaultPeriodSecs),
         () -> {
           val totalMemory = runtime.totalMemory();
           val usedMemory = totalMemory - runtime.freeMemory();
