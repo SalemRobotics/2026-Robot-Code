@@ -7,7 +7,6 @@ import com.frc6324.lib.util.DeltaTimeCalculator;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
-import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
 
 public final class IntakeIOSim extends IntakeIOTalonFX {
   private final TalonFXSimState deploySimState = talon.getSimState();
@@ -19,7 +18,7 @@ public final class IntakeIOSim extends IntakeIOTalonFX {
   private final DeltaTimeCalculator deltaTime = new DeltaTimeCalculator();
 
   /** Creates a new sim implementation of the intake. */
-  public IntakeIOSim(AbstractDriveTrainSimulation drivetrainSimulation) {
+  public IntakeIOSim() {
     deploySimState.setMotorType(INTAKE_MOTOR_TYPE);
   }
 

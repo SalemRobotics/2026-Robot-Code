@@ -19,33 +19,27 @@ import static com.frc6324.robot2026.Constants.*;
 
 import com.frc6324.lib.util.IOLayer;
 import com.frc6324.robot2026.commands.DriveCommands;
+import com.frc6324.robot2026.subsystems.climber.*;
+import com.frc6324.robot2026.subsystems.drive.*;
 import com.frc6324.robot2026.subsystems.drive.DriveIO.DriveIOReplay;
-import com.frc6324.robot2026.subsystems.drive.DriveIOCTRE;
-import com.frc6324.robot2026.subsystems.drive.DriveIOSim;
-import com.frc6324.robot2026.subsystems.drive.SwerveDrive;
-import com.frc6324.robot2026.subsystems.intake.Intake;
-import com.frc6324.robot2026.subsystems.intake.IntakeIOSim;
-import com.frc6324.robot2026.subsystems.intake.IntakeIOTalonFX;
-import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagIOPhoton;
-import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagIOSim;
-import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagVision;
-import com.frc6324.robot2026.subsystems.vision.objdetect.ObjectDetection;
+import com.frc6324.robot2026.subsystems.intake.*;
+import com.frc6324.robot2026.subsystems.leds.LEDs;
+import com.frc6324.robot2026.subsystems.rollers.*;
+import com.frc6324.robot2026.subsystems.vision.apriltag.*;
+import com.frc6324.robot2026.subsystems.vision.objdetect.*;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
+@SuppressWarnings("unused")
 public class RobotContainer {
-  // private final Climber climber;
-  private final SwerveDrive drive;
-
-  @SuppressWarnings("unused")
-  private final Intake intake;
-
-  @SuppressWarnings("unused")
   private final AprilTagVision visionOdometry;
-
-  @SuppressWarnings("unused")
+  private final Climber climber;
+  private final Intake intake;
+  private final LEDs leds = new LEDs();
   private final ObjectDetection objectDetection;
+  private final Rollers rollers;
+  private final SwerveDrive drive;
 
   private final CommandXboxController controller =
       new CommandXboxController(DRIVER_CONTROLLER_PORT);
@@ -53,43 +47,48 @@ public class RobotContainer {
   public RobotContainer() {
     switch (Constants.CURRENT_MODE) {
       case REAL -> {
-        // climber = new Climber(new ClimberIOTalonFX());
-
-        final DriveIOCTRE realDrive = new DriveIOCTRE();
-        drive = new SwerveDrive(realDrive);
+        final DriveIOCTRE driveIO = new DriveIOCTRE();
+        drive = new SwerveDrive(driveIO);
 
         visionOdometry =
             new AprilTagVision(
-                    new AprilTagIOPhoton(realDrive::samplePoseAt),
-                    new AprilTagIOPhoton(realDrive::samplePoseAt),
-                    new AprilTagIOPhoton(realDrive::samplePoseAt),
-                    new AprilTagIOPhoton(realDrive::samplePoseAt))
+                    new AprilTagIOPhoton(driveIO),
+                    new AprilTagIOPhoton(driveIO),
+                    new AprilTagIOPhoton(driveIO),
+                    new AprilTagIOPhoton(driveIO))
                 .withConsumer(drive);
+        objectDetection = new ObjectDetection(new ObjDetectIOPhoton());
+
         intake = new Intake(new IntakeIOTalonFX());
-        objectDetection = new ObjectDetection();
+        rollers = new Rollers(new RollerIOTalonFX());
+
+        climber = new Climber(new ClimberIOTalonFX());
       }
       case SIM -> {
-        // climber = new Climber(new ClimberIOSim());
-
-        final DriveIOSim simDrive = new DriveIOSim();
-        drive = new SwerveDrive(simDrive);
+        final DriveIOSim driveIO = new DriveIOSim();
+        drive = new SwerveDrive(driveIO);
 
         visionOdometry =
             new AprilTagVision(
-                new AprilTagIOSim(simDrive::samplePoseAt, drive),
-                new AprilTagIOSim(simDrive::samplePoseAt, drive),
-                new AprilTagIOSim(simDrive::samplePoseAt, drive),
-                new AprilTagIOSim(simDrive::samplePoseAt, drive));
-        intake = new Intake(new IntakeIOSim(simDrive.getDriveSimulation()));
-        objectDetection = new ObjectDetection();
+                new AprilTagIOSim(driveIO, drive),
+                new AprilTagIOSim(driveIO, drive),
+                new AprilTagIOSim(driveIO, drive),
+                new AprilTagIOSim(driveIO, drive));
+        objectDetection = new ObjectDetection(IOLayer::replay);
+
+        intake = new Intake(new IntakeIOSim());
+        rollers = new Rollers(new RollerIOSim());
+
+        climber = new Climber(new ClimberIOSim());
       }
       default -> {
-        // climber = new Climber(IOLayer::replay);
         drive = new SwerveDrive(new DriveIOReplay());
         visionOdometry =
             new AprilTagVision(IOLayer::replay, IOLayer::replay, IOLayer::replay, IOLayer::replay);
         objectDetection = new ObjectDetection(IOLayer::replay);
         intake = new Intake(IOLayer::replay);
+        rollers = new Rollers(IOLayer::replay);
+        climber = new Climber(IOLayer::replay);
       }
     }
 
