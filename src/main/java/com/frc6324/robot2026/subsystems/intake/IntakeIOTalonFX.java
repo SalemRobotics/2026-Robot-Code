@@ -17,13 +17,22 @@ public class IntakeIOTalonFX implements IntakeIO {
   private final MotionMagicTorqueCurrentFOC request = new MotionMagicTorqueCurrentFOC(0);
   // Status signals
   private final StatusSignal<Angle> deployPosition = talon.getPosition();
+  private final StatusSignal<Double> pidSetpoint = talon.getClosedLoopReference();
+  private final StatusSignal<Double> positionError = talon.getClosedLoopError();
+  private final StatusSignal<Double> pidOutput = talon.getClosedLoopOutput();
   private final StatusSignal<AngularVelocity> deployVelocity = talon.getVelocity();
   private final StatusSignal<Voltage> deployMotorVoltage = talon.getMotorVoltage();
   private final StatusSignal<Current> deployStatorCurrent = talon.getStatorCurrent();
   private final StatusSignal<Current> deployTorqueCurrent = talon.getTorqueCurrent();
 
   private final BaseStatusSignal[] signals = {
-    deployPosition, deployVelocity, deployMotorVoltage, deployStatorCurrent, deployTorqueCurrent
+    deployPosition,
+    positionError,
+    pidOutput,
+    deployVelocity,
+    deployMotorVoltage,
+    deployStatorCurrent,
+    deployTorqueCurrent
   };
 
   public IntakeIOTalonFX() {
@@ -59,6 +68,9 @@ public class IntakeIOTalonFX implements IntakeIO {
     inputs.motorConnected = BaseStatusSignal.refreshAll(signals).isOK();
 
     inputs.motorPosition = deployPosition.getValue();
+    inputs.positionError = positionError.getValueAsDouble();
+    inputs.pidSetpoint = pidSetpoint.getValueAsDouble();
+    inputs.pidOutput = pidOutput.getValueAsDouble();
     inputs.motorVelocity = deployVelocity.getValue();
     inputs.motorVoltage = deployMotorVoltage.getValue();
     inputs.motorStatorCurrent = deployStatorCurrent.getValue();

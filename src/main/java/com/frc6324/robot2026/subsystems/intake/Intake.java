@@ -3,10 +3,9 @@ package com.frc6324.robot2026.subsystems.intake;
 import static com.frc6324.robot2026.subsystems.intake.IntakeConstants.*;
 import static edu.wpi.first.units.Units.*;
 
-import com.frc6324.robot2026.mechanisms.IntakeMechanism;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
@@ -19,15 +18,16 @@ public final class Intake extends SubsystemBase {
     this.io = io;
   }
 
-  public Command deploy() {
-    return Commands.sequence(
-        runOnce(io::deploy),
-        idle()
-            .until(
-                () ->
-                    inputs.motorPosition.isNear(INTAKE_DEPLOYED_POSITION, INTAKE_DEPLOY_TOLERANCE)),
-        runOnce(io::spring),
-        idle());
+  public void deploy() {
+    io.deploy();
+  }
+
+  public boolean isDeployed() {
+    return inputs.motorPosition.isNear(INTAKE_DEPLOYED_POSITION, INTAKE_DEPLOY_TOLERANCE);
+  }
+
+  public boolean isStowed() {
+    return inputs.motorPosition.isNear(INTAKE_STOWED_POSITION, INTAKE_DEPLOY_TOLERANCE);
   }
 
   @Override
@@ -35,16 +35,31 @@ public final class Intake extends SubsystemBase {
     io.updateInputs(inputs);
     Logger.processInputs("Intake/Deploy", inputs);
 
-    extensionDistance =
-        INTAKE_EXTENSION.times(INTAKE_DEPLOYED_POSITION.div(inputs.motorPosition).magnitude());
+    final double factor =
+        inputs.motorPosition.in(Rotations) / INTAKE_DEPLOYED_POSITION.in(Rotations);
+    extensionDistance = INTAKE_EXTENSION.times(factor);
+
+    Logger.recordOutput("Intake/DeployPosition", INTAKE_DEPLOYED_POSITION);
+    Logger.recordOutput("Intake/MotorPositionRots", inputs.motorPosition.magnitude(), Rotations);
+
+    Logger.recordOutput("Intake/ExtensionFactor", factor);
+    Logger.recordOutput("Intake/ExtensionDistance", extensionDistance);
   }
 
   @Override
   public void simulationPeriodic() {
-    IntakeMechanism.getInstance().setExtension(extensionDistance);
+    // IntakeMechanism.getInstance().setExtension(extensionDistance);
+    // IntakeMechanism.getInstance().log();
+    Logger.recordOutput(
+        "Intake/MechanismTransform",
+        new Transform3d(extensionDistance, Inches.zero(), Inches.zero(), Rotation3d.kZero));
   }
 
-  public Command stow() {
-    return runOnce(io::stow).andThen(idle());
+  public void spring() {
+    io.spring();
+  }
+
+  public void stow() {
+    io.stow();
   }
 }

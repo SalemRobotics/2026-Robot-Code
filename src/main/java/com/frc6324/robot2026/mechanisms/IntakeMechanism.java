@@ -1,6 +1,7 @@
 package com.frc6324.robot2026.mechanisms;
 
 import com.frc6324.lib.LazySingleton;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Distance;
 import org.littletonrobotics.junction.Logger;
@@ -16,9 +17,7 @@ public final class IntakeMechanism {
   private final LoggedMechanismLigament2d intake =
       mechanism.getRoot("Intake Root", 0, 0).append(new LoggedMechanismLigament2d("Intake", 0, 0));
 
-  private IntakeMechanism() {
-    throw new IllegalAccessError();
-  }
+  private IntakeMechanism() {}
 
   public static IntakeMechanism getInstance() {
     if (instance == null) {
@@ -30,6 +29,7 @@ public final class IntakeMechanism {
 
   public void log() {
     Logger.recordOutput("Intake/Mechanism", mechanism);
+    Logger.recordOutput("Intake/MechPoses", mechanism.generate3dMechanism().toArray(Pose3d[]::new));
   }
 
   public void setExtension(Distance extensionMeters) {

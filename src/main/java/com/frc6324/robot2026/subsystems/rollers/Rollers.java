@@ -3,7 +3,6 @@ package com.frc6324.robot2026.subsystems.rollers;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
@@ -34,12 +33,9 @@ public final class Rollers extends SubsystemBase {
   /**
    * Commands the rollers to coast out to save power when they aren't actively being used (e.g.
    * under the trench)
-   *
-   * @return The coasting command. This command immediately ends upon running. Use {@link
-   *     Command#repeatedly()} to make it run repeatedly until a condition is met.
    */
-  public Command coastRollers() {
-    return runOnce(io::coast);
+  public void coastRollers() {
+    io.coast();
   }
 
   @Override
@@ -57,21 +53,13 @@ public final class Rollers extends SubsystemBase {
     followerDisconnectedAlert.set(followerDisconnected);
   }
 
-  /**
-   * Starts the intake's rollers.
-   *
-   * @return The roller command.
-   */
-  public Command startRollers() {
-    return runOnce(io::start);
+  /** Starts the intake's rollers. */
+  public void startRollers() {
+    io.start();
   }
 
-  /**
-   * Immediately stops the intake's rollers.
-   *
-   * @return The brake command.
-   */
-  public Command stopRollers() {
-    return runOnce(io::stop);
+  /** Immediately stops the intake's rollers. */
+  public void stopRollers() {
+    io.stop();
   }
 }

@@ -55,6 +55,10 @@ public final class DriveCommands {
     return new Translation2d(magnitude, direction);
   }
 
+  public static Translation2d getLinearVelocityFromJoysticks(XboxController controller) {
+    return getLinearVelocityFromJoysticks(-controller.getLeftY(), -controller.getLeftX());
+  }
+
   public static Command driveToPose(SwerveDrive drive, Pose2d pose) {
     FollowPath.Builder builder = drive.getBLineBuilder();
 

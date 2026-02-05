@@ -25,6 +25,9 @@ public interface IntakeIO {
     public boolean motorConnected = false;
 
     public Angle motorPosition = Rotations.zero();
+    public double positionError = 0;
+    public double pidSetpoint = 0;
+    public double pidOutput = 0;
     public AngularVelocity motorVelocity = RotationsPerSecond.zero();
     public Voltage motorVoltage = Volts.zero();
     public Current motorStatorCurrent = Amps.zero();

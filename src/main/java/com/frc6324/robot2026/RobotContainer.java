@@ -27,9 +27,11 @@ import com.frc6324.robot2026.subsystems.leds.LEDs;
 import com.frc6324.robot2026.subsystems.rollers.*;
 import com.frc6324.robot2026.subsystems.vision.apriltag.*;
 import com.frc6324.robot2026.subsystems.vision.objdetect.*;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import org.littletonrobotics.junction.LoggedPowerDistribution;
 
 @SuppressWarnings("unused")
 public class RobotContainer {
@@ -41,6 +43,8 @@ public class RobotContainer {
   private final Rollers rollers;
   private final SwerveDrive drive;
 
+  private final LoggedPowerDistribution pdh =
+      LoggedPowerDistribution.getInstance(0, ModuleType.kRev);
   private final CommandXboxController controller =
       new CommandXboxController(DRIVER_CONTROLLER_PORT);
 
@@ -99,8 +103,17 @@ public class RobotContainer {
     drive.setDefaultCommand(DriveCommands.joystickDrive(drive, controller.getHID()));
     // Bind climber commands to the D-pad
 
-    // controller.povUp().whileTrue(climber.stow()).onFalse(climber.stop());
-    // controller.povDown().whileTrue(climber.deploy()).onFalse(climber.stop());
+    controller.povUp().whileTrue(climber.stow()).onFalse(climber.stop());
+    controller.povDown().whileTrue(climber.deploy()).onFalse(climber.stop());
+
+    controller
+        .y()
+        .whileTrue(
+            Commands.print("Deploying intake!")
+                .andThen(Commands.run(intake::deploy, intake).until(intake::isDeployed)))
+        .onFalse(
+            Commands.print("Stowing intake!")
+                .andThen(Commands.run(intake::stow, intake).until(intake::isStowed)));
   }
 
   public Command getAutonomousCommand() {
