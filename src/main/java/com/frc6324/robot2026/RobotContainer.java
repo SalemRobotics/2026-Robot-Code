@@ -17,13 +17,11 @@ package com.frc6324.robot2026;
 
 import static com.frc6324.robot2026.Constants.*;
 
-import com.frc6324.lib.util.IOLayer;
 import com.frc6324.robot2026.commands.DriveCommands;
 import com.frc6324.robot2026.subsystems.climber.*;
 import com.frc6324.robot2026.subsystems.drive.*;
 import com.frc6324.robot2026.subsystems.drive.DriveIO.DriveIOReplay;
 import com.frc6324.robot2026.subsystems.intake.*;
-import com.frc6324.robot2026.subsystems.leds.LEDs;
 import com.frc6324.robot2026.subsystems.rollers.*;
 import com.frc6324.robot2026.subsystems.vision.apriltag.*;
 import com.frc6324.robot2026.subsystems.vision.objdetect.*;
@@ -35,12 +33,12 @@ import org.littletonrobotics.junction.LoggedPowerDistribution;
 
 @SuppressWarnings("unused")
 public class RobotContainer {
-  private final AprilTagVision visionOdometry;
-  private final Climber climber;
-  private final Intake intake;
-  private final LEDs leds = new LEDs();
-  private final ObjectDetection objectDetection;
-  private final Rollers rollers;
+  // private final AprilTagVision visionOdometry;
+  // private final Climber climber;
+  // private final Intake intake;
+  // private final LEDs leds = new LEDs();
+  // private final ObjectDetection objectDetection;
+  // private final Rollers rollers;
   private final SwerveDrive drive;
 
   private final LoggedPowerDistribution pdh =
@@ -54,45 +52,46 @@ public class RobotContainer {
         final DriveIOCTRE driveIO = new DriveIOCTRE();
         drive = new SwerveDrive(driveIO);
 
-        visionOdometry =
-            new AprilTagVision(
-                    new AprilTagIOPhoton(driveIO),
-                    new AprilTagIOPhoton(driveIO),
-                    new AprilTagIOPhoton(driveIO),
-                    new AprilTagIOPhoton(driveIO))
-                .withConsumer(drive);
-        objectDetection = new ObjectDetection(new ObjDetectIOPhoton());
+        // visionOdometry =
+        //     new AprilTagVision(
+        //             new AprilTagIOPhoton(driveIO),
+        //             new AprilTagIOPhoton(driveIO),
+        //             new AprilTagIOPhoton(driveIO),
+        //             new AprilTagIOPhoton(driveIO))
+        //         .withConsumer(drive);
+        // objectDetection = new ObjectDetection(new ObjDetectIOPhoton());
 
-        intake = new Intake(new IntakeIOTalonFX());
-        rollers = new Rollers(new RollerIOTalonFX());
+        // intake = new Intake(new IntakeIOTalonFX());
+        // rollers = new Rollers(new RollerIOTalonFX());
 
-        climber = new Climber(new ClimberIOTalonFX());
+        // climber = new Climber(new ClimberIOTalonFX());
       }
       case SIM -> {
         final DriveIOSim driveIO = new DriveIOSim();
         drive = new SwerveDrive(driveIO);
 
-        visionOdometry =
-            new AprilTagVision(
-                new AprilTagIOSim(driveIO, drive),
-                new AprilTagIOSim(driveIO, drive),
-                new AprilTagIOSim(driveIO, drive),
-                new AprilTagIOSim(driveIO, drive));
-        objectDetection = new ObjectDetection(IOLayer::replay);
+        // visionOdometry =
+        //     new AprilTagVision(
+        //         new AprilTagIOSim(driveIO, drive),
+        //         new AprilTagIOSim(driveIO, drive),
+        //         new AprilTagIOSim(driveIO, drive),
+        //         new AprilTagIOSim(driveIO, drive));
+        // objectDetection = new ObjectDetection(IOLayer::replay);
 
-        intake = new Intake(new IntakeIOSim());
-        rollers = new Rollers(new RollerIOSim());
+        // intake = new Intake(new IntakeIOSim());
+        // rollers = new Rollers(new RollerIOSim());
 
-        climber = new Climber(new ClimberIOSim());
+        // climber = new Climber(new ClimberIOSim());
       }
       default -> {
         drive = new SwerveDrive(new DriveIOReplay());
-        visionOdometry =
-            new AprilTagVision(IOLayer::replay, IOLayer::replay, IOLayer::replay, IOLayer::replay);
-        objectDetection = new ObjectDetection(IOLayer::replay);
-        intake = new Intake(IOLayer::replay);
-        rollers = new Rollers(IOLayer::replay);
-        climber = new Climber(IOLayer::replay);
+        // visionOdometry =
+        //     new AprilTagVision(IOLayer::replay, IOLayer::replay, IOLayer::replay,
+        // IOLayer::replay);
+        // objectDetection = new ObjectDetection(IOLayer::replay);
+        // intake = new Intake(IOLayer::replay);
+        // rollers = new Rollers(IOLayer::replay);
+        // climber = new Climber(IOLayer::replay);
       }
     }
 
@@ -103,17 +102,17 @@ public class RobotContainer {
     drive.setDefaultCommand(DriveCommands.joystickDrive(drive, controller.getHID()));
     // Bind climber commands to the D-pad
 
-    controller.povUp().whileTrue(climber.stow()).onFalse(climber.stop());
-    controller.povDown().whileTrue(climber.deploy()).onFalse(climber.stop());
+    // controller.povUp().whileTrue(climber.stow()).onFalse(climber.stop());
+    // controller.povDown().whileTrue(climber.deploy()).onFalse(climber.stop());
 
-    controller
-        .y()
-        .whileTrue(
-            Commands.print("Deploying intake!")
-                .andThen(Commands.run(intake::deploy, intake).until(intake::isDeployed)))
-        .onFalse(
-            Commands.print("Stowing intake!")
-                .andThen(Commands.run(intake::stow, intake).until(intake::isStowed)));
+    // controller
+    //     .y()
+    //     .whileTrue(
+    //         Commands.print("Deploying intake!")
+    //             .andThen(Commands.run(intake::deploy, intake).until(intake::isDeployed)))
+    //     .onFalse(
+    //         Commands.print("Stowing intake!")
+    //             .andThen(Commands.run(intake::stow, intake).until(intake::isStowed)));
   }
 
   public Command getAutonomousCommand() {
