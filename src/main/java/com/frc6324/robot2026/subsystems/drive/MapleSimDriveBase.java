@@ -40,7 +40,7 @@ public final class MapleSimDriveBase extends SwerveDriveSimulation {
 
     SwerveModuleSimulation[] moduleSimulations = getModules();
     for (int i = 0; i < this.simModules.length; i++) {
-      simModules[i] = new SimSwerveModule(moduleConstants[0], moduleSimulations[i], modules[i]);
+      simModules[i] = new SimSwerveModule(moduleConstants[i], moduleSimulations[i], modules[i]);
     }
 
     SimulatedArena.overrideSimulationTimings(ODOMETRY_PERIOD, 1);

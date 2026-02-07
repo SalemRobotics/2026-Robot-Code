@@ -41,12 +41,12 @@ public final class DrivetrainConstants {
 
   public static final Mass ROBOT_MASS = Pounds.of(140);
   public static final MomentOfInertia ROBOT_MOI = KilogramSquareMeters.of(6);
-  public static final double WHEEL_COF = 1.6;
+  public static final double WHEEL_COF = 2.2;
 
   public static final DriveTrainSimulationConfig MAPLE_SIM_CONFIG =
       DriveTrainSimulationConfig.Default()
           .withRobotMass(ROBOT_MASS)
-          .withBumperSize(Inches.of(27), Inches.of(27))
+          .withBumperSize(Inches.of(34), Inches.of(34))
           .withCustomModuleTranslations(MODULE_TRANSLATIONS)
           .withGyro(COTS.ofPigeon2())
           .withSwerveModule(

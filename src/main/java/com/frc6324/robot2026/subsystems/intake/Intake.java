@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
@@ -48,11 +49,12 @@ public final class Intake extends SubsystemBase {
 
   @Override
   public void simulationPeriodic() {
-    // IntakeMechanism.getInstance().setExtension(extensionDistance);
-    // IntakeMechanism.getInstance().log();
+    Translation3d mechTranslation =
+        new Translation3d(extensionDistance, Inches.zero(), Inches.zero())
+            .rotateBy(INTAKE_MECHANISM_ROTATION);
+
     Logger.recordOutput(
-        "Intake/MechanismTransform",
-        new Transform3d(extensionDistance, Inches.zero(), Inches.zero(), Rotation3d.kZero));
+        "Intake/MechanismTransform", new Transform3d(mechTranslation, Rotation3d.kZero));
   }
 
   public void spring() {

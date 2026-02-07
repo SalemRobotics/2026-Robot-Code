@@ -294,21 +294,21 @@ public final class SwerveDrive extends SubsystemBase implements VisionConsumer, 
     moduleConstants.SteerMotorInverted = false;
 
     // Use Voltage output during sim since Torque Current doesn't play nice
-    moduleConstants.SteerMotorClosedLoopOutput = ClosedLoopOutputType.Voltage;
+    moduleConstants.DriveMotorClosedLoopOutput = ClosedLoopOutputType.Voltage;
     moduleConstants.SteerMotorClosedLoopOutput = ClosedLoopOutputType.Voltage;
 
     // Alter motor PID gains for both sim and voltage
-    moduleConstants.DriveMotorGains.kP = 10;
-    moduleConstants.DriveMotorGains.kD = 0;
+    moduleConstants.DriveMotorGains.kP = 5;
+    moduleConstants.DriveMotorGains.kD = 0.1;
     moduleConstants.DriveMotorGains.kS = 0;
 
-    moduleConstants.SteerMotorGains.kP = 80;
-    moduleConstants.SteerMotorGains.kD = 8;
-    moduleConstants.SteerMotorGains.kS = 0.6;
+    moduleConstants.SteerMotorGains.kP = 40;
+    moduleConstants.SteerMotorGains.kD = 5;
+    moduleConstants.SteerMotorGains.kS = 0.4;
     moduleConstants.SteerMotorGains.kV = 0;
 
     // Adjust friction voltages for sim
-    moduleConstants.DriveFrictionVoltage = 0.1;
+    moduleConstants.DriveFrictionVoltage = 0.25;
     moduleConstants.SteerFrictionVoltage = 0.15;
 
     // Adjust steer inertia

@@ -17,6 +17,7 @@ package com.frc6324.robot2026;
 
 import static com.frc6324.robot2026.Constants.*;
 
+import com.frc6324.lib.util.IOLayer;
 import com.frc6324.robot2026.commands.DriveCommands;
 import com.frc6324.robot2026.subsystems.climber.*;
 import com.frc6324.robot2026.subsystems.drive.*;
@@ -35,7 +36,7 @@ import org.littletonrobotics.junction.LoggedPowerDistribution;
 public class RobotContainer {
   // private final AprilTagVision visionOdometry;
   // private final Climber climber;
-  // private final Intake intake;
+  private final Intake intake;
   // private final LEDs leds = new LEDs();
   // private final ObjectDetection objectDetection;
   // private final Rollers rollers;
@@ -61,7 +62,7 @@ public class RobotContainer {
         //         .withConsumer(drive);
         // objectDetection = new ObjectDetection(new ObjDetectIOPhoton());
 
-        // intake = new Intake(new IntakeIOTalonFX());
+        intake = new Intake(new IntakeIOTalonFX());
         // rollers = new Rollers(new RollerIOTalonFX());
 
         // climber = new Climber(new ClimberIOTalonFX());
@@ -78,7 +79,7 @@ public class RobotContainer {
         //         new AprilTagIOSim(driveIO, drive));
         // objectDetection = new ObjectDetection(IOLayer::replay);
 
-        // intake = new Intake(new IntakeIOSim());
+        intake = new Intake(new IntakeIOSim());
         // rollers = new Rollers(new RollerIOSim());
 
         // climber = new Climber(new ClimberIOSim());
@@ -89,7 +90,7 @@ public class RobotContainer {
         //     new AprilTagVision(IOLayer::replay, IOLayer::replay, IOLayer::replay,
         // IOLayer::replay);
         // objectDetection = new ObjectDetection(IOLayer::replay);
-        // intake = new Intake(IOLayer::replay);
+        intake = new Intake(IOLayer::replay);
         // rollers = new Rollers(IOLayer::replay);
         // climber = new Climber(IOLayer::replay);
       }
@@ -105,14 +106,14 @@ public class RobotContainer {
     // controller.povUp().whileTrue(climber.stow()).onFalse(climber.stop());
     // controller.povDown().whileTrue(climber.deploy()).onFalse(climber.stop());
 
-    // controller
-    //     .y()
-    //     .whileTrue(
-    //         Commands.print("Deploying intake!")
-    //             .andThen(Commands.run(intake::deploy, intake).until(intake::isDeployed)))
-    //     .onFalse(
-    //         Commands.print("Stowing intake!")
-    //             .andThen(Commands.run(intake::stow, intake).until(intake::isStowed)));
+    controller
+        .y()
+        .whileTrue(
+            Commands.print("Deploying intake!")
+                .andThen(Commands.run(intake::deploy, intake).until(intake::isDeployed)))
+        .onFalse(
+            Commands.print("Stowing intake!")
+                .andThen(Commands.run(intake::stow, intake).until(intake::isStowed)));
   }
 
   public Command getAutonomousCommand() {

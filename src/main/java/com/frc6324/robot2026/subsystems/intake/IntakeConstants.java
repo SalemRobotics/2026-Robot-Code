@@ -11,6 +11,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
 import com.frc6324.lib.UninstantiableClass;
 import com.frc6324.robot2026.Constants;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.*;
 
@@ -36,7 +37,7 @@ public final class IntakeConstants {
           .withSupplyCurrentLimitEnable(true);
 
   public static final Slot0Configs DEPLOY_GAINS =
-      new Slot0Configs().withKP(40).withKD(1).withKV(1).withKA(0.25).withKS(0.1);
+      new Slot0Configs().withKP(80).withKD(2).withKV(1).withKA(0.25).withKS(0.1);
   public static final Slot1Configs SPRING_GAINS =
       new Slot1Configs().withKP(5).withKD(0.001).withKS(0.01);
   public static final MotionMagicConfigs MOTION_MAGIC =
@@ -59,6 +60,8 @@ public final class IntakeConstants {
   public static final double INTAKE_REDUCTION = 9;
   public static final DCMotor INTAKE_GEARBOX = DCMotor.getKrakenX60Foc(1);
   public static final MotorType INTAKE_MOTOR_TYPE = MotorType.KrakenX60;
+  public static final Rotation3d INTAKE_MECHANISM_ROTATION =
+      new Rotation3d(Degrees.zero(), Degrees.of(18.5), Degrees.zero());
 
   private IntakeConstants() {
     throw new IllegalAccessError();
