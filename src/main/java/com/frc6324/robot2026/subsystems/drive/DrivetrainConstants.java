@@ -43,6 +43,9 @@ public final class DrivetrainConstants {
   public static final MomentOfInertia ROBOT_MOI = KilogramSquareMeters.of(6);
   public static final double WHEEL_COF = 2.2;
 
+  public static final Voltage DRIVE_FRICTION_VOLTAGE = Volts.of(0.25);
+  public static final Voltage STEER_FRICTION_VOLTAGE = Volts.of(0.35);
+
   public static final DriveTrainSimulationConfig MAPLE_SIM_CONFIG =
       DriveTrainSimulationConfig.Default()
           .withRobotMass(ROBOT_MASS)
@@ -53,12 +56,12 @@ public final class DrivetrainConstants {
               new SwerveModuleSimulationConfig(
                   DCMotor.getKrakenX60Foc(1),
                   DCMotor.getKrakenX44Foc(1),
-                  6.03,
-                  287 / 11,
-                  Volts.of(0.1),
-                  Volts.of(0.2),
+                  TunerConstants.kDriveGearRatio,
+                  TunerConstants.kSteerGearRatio,
+                  DRIVE_FRICTION_VOLTAGE,
+                  STEER_FRICTION_VOLTAGE,
                   Inches.of(2),
-                  KilogramSquareMeters.of(0.03),
+                  KilogramSquareMeters.of(0.1),
                   WHEEL_COF));
 
   public static final Pose2d STARTING_POSE = new Pose2d(3, 3, Rotation2d.kZero);

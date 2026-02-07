@@ -293,25 +293,25 @@ public final class SwerveDrive extends SubsystemBase implements VisionConsumer, 
     moduleConstants.DriveMotorInverted = false;
     moduleConstants.SteerMotorInverted = false;
 
+    // Adjust drive PID for simulation (still in torque current)
+    moduleConstants.DriveMotorGains.kP = 10;
+    moduleConstants.DriveMotorGains.kD = 0;
+    moduleConstants.DriveMotorGains.kS = 0.5;
+
     // Use Voltage output during sim since Torque Current doesn't play nice
-    moduleConstants.DriveMotorClosedLoopOutput = ClosedLoopOutputType.Voltage;
     moduleConstants.SteerMotorClosedLoopOutput = ClosedLoopOutputType.Voltage;
-
-    // Alter motor PID gains for both sim and voltage
-    moduleConstants.DriveMotorGains.kP = 5;
-    moduleConstants.DriveMotorGains.kD = 0.1;
-    moduleConstants.DriveMotorGains.kS = 0;
-
-    moduleConstants.SteerMotorGains.kP = 40;
-    moduleConstants.SteerMotorGains.kD = 5;
-    moduleConstants.SteerMotorGains.kS = 0.4;
+    // Alter steer motor PID gains for both sim and voltage
+    moduleConstants.SteerMotorGains.kP = 12.5;
+    moduleConstants.SteerMotorGains.kD = 1;
+    moduleConstants.SteerMotorGains.kS = 0.6;
     moduleConstants.SteerMotorGains.kV = 0;
+    moduleConstants.SteerMotorGains.kA = 0;
 
     // Adjust friction voltages for sim
-    moduleConstants.DriveFrictionVoltage = 0.25;
-    moduleConstants.SteerFrictionVoltage = 0.15;
+    moduleConstants.DriveFrictionVoltage = DRIVE_FRICTION_VOLTAGE.in(Volts);
+    moduleConstants.SteerFrictionVoltage = STEER_FRICTION_VOLTAGE.in(Volts);
 
     // Adjust steer inertia
-    moduleConstants.SteerInertia = 0.05;
+    moduleConstants.SteerInertia = 0.1;
   }
 }
