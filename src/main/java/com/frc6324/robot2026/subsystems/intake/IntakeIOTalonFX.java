@@ -11,6 +11,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.frc6324.robot2026.Constants;
 import edu.wpi.first.units.measure.*;
+import edu.wpi.first.wpilibj.RobotBase;
 
 public class IntakeIOTalonFX implements IntakeIO {
   protected final TalonFX talon = new TalonFX(INTAKE_MOTOR_ID, INTAKE_CAN_BUS);
@@ -40,7 +41,7 @@ public class IntakeIOTalonFX implements IntakeIO {
     tryUntilOk(5, () -> talon.getConfigurator().apply(INTAKE_MOTOR_CONFIG));
     tryUntilOk(5, () -> talon.setNeutralMode(NeutralModeValue.Coast));
 
-    if (INTAKE_CAN_BUS == Constants.CANIVORE) {
+    if (RobotBase.isReal() && INTAKE_CAN_BUS == Constants.CANIVORE) {
       BaseStatusSignal.waitForAll(1, signals);
     }
 

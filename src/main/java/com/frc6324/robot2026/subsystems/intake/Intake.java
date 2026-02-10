@@ -39,12 +39,6 @@ public final class Intake extends SubsystemBase {
     final double factor =
         inputs.motorPosition.in(Rotations) / INTAKE_DEPLOYED_POSITION.in(Rotations);
     extensionDistance = INTAKE_EXTENSION.times(factor);
-
-    Logger.recordOutput("Intake/DeployPosition", INTAKE_DEPLOYED_POSITION);
-    Logger.recordOutput("Intake/MotorPositionRots", inputs.motorPosition.magnitude(), Rotations);
-
-    Logger.recordOutput("Intake/ExtensionFactor", factor);
-    Logger.recordOutput("Intake/ExtensionDistance", extensionDistance);
   }
 
   @Override
