@@ -16,6 +16,7 @@
 package com.frc6324.robot2026;
 
 import com.ctre.phoenix6.SignalLogger;
+import com.frc6324.robot2026.sim.MapleSimManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -208,4 +209,9 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void testExit() {}
+
+  @Override
+  public void simulationPeriodic() {
+    MapleSimManager.getInstance().simulationPeriodic();
+  }
 }

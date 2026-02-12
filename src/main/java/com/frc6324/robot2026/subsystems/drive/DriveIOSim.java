@@ -4,12 +4,11 @@ import static com.frc6324.robot2026.subsystems.drive.DrivetrainConstants.ODOMETR
 import static edu.wpi.first.units.Units.Seconds;
 
 import com.frc6324.robot2026.generated.TunerConstants;
+import com.frc6324.robot2026.sim.MapleSimDriveBase;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.Timer;
 import lombok.Getter;
-import org.ironmaple.simulation.SimulatedArena;
-import org.littletonrobotics.junction.Logger;
 
 public final class DriveIOSim extends DriveIOCTRE {
   @Getter
@@ -28,9 +27,11 @@ public final class DriveIOSim extends DriveIOCTRE {
   public DriveIOSim() {
     super();
 
-    registerTelemetry(state -> state.Pose = driveSimulation.getSimulatedDriveTrainPose());
-
-    // Notifier.setHALThreadPriority(true, 90);
+    registerTelemetry(
+        state -> {
+          state.Pose = driveSimulation.getPose();
+          state.Speeds = driveSimulation.getChassisSpeeds();
+        });
 
     notifier.setName("Simulation Thread");
     notifier.startPeriodic(ODOMETRY_PERIOD.in(Seconds));
@@ -38,17 +39,9 @@ public final class DriveIOSim extends DriveIOCTRE {
 
   @Override
   public void resetPose(Pose2d pose) {
-    driveSimulation.setSimulationWorldPose(pose);
+    driveSimulation.setPose(pose);
     Timer.delay(0.05);
 
     super.resetPose(pose);
-  }
-
-  @Override
-  public void updateInputs(DriveInputs inputs) {
-    super.updateInputs(inputs);
-
-    final SimulatedArena arena = SimulatedArena.getInstance();
-    Logger.recordOutput("FieldSimulation/Fuel", arena.getGamePiecesArrayByType("Fuel"));
   }
 }

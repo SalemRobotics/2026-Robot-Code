@@ -3,11 +3,15 @@ package com.frc6324.robot2026.subsystems.intake;
 import static com.frc6324.robot2026.subsystems.intake.IntakeConstants.*;
 import static edu.wpi.first.units.Units.*;
 
+import com.frc6324.robot2026.sim.MapleSimManager;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import org.littletonrobotics.junction.Logger;
 
 public final class Intake extends SubsystemBase {
@@ -15,8 +19,18 @@ public final class Intake extends SubsystemBase {
   private final IntakeInputsAutoLogged inputs = new IntakeInputsAutoLogged();
   private Distance extensionDistance = Inches.zero();
 
+  public final Trigger isDeployed = new Trigger(this::isDeployed);
+  public final Trigger isStowed = new Trigger(this::isStowed);
+
   public Intake(IntakeIO io) {
     this.io = io;
+
+    if (RobotBase.isSimulation()) {
+      isDeployed.onTrue(
+          Commands.runOnce(() -> MapleSimManager.getInstance().setIntakeExtended(true)));
+      isDeployed.onFalse(
+          Commands.runOnce(() -> MapleSimManager.getInstance().setIntakeExtended(false)));
+    }
   }
 
   public void deploy() {

@@ -78,11 +78,19 @@ public class RobotContainer {
 
   private void configureBindings() {
     drive.setDefaultCommand(DriveCommands.joystickDrive(drive, controller.getHID()));
+    shooter.setDefaultCommand(
+        Commands.runOnce(shooter::spinUpShooter, shooter).andThen(shooter.idle()));
 
     controller
         .x()
-        .whileTrue(Commands.print("Raising hood").andThen(Commands.run(shooter::pass, shooter)))
-        .onFalse(Commands.print("Stowing hood").andThen(Commands.run(shooter::stowHood, shooter)));
+        .whileTrue(Commands.run(shooter::pass, shooter))
+        .onFalse(
+            Commands.run(
+                () -> {
+                  shooter.spinUpShooter();
+                  shooter.stowHood();
+                },
+                shooter));
 
     controller
         .y()

@@ -20,7 +20,8 @@ public interface ShooterIO {
   @AutoLog
   public class ShooterInputs {
     public boolean hoodConnected = false;
-    public boolean flywheelConnected = false;
+    public boolean flywheelLeaderConnected = false;
+    public boolean flywheelFollowerConnected = false;
 
     public Angle hoodPosition = Rotations.zero();
     public AngularVelocity hoodVelocity = RotationsPerSecond.zero();
@@ -30,12 +31,18 @@ public interface ShooterIO {
     public Current hoodStatorCurrent = Amps.zero();
     public Current hoodTorqueCurrent = Amps.zero();
 
-    public AngularVelocity flywheelVelocity = RotationsPerSecond.zero();
-    public AngularAcceleration flywheelAcceleration = RotationsPerSecondPerSecond.zero();
-    public double flywheelPIDSetpoint = 0;
-    public double flywheelPIDOutput = 0;
-    public Voltage flywheelMotorVoltage = Volts.zero();
-    public Current flywheelStatorCurrent = Amps.zero();
-    public Current flywheelTorqueCurrent = Amps.zero();
+    public AngularVelocity flywheelLeaderVelocity = RotationsPerSecond.zero();
+    public AngularAcceleration flywheelLeaderAcceleration = RotationsPerSecondPerSecond.zero();
+    public double flywheelLeaderPIDSetpoint = 0;
+    public double flywheelLeaderPIDOutput = 0;
+    public Voltage flywheelLeaderMotorVoltage = Volts.zero();
+    public Current flywheelLeaderStatorCurrent = Amps.zero();
+    public Current flywheelLeaderTorqueCurrent = Amps.zero();
+
+    public AngularVelocity flywheelFollowerVelocity = RotationsPerSecond.zero();
+    public AngularAcceleration flywheelFollowerAcceleration = RotationsPerSecondPerSecond.zero();
+    public Voltage flywheelFollowerMotorVoltage = Volts.zero();
+    public Current flywheelFollowerStatorCurrent = Amps.zero();
+    public Current flywheelFollowerTorqueCurrent = Amps.zero();
   }
 }

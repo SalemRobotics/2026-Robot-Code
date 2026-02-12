@@ -6,6 +6,7 @@ import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagIO.VisionEstimat
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
@@ -40,6 +41,11 @@ public class AprilTagVision extends SubsystemBase {
               "AprilTag camera '" + CAMERA_NAMES[i] + "' is disconnected.", AlertType.kWarning);
       inputs[i] = new VisionInputsAutoLogged();
     }
+
+    final Pose3d[] allTagPoses =
+        APRILTAG_LAYOUT.getTags().stream().map(tag -> tag.pose).toArray(Pose3d[]::new);
+
+    Logger.recordOutput("Vision/AllKnownAprilTags", allTagPoses);
 
     VisionUpdateThread.start();
   }

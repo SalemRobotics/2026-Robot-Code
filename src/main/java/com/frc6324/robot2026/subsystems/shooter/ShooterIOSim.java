@@ -1,6 +1,7 @@
 package com.frc6324.robot2026.subsystems.shooter;
 
-import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.*;
+import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.FlywheelConstants.*;
+import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.HoodConstants.*;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 
 import com.ctre.phoenix6.sim.TalonFXSimState;
@@ -14,23 +15,21 @@ public class ShooterIOSim extends ShooterIOTalonFX {
   private final DCMotorSim hoodSim =
       new DCMotorSim(
           LinearSystemId.createDCMotorSystem(
-              SHOOTER_HOOD_GEARBOX, SHOOTER_HOOD_MOI, SHOOTER_HOOD_REDUCTION),
-          SHOOTER_HOOD_GEARBOX);
+              HOOD_GEARBOX, HOOD_MOI.in(KilogramSquareMeters), HOOD_REDUCTION),
+          HOOD_GEARBOX);
   private final FlywheelSim flywheelSim =
       new FlywheelSim(
           LinearSystemId.createFlywheelSystem(
-              SHOOTER_FLYWHEEL_GEARBOX,
-              SHOOTER_FLYWHEEL_MOI.in(KilogramSquareMeters),
-              SHOOTER_FLYWHEEL_REDUCTION),
-          SHOOTER_FLYWHEEL_GEARBOX);
+              FLYWHEEL_GEARBOX, FLYWHEEL_MOI.in(KilogramSquareMeters), 1),
+          FLYWHEEL_GEARBOX);
 
   private final TalonFXSimState hoodSimState = hoodTalon.getSimState();
-  private final TalonFXSimState flywheelSimState = flywheelTalon.getSimState();
+  private final TalonFXSimState flywheelSimState = flywheelLeader.getSimState();
   private final DeltaTimeCalculator deltaTime = new DeltaTimeCalculator();
 
   public ShooterIOSim() {
-    hoodSimState.setMotorType(SHOOTER_HOOD_MOTOR_TYPE);
-    flywheelSimState.setMotorType(SHOOTER_FLYWHEEL_MOTOR_TYPE);
+    hoodSimState.setMotorType(HOOD_MOTOR_TYPE);
+    flywheelSimState.setMotorType(FLYWHEEL_MOTOR_TYPE);
   }
 
   @Override

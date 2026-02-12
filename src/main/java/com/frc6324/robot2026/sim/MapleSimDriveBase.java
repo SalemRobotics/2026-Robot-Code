@@ -1,32 +1,26 @@
-package com.frc6324.robot2026.subsystems.drive;
+package com.frc6324.robot2026.sim;
 
-import static com.frc6324.robot2026.subsystems.drive.DrivetrainConstants.*;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.hardware.CANcoder;
-import com.ctre.phoenix6.hardware.Pigeon2;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.sim.CANcoderSimState;
-import com.ctre.phoenix6.sim.Pigeon2SimState;
-import com.ctre.phoenix6.sim.TalonFXSimState;
+import com.ctre.phoenix6.hardware.*;
+import com.ctre.phoenix6.sim.*;
 import com.ctre.phoenix6.swerve.SwerveModule;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Voltage;
-import org.ironmaple.simulation.SimulatedArena;
+import edu.wpi.first.units.measure.*;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.drivesims.SwerveModuleSimulation;
 import org.ironmaple.simulation.motorsims.SimulatedBattery;
 import org.ironmaple.simulation.motorsims.SimulatedMotorController;
-import org.ironmaple.simulation.seasonspecific.rebuilt2026.Arena2026Rebuilt;
 
-public final class MapleSimDriveBase extends SwerveDriveSimulation {
+public final class MapleSimDriveBase {
   private final Pigeon2SimState pigeonSim;
   private final SimSwerveModule[] simModules;
+  private final SwerveDriveSimulation simulation;
 
   @SuppressWarnings("unchecked")
   public MapleSimDriveBase(
@@ -34,29 +28,35 @@ public final class MapleSimDriveBase extends SwerveDriveSimulation {
       SwerveModule<TalonFX, TalonFX, CANcoder>[] modules,
       SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>...
           moduleConstants) {
-    super(MAPLE_SIM_CONFIG, STARTING_POSE);
     this.pigeonSim = pigeon.getSimState();
+    this.simulation = MapleSimManager.getInstance().getMainRobotDriveSimulation();
     simModules = new SimSwerveModule[moduleConstants.length];
 
-    SwerveModuleSimulation[] moduleSimulations = getModules();
+    SwerveModuleSimulation[] moduleSimulations = simulation.getModules();
     for (int i = 0; i < this.simModules.length; i++) {
       simModules[i] = new SimSwerveModule(moduleConstants[i], moduleSimulations[i], modules[i]);
     }
+  }
 
-    SimulatedArena.overrideSimulationTimings(ODOMETRY_PERIOD, 1);
-    SimulatedArena.getInstance().addDriveTrainSimulation(this);
-    if (SimulatedArena.getInstance() instanceof Arena2026Rebuilt rebuilt) {
-      rebuilt.setEfficiencyMode(false);
-    }
-    SimulatedArena.getInstance().resetFieldForAuto();
+  public ChassisSpeeds getChassisSpeeds() {
+    return simulation.getDriveTrainSimulatedChassisSpeedsRobotRelative();
+  }
+
+  public Pose2d getPose() {
+    return simulation.getSimulatedDriveTrainPose();
+  }
+
+  public Rotation2d getRotation() {
+    return getPose().getRotation();
+  }
+
+  public void setPose(Pose2d pose) {
+    simulation.setSimulationWorldPose(pose);
   }
 
   public void update() {
-    SimulatedArena.getInstance().simulationPeriodic();
-    pigeonSim.setRawYaw(getSimulatedDriveTrainPose().getRotation().getMeasure());
-
-    final ChassisSpeeds robotSpeeds = getDriveTrainSimulatedChassisSpeedsRobotRelative();
-    pigeonSim.setAngularVelocityZ(RadiansPerSecond.of(robotSpeeds.omegaRadiansPerSecond));
+    pigeonSim.setRawYaw(getRotation().getMeasure());
+    pigeonSim.setAngularVelocityZ(RadiansPerSecond.of(getChassisSpeeds().omegaRadiansPerSecond));
   }
 
   /** Represents a simulation of a single {@link SwerveModule}. */
