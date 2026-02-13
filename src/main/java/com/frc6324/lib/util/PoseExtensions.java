@@ -33,6 +33,14 @@ public final class PoseExtensions {
     throw new IllegalAccessError();
   }
 
+  public static double getNorm(Pose2d pose) {
+    return pose.getTranslation().getNorm();
+  }
+
+  public static double getDistance(Pose2d lhs, Pose2d rhs) {
+    return lhs.getTranslation().getDistance(rhs.getTranslation());
+  }
+
   @Contract("_, _ -> new")
   public static @NotNull Pose2d plus(@NotNull Pose2d lhs, @NotNull Pose2d rhs) {
     return new Pose2d(

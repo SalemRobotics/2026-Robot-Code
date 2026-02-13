@@ -9,9 +9,11 @@ import com.frc6324.robot2026.subsystems.intake.IntakeConstants;
 import com.frc6324.robot2026.subsystems.shooter.ShooterConstants;
 import com.frc6324.robot2026.subsystems.shooter.ShooterConstants.FlywheelConstants;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -23,8 +25,6 @@ import org.ironmaple.simulation.IntakeSimulation;
 import org.ironmaple.simulation.IntakeSimulation.IntakeSide;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
-import org.ironmaple.simulation.seasonspecific.rebuilt2026.Arena2026Rebuilt;
-import org.ironmaple.simulation.seasonspecific.rebuilt2026.RebuiltFuelOnFly;
 import org.littletonrobotics.junction.Logger;
 
 @ExtensionMethod(UnitsUtils.class)
@@ -32,7 +32,7 @@ import org.littletonrobotics.junction.Logger;
 public final class MapleSimManager {
   private static MapleSimManager instance = null;
 
-  private final Arena2026Rebuilt arena;
+  private final RebuiltArena arena;
   private final SwerveDriveSimulation driveSimulation =
       new SwerveDriveSimulation(
           DrivetrainConstants.MAPLE_SIM_CONFIG, DrivetrainConstants.STARTING_POSE);
@@ -54,7 +54,8 @@ public final class MapleSimManager {
   private double lastLaunchTimestamp = 0;
 
   private MapleSimManager() {
-    arena = new Arena2026Rebuilt(false);
+    arena = new RebuiltArena();
+
     arena.setEfficiencyMode(false);
     arena.addDriveTrainSimulation(driveSimulation);
     intakeSim.register(arena);
@@ -136,19 +137,22 @@ public final class MapleSimManager {
           && intakeSim.obtainGamePieceFromIntake()) {
         final Pose2d drivePose = driveSimulation.getSimulatedDriveTrainPose();
 
-        final RebuiltFuelOnFly piece =
-            new RebuiltFuelOnFly(
-                drivePose.getTranslation(),
-                shooterPosition.toTranslation2d(),
-                driveSimulation.getDriveTrainSimulatedChassisSpeedsFieldRelative(),
-                drivePose.getRotation(),
-                Meters.of(shooterPosition.getZ()),
-                FlywheelConstants.FLYWHEEL_RADIUS
-                    .times(shooterSpeed.in(RadiansPerSecond))
-                    .per(Second),
-                shooterAngle);
+        final LinearVelocity fuelVelocity =
+            FlywheelConstants.FLYWHEEL_RADIUS
+                .times(shooterSpeed.in(RadiansPerSecond))
+                .times(FlywheelConstants.FLYWHEEL_EFFICIENCY)
+                .per(Second);
 
-        arena.addGamePieceProjectile(piece);
+        final FlyingFuelSimulation fuel =
+            new FlyingFuelSimulation(
+                drivePose,
+                shooterPosition,
+                Rotation2d.kZero,
+                driveSimulation.getDriveTrainSimulatedChassisSpeedsFieldRelative(),
+                shooterAngle,
+                fuelVelocity);
+
+        arena.addFuelProjectile(fuel);
 
         lastLaunchTimestamp = currentTimestamp;
       }
@@ -158,15 +162,20 @@ public final class MapleSimManager {
   }
 
   public void simulationPeriodic() {
-    arena.simulationPeriodic();
+    try {
+      simulationLock.lock();
+      arena.simulationPeriodic();
 
-    Logger.recordOutput("FieldSimulation/Fuel", arena.getGamePiecesArrayByType("Fuel"));
-    Logger.recordOutput("FieldSimulation/BlueAllianceScore", arena.getScore(Alliance.Blue));
-    Logger.recordOutput("FieldSimulation/RedAllianceScore", arena.getScore(Alliance.Red));
+      Logger.recordOutput("FieldSimulation/Fuel", arena.getFuelPoses());
+      Logger.recordOutput("FieldSimulation/BlueAllianceScore", arena.getScore(Alliance.Blue));
+      Logger.recordOutput("FieldSimulation/RedAllianceScore", arena.getScore(Alliance.Red));
 
-    Logger.recordOutput("FieldSimulation/MainRobot/IntakeExtended", intakeExtended);
-    Logger.recordOutput("FieldSimulation/MainRobot/IntakeActive", intakeSim.isRunning());
-    Logger.recordOutput(
-        "FieldSimulation/MainRobot/NumberFuelHeld", intakeSim.getGamePiecesAmount());
+      Logger.recordOutput("FieldSimulation/MainRobot/IntakeExtended", intakeExtended);
+      Logger.recordOutput("FieldSimulation/MainRobot/IntakeActive", intakeSim.isRunning());
+      Logger.recordOutput(
+          "FieldSimulation/MainRobot/NumberFuelHeld", intakeSim.getGamePiecesAmount());
+    } finally {
+      simulationLock.unlock();
+    }
   }
 }

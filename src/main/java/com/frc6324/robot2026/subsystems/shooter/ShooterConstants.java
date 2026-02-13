@@ -1,6 +1,5 @@
 package com.frc6324.robot2026.subsystems.shooter;
 
-import static com.frc6324.lib.util.UnitsUtils.PSI;
 import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.CANBus;
@@ -96,7 +95,10 @@ public final class ShooterConstants {
   public static final class FlywheelConstants {
     public static final int FLYWHEEL_LEADER_ID = 31;
     public static final int FLYWHEEL_FOLLOWER_ID = 32;
-    public static final Distance FLYWHEEL_RADIUS = Inches.of(2);
+    // Accounts for loss of speed due to compression, slip and others that we can't explicitly model
+    // in sim
+    public static final double FLYWHEEL_EFFICIENCY = 0.7;
+    public static final Distance FLYWHEEL_RADIUS = Inches.of(1.5);
 
     public static final MotorAlignmentValue FLYWHEEL_MOTOR_ALIGNMENT = MotorAlignmentValue.Opposed;
 
@@ -108,7 +110,7 @@ public final class ShooterConstants {
             .withSupplyCurrentLimitEnable(true);
 
     public static final Slot0Configs FLYWHEEL_GAINS =
-        new Slot0Configs().withKP(250).withKD(2.5).withKS(5).withKV(5);
+        new Slot0Configs().withKP(2).withKD(0.0025).withKS(2.5);
 
     public static final TalonFXConfiguration FLYWHEEL_MOTOR_CONFIG =
         new TalonFXConfiguration()
@@ -117,8 +119,7 @@ public final class ShooterConstants {
 
     public static final DCMotor FLYWHEEL_GEARBOX = DCMotor.getKrakenX60Foc(2);
     public static final MotorType FLYWHEEL_MOTOR_TYPE = MotorType.KrakenX60;
-
-    public static final MomentOfInertia FLYWHEEL_MOI = KilogramSquareMeters.of(0.2).plus(PSI.of(4));
+    public static final MomentOfInertia FLYWHEEL_MOI = KilogramSquareMeters.of(0.0011705586);
 
     private FlywheelConstants() {
       throw new IllegalAccessError();

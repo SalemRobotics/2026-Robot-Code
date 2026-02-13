@@ -8,7 +8,6 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
@@ -27,7 +26,7 @@ public final class Shooter extends SubsystemBase {
     io.setHoodAngle(HOOD_MAX_ANGLE);
     hoodSetpoint = HOOD_MAX_ANGLE;
 
-    io.setFlywheelVelocity(RPM.of(RobotBase.isSimulation() ? 1200 : 3000));
+    io.setFlywheelVelocity(RPM.of(3000));
 
     currentlyShooting = true;
   }
