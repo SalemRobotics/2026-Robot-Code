@@ -5,9 +5,7 @@ import com.frc6324.lib.UninstantiableClass;
 import com.frc6324.lib.util.PoseExtensions;
 import com.frc6324.robot2026.subsystems.drive.SwerveDrive;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -55,6 +53,10 @@ public final class DriveCommands {
     // Return a translation of the given magnitude following the calculated
     // direction
     return new Translation2d(magnitude, direction);
+  }
+
+  public static Translation2d getLinearVelocityFromJoysticks(XboxController controller) {
+    return getLinearVelocityFromJoysticks(-controller.getLeftY(), -controller.getLeftX());
   }
 
   public static Command driveToPose(SwerveDrive drive, Pose2d pose) {

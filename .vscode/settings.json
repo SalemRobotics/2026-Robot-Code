@@ -29,6 +29,14 @@
   ],
   "java.test.defaultConfig": "WPIlibUnitTests",
   "java.import.gradle.annotationProcessing.enabled": true,
+  "java.compile.nullAnalysis.nonnull": [
+    "javax.annotation.Nonnull",
+    "org.eclipse.jdt.annotation.NonNull",
+    "org.springframework.lang.NonNull",
+    "org.jspecify.annotations.NonNull",
+    "org.jetbrains.annotations.NotNull"
+  ],
+  "java.import.gradle.wrapper.enabled": true,
   "java.completion.favoriteStaticMembers": [
     "org.junit.Assert.*",
     "org.junit.Assume.*",
@@ -39,7 +47,9 @@
     "org.mockito.Mockito.*",
     "org.mockito.ArgumentMatchers.*",
     "org.mockito.Answers.*",
-    "edu.wpi.first.units.Units.*"
+    "edu.wpi.first.units.Units.*",
+    "com.frc6324.*",
+    null
   ],
   "java.completion.filteredTypes": [
     "java.awt.*",
@@ -58,5 +68,6 @@
     "edu.wpi.first.math.proto.*",
     "edu.wpi.first.math.**.proto.*",
     "edu.wpi.first.math.**.struct.*"
-  ]
+  ],
+  "java.debug.settings.onBuildFailureProceed": true
 }

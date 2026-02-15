@@ -16,10 +16,13 @@
 package com.frc6324.robot2026;
 
 import com.ctre.phoenix6.SignalLogger;
+import com.frc6324.robot2026.sim.MapleSimManager;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import java.util.Optional;
 import lombok.val;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
@@ -29,8 +32,9 @@ import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 public class Robot extends LoggedRobot {
-  private Command autonomousCommand;
+  public static Optional<Alliance> autoWinner = Optional.empty();
 
+  private Command autonomousCommand = null;
   private final RobotContainer robotContainer;
   private final Runtime runtime = Runtime.getRuntime();
 
@@ -86,10 +90,42 @@ public class Robot extends LoggedRobot {
     robotContainer = new RobotContainer();
   }
 
+  /**
+   * Gets if the current alliance has an active hub.
+   *
+   * @return Whether the current alliance's hub is active.
+   */
+  public static boolean getIsAllianceActive() {
+    // If we're in autonomous, both hubs are active
+    if (DriverStation.isAutonomous()) {
+      return true;
+    }
+
+    final Optional<Alliance> selfAllianceOpt = DriverStation.getAlliance();
+
+    // Ignore and return true in practice where we don't set the game message
+    if (autoWinner.isEmpty() && selfAllianceOpt.isEmpty()) {
+      return true;
+    }
+
+    final Alliance inactiveFirst = autoWinner.get();
+    final Alliance selfAlliance = selfAllianceOpt.get();
+    final double teleopTime = DriverStation.getMatchTime();
+
+    // In the first 10 secs of teleop and the last 30 secs, both hubs are active
+    if (teleopTime <= 130 || teleopTime >= 30) {
+      return true;
+    } else if ((teleopTime >= 105 && teleopTime <= 80) || (teleopTime >= 55 && teleopTime <= 30)) {
+      return inactiveFirst == selfAlliance;
+    } else {
+      return inactiveFirst != selfAlliance;
+    }
+  }
+
   @Override
   public void robotPeriodic() {
     Logger.runEveryN(
-        25,
+        (int) (1 / defaultPeriodSecs),
         () -> {
           val totalMemory = runtime.totalMemory();
           val usedMemory = totalMemory - runtime.freeMemory();
@@ -136,6 +172,10 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void teleopInit() {
+    if (DriverStation.isFMSAttached()) {
+      autoWinner = Optional.empty();
+    }
+
     // If an auto command is running, cancel it
     if (autonomousCommand != null) {
       autonomousCommand.cancel();
@@ -143,7 +183,17 @@ public class Robot extends LoggedRobot {
   }
 
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    if (DriverStation.isFMSAttached() && autoWinner.isEmpty()) {
+      switch (DriverStation.getGameSpecificMessage()) {
+        case "B" -> autoWinner = Optional.of(Alliance.Blue);
+        case "R" -> autoWinner = Optional.of(Alliance.Red);
+        default -> {
+          /* Do nothing since there isn't a message */
+        }
+      }
+    }
+  }
 
   @Override
   public void teleopExit() {}
@@ -159,4 +209,9 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void testExit() {}
+
+  @Override
+  public void simulationPeriodic() {
+    MapleSimManager.getInstance().simulationPeriodic();
+  }
 }

@@ -19,69 +19,57 @@ import static com.frc6324.robot2026.Constants.*;
 
 import com.frc6324.lib.util.IOLayer;
 import com.frc6324.robot2026.commands.DriveCommands;
+import com.frc6324.robot2026.subsystems.climber.*;
+import com.frc6324.robot2026.subsystems.drive.*;
 import com.frc6324.robot2026.subsystems.drive.DriveIO.DriveIOReplay;
-import com.frc6324.robot2026.subsystems.drive.DriveIOCTRE;
-import com.frc6324.robot2026.subsystems.drive.DriveIOSim;
-import com.frc6324.robot2026.subsystems.drive.SwerveDrive;
-import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagIOPhoton;
-import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagIOSim;
-import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagVision;
-import com.frc6324.robot2026.subsystems.vision.objdetect.ObjectDetection;
+import com.frc6324.robot2026.subsystems.intake.*;
+import com.frc6324.robot2026.subsystems.rollers.*;
+import com.frc6324.robot2026.subsystems.shooter.Shooter;
+import com.frc6324.robot2026.subsystems.shooter.ShooterIOSim;
+import com.frc6324.robot2026.subsystems.shooter.ShooterIOTalonFX;
+import com.frc6324.robot2026.subsystems.vision.apriltag.*;
+import com.frc6324.robot2026.subsystems.vision.objdetect.*;
+import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import org.littletonrobotics.junction.LoggedPowerDistribution;
 
+@SuppressWarnings("unused")
 public class RobotContainer {
-  // private final Climber climber;
+  private final Intake intake;
+  private final Shooter shooter;
   private final SwerveDrive drive;
 
-  @SuppressWarnings("unused")
-  private final AprilTagVision visionOdometry;
-
-  @SuppressWarnings("unused")
-  private final ObjectDetection objectDetection;
-
+  private final PowerDistribution pdh = new PowerDistribution();
+  private final LoggedPowerDistribution loggedPDH =
+      LoggedPowerDistribution.getInstance(pdh.getModule(), pdh.getType());
   private final CommandXboxController controller =
       new CommandXboxController(DRIVER_CONTROLLER_PORT);
 
   public RobotContainer() {
+    pdh.setSwitchableChannel(true);
+
     switch (Constants.CURRENT_MODE) {
       case REAL -> {
-        // climber = new Climber(new ClimberIOTalonFX());
+        final DriveIOCTRE driveIO = new DriveIOCTRE();
+        drive = new SwerveDrive(driveIO);
 
-        final DriveIOCTRE realDrive = new DriveIOCTRE();
-        drive = new SwerveDrive(realDrive);
-
-        visionOdometry =
-            new AprilTagVision(
-                    new AprilTagIOPhoton(realDrive::samplePoseAt),
-                    new AprilTagIOPhoton(realDrive::samplePoseAt),
-                    new AprilTagIOPhoton(realDrive::samplePoseAt),
-                    new AprilTagIOPhoton(realDrive::samplePoseAt))
-                .withConsumer(drive);
-
-        objectDetection = new ObjectDetection();
+        intake = new Intake(new IntakeIOTalonFX());
+        shooter = new Shooter(new ShooterIOTalonFX());
       }
       case SIM -> {
-        // climber = new Climber(new ClimberIOSim());
+        final DriveIOSim driveIO = new DriveIOSim();
+        drive = new SwerveDrive(driveIO);
 
-        final DriveIOSim simDrive = new DriveIOSim();
-        drive = new SwerveDrive(simDrive);
-
-        visionOdometry =
-            new AprilTagVision(
-                new AprilTagIOSim(simDrive::samplePoseAt, drive),
-                new AprilTagIOSim(simDrive::samplePoseAt, drive),
-                new AprilTagIOSim(simDrive::samplePoseAt, drive),
-                new AprilTagIOSim(simDrive::samplePoseAt, drive));
-        objectDetection = new ObjectDetection();
+        intake = new Intake(new IntakeIOSim());
+        shooter = new Shooter(new ShooterIOSim());
       }
       default -> {
-        // climber = new Climber(IOLayer::replay);
         drive = new SwerveDrive(new DriveIOReplay());
-        visionOdometry =
-            new AprilTagVision(IOLayer::replay, IOLayer::replay, IOLayer::replay, IOLayer::replay);
-        objectDetection = new ObjectDetection(IOLayer::replay);
+
+        intake = new Intake(IOLayer::replay);
+        shooter = new Shooter(IOLayer::replay);
       }
     }
 
@@ -90,10 +78,24 @@ public class RobotContainer {
 
   private void configureBindings() {
     drive.setDefaultCommand(DriveCommands.joystickDrive(drive, controller.getHID()));
-    // Bind climber commands to the D-pad
+    shooter.setDefaultCommand(
+        Commands.runOnce(shooter::spinUpShooter, shooter).andThen(shooter.idle()));
 
-    // controller.povUp().whileTrue(climber.stow()).onFalse(climber.stop());
-    // controller.povDown().whileTrue(climber.deploy()).onFalse(climber.stop());
+    controller
+        .x()
+        .whileTrue(Commands.run(shooter::pass, shooter))
+        .onFalse(
+            Commands.run(
+                () -> {
+                  shooter.spinUpShooter();
+                  shooter.stowHood();
+                },
+                shooter));
+
+    controller
+        .y()
+        .whileTrue(Commands.run(intake::deploy, intake).until(intake::isDeployed))
+        .onFalse(Commands.run(intake::stow, intake).until(intake::isStowed));
   }
 
   public Command getAutonomousCommand() {

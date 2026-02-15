@@ -1,7 +1,6 @@
 package com.frc6324.robot2026.subsystems.vision.objdetect;
 
-import static edu.wpi.first.units.Units.Centimeters;
-import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.*;
 
 import com.frc6324.lib.UninstantiableClass;
 import com.frc6324.robot2026.subsystems.intake.IntakeConstants;
