@@ -3,7 +3,7 @@ package com.frc6324.robot2026.sim;
 import static edu.wpi.first.units.Units.*;
 
 import com.frc6324.lib.LazySingleton;
-import com.frc6324.lib.util.UnitsUtils;
+import com.frc6324.lib.util.CommonUtils;
 import com.frc6324.robot2026.subsystems.drive.DrivetrainConstants;
 import com.frc6324.robot2026.subsystems.intake.IntakeConstants;
 import com.frc6324.robot2026.subsystems.shooter.ShooterConstants;
@@ -19,7 +19,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.concurrent.locks.ReentrantLock;
-import lombok.Setter;
 import lombok.experimental.ExtensionMethod;
 import org.ironmaple.simulation.IntakeSimulation;
 import org.ironmaple.simulation.IntakeSimulation.IntakeSide;
@@ -27,7 +26,8 @@ import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
 
-@ExtensionMethod(UnitsUtils.class)
+/** A helper class to manage maple-sim accross the whole robot in a thread-safe, lazy way. */
+@ExtensionMethod(CommonUtils.class)
 @LazySingleton
 public final class MapleSimManager {
   private static MapleSimManager instance = null;
@@ -46,9 +46,9 @@ public final class MapleSimManager {
           50);
   private final ReentrantLock simulationLock = new ReentrantLock();
 
-  @Setter private Translation3d shooterPosition = Translation3d.kZero;
-  @Setter private AngularVelocity shooterSpeed = RadiansPerSecond.zero();
-  @Setter private Angle shooterAngle = Radians.zero();
+  private Translation3d shooterPosition = Translation3d.kZero;
+  private AngularVelocity shooterSpeed = RadiansPerSecond.zero();
+  private Angle shooterAngle = Radians.zero();
 
   private boolean intakeExtended = false;
   private double lastLaunchTimestamp = 0;
@@ -100,6 +100,11 @@ public final class MapleSimManager {
             .ignoringDisable(true));
   }
 
+  /**
+   * Gets an instance of the simulation manager, or initializes it if it hasn't been already.
+   *
+   * @return The instance of the maple-sim manager.
+   */
   public static MapleSimManager getInstance() {
     if (instance == null) {
       instance = new MapleSimManager();
@@ -118,16 +123,35 @@ public final class MapleSimManager {
     return driveSimulation;
   }
 
+  /**
+   * Sets whether the intake is extended (and therefore on).
+   *
+   * @param extended Whether the intake is extended.
+   */
   public void setIntakeExtended(boolean extended) {
     intakeExtended = extended;
 
     if (extended) {
       intakeSim.startIntake();
-    } else {
+    } else if (intakeSim.isRunning()) {
       intakeSim.stopIntake();
     }
   }
 
+  /**
+   * Sets the state of the simulated shooter.
+   *
+   * @param position The position of the center of the shooter.
+   * @param speed The speed of the shooter's flywheel.
+   * @param angle The angle of the shooter's hood.
+   */
+  public void setShooterState(Translation3d position, AngularVelocity speed, Angle angle) {
+    shooterPosition = position;
+    shooterSpeed = speed;
+    shooterAngle = angle;
+  }
+
+  /** Launches a single fuel given the known shooter state. */
   public void launchFuel() {
     final double currentTimestamp = Timer.getTimestamp();
 
@@ -138,10 +162,9 @@ public final class MapleSimManager {
         final Pose2d drivePose = driveSimulation.getSimulatedDriveTrainPose();
 
         final LinearVelocity fuelVelocity =
-            FlywheelConstants.FLYWHEEL_RADIUS
-                .times(shooterSpeed.in(RadiansPerSecond))
-                .times(FlywheelConstants.FLYWHEEL_EFFICIENCY)
-                .per(Second);
+            shooterSpeed
+                .getVelocity(FlywheelConstants.FLYWHEEL_RADIUS)
+                .times(FlywheelConstants.FLYWHEEL_EFFICIENCY);
 
         final FlyingFuelSimulation fuel =
             new FlyingFuelSimulation(
@@ -161,6 +184,7 @@ public final class MapleSimManager {
     }
   }
 
+  /** Updates maple-sim's simulation and logs helpful data for AdvantageScope. */
   public void simulationPeriodic() {
     try {
       simulationLock.lock();

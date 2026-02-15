@@ -61,7 +61,7 @@ public class RebuiltArena extends Arena2026Rebuilt {
 
     toRemove.clear();
     for (final FlyingFuelSimulation fuel : fuelSimulations) {
-      fuel.update(toRemove, dt);
+      fuel.update(toRemove::add, dt);
     }
 
     for (final FlyingFuelSimulation fuel : toRemove) {

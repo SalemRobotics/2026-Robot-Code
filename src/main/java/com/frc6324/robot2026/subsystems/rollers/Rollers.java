@@ -54,7 +54,7 @@ public final class Rollers extends SubsystemBase {
   }
 
   /** Starts the intake's rollers. */
-  public void startRollers() {
+  public void spinRollers() {
     io.start();
   }
 

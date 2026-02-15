@@ -17,6 +17,7 @@
 package com.frc6324.lib.util;
 
 import com.frc6324.lib.UninstantiableClass;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -39,6 +40,12 @@ public final class PoseExtensions {
 
   public static double getDistance(Pose2d lhs, Pose2d rhs) {
     return lhs.getTranslation().getDistance(rhs.getTranslation());
+  }
+
+  public static boolean boundedWithinX(Pose2d pose, double xMin, double xMax) {
+    final double x = pose.getX();
+
+    return x >= xMin && x <= xMax;
   }
 
   @Contract("_, _ -> new")

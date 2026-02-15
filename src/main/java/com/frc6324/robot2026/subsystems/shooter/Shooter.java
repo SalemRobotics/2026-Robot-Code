@@ -1,5 +1,6 @@
 package com.frc6324.robot2026.subsystems.shooter;
 
+import static com.frc6324.lib.util.CommonUtils.NINETY_DEGREES;
 import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.HoodConstants.*;
 import static edu.wpi.first.units.Units.*;
 
@@ -53,9 +54,10 @@ public final class Shooter extends SubsystemBase {
 
     final MapleSimManager manager = MapleSimManager.getInstance();
 
-    manager.setShooterPosition(translation.plus(HOOD_SHOOTING_OFFSET));
-    manager.setShooterSpeed(inputs.flywheelLeaderVelocity);
-    manager.setShooterAngle(Degrees.of(90).minus(inputs.hoodPosition));
+    manager.setShooterState(
+        translation.plus(HOOD_SHOOTING_OFFSET),
+        inputs.flywheelLeaderVelocity,
+        NINETY_DEGREES.minus(inputs.hoodPosition));
 
     if (currentlyShooting && shooterAngle.isNear(hoodSetpoint, HOOD_TOLERANCE)) {
       manager.launchFuel();
