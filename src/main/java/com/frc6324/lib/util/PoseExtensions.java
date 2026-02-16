@@ -17,7 +17,6 @@
 package com.frc6324.lib.util;
 
 import com.frc6324.lib.UninstantiableClass;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;

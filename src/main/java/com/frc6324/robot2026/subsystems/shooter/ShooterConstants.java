@@ -98,6 +98,7 @@ public final class ShooterConstants {
     // Accounts for loss of speed due to compression, slip and others that we can't explicitly model
     // in sim
     public static final double FLYWHEEL_EFFICIENCY = 0.7;
+    public static final double FLYWHEEL_BACKSPIN_EFFICIENCY = 0.4;
     public static final Distance FLYWHEEL_RADIUS = Inches.of(1.5);
 
     public static final MotorAlignmentValue FLYWHEEL_MOTOR_ALIGNMENT = MotorAlignmentValue.Opposed;

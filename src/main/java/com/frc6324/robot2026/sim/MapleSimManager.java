@@ -173,7 +173,8 @@ public final class MapleSimManager {
                 Rotation2d.kZero,
                 driveSimulation.getDriveTrainSimulatedChassisSpeedsFieldRelative(),
                 shooterAngle,
-                fuelVelocity);
+                fuelVelocity,
+                FlywheelConstants.FLYWHEEL_BACKSPIN_EFFICIENCY);
 
         arena.addFuelProjectile(fuel);
 
