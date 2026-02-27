@@ -48,7 +48,7 @@
     "org.mockito.ArgumentMatchers.*",
     "org.mockito.Answers.*",
     "edu.wpi.first.units.Units.*",
-    "com.frc6324.*",
+    "com.frc6324.**.*",
     null
   ],
   "java.completion.filteredTypes": [

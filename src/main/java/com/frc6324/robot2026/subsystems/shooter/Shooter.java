@@ -1,6 +1,8 @@
 package com.frc6324.robot2026.subsystems.shooter;
 
 import static com.frc6324.lib.util.CommonUtils.NINETY_DEGREES;
+import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.*;
+import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.FlywheelConstants.*;
 import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.HoodConstants.*;
 import static edu.wpi.first.units.Units.*;
 
@@ -9,6 +11,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
@@ -19,17 +22,37 @@ public final class Shooter extends SubsystemBase {
   private Angle hoodSetpoint = Rotations.zero();
   private boolean currentlyShooting = false;
 
+  private AngularVelocity flywheelSetpoint = RadiansPerSecond.zero();
+  private boolean flywheelAtSetpoint = false;
+
+  /**
+   * Creates a new shooter subsystem.
+   *
+   * @param io The implementation of the shooter's I/O to use.
+   */
   public Shooter(ShooterIO io) {
     this.io = io;
   }
 
-  public void pass() {
-    io.setHoodAngle(HOOD_MAX_ANGLE);
-    hoodSetpoint = HOOD_MAX_ANGLE;
+  /**
+   * Gets whether the flywheel has reached its target velocity.
+   *
+   * @return Whether the flywheel has gotten within 1 rad/sec of its velocity setpoint.
+   */
+  public boolean atTargetVelocity() {
+    return flywheelAtSetpoint;
+  }
 
-    io.setFlywheelVelocity(RPM.of(3000));
+  /**
+   * Commands the shooter to pass into this robot's alliance zone.
+   *
+   * @param distanceToZone The distance from the robot to the alliance zone.
+   */
+  public void pass(double distanceToZone) {
+    setHoodAngle(HOOD_MAX_ANGLE);
 
-    currentlyShooting = true;
+    AngularVelocity targetVelocity = PASSING_FLYWHEEL_VELOCITY_MAP.get(distanceToZone);
+    setFlywheelVelocity(targetVelocity);
   }
 
   @Override
@@ -38,6 +61,31 @@ public final class Shooter extends SubsystemBase {
     Logger.processInputs("Shooter", inputs);
 
     Logger.recordOutput("Shooter/CurrentlyShooting", currentlyShooting);
+
+    flywheelAtSetpoint =
+        inputs.flywheelLeaderVelocity.isNear(flywheelSetpoint, FLYWHEEL_VELOCITY_TOLERANCE);
+  }
+
+  /**
+   * Sets the target velocity of the flywheel.
+   *
+   * @param velocity The velocity setpoint.
+   */
+  private void setFlywheelVelocity(AngularVelocity velocity) {
+    io.setFlywheelVelocity(velocity);
+    flywheelSetpoint = velocity;
+
+    currentlyShooting = true;
+  }
+
+  /**
+   * Sets the target position of the hood.
+   *
+   * @param angle The hood setpoint.
+   */
+  private void setHoodAngle(Angle angle) {
+    io.setHoodAngle(angle);
+    hoodSetpoint = angle;
   }
 
   @Override
@@ -64,21 +112,28 @@ public final class Shooter extends SubsystemBase {
     }
   }
 
-  public void shootIntoHub(double distanceToHub) {}
+  /**
+   * Commands the shooter to shoot into the hub.
+   *
+   * @param distanceToHub The distance from the robot to the hub.
+   */
+  public void shootIntoHub(double distanceToHub) {
+    Angle hoodAngle = HOOD_ANGLE_MAP.get(distanceToHub);
+    AngularVelocity targetVelocity = HUB_FLYWHEEL_VELOCITY_MAP.get(distanceToHub);
 
-  public void spinUpShooter() {
-    io.setFlywheelVelocity(RadiansPerSecond.of(75));
-    currentlyShooting = false;
+    setHoodAngle(hoodAngle);
+    setFlywheelVelocity(targetVelocity);
   }
 
-  public void stop() {
+  /** Commands the flywheel to coast out to conserve battery voltage. */
+  public void stopFlywheel() {
     io.coastFlywheel();
 
     currentlyShooting = false;
   }
 
+  /** Commands the hood to stow when it isn't being used. */
   public void stowHood() {
-    io.setHoodAngle(HOOD_STOW_ANGLE);
-    hoodSetpoint = HOOD_STOW_ANGLE;
+    setHoodAngle(HOOD_STOW_ANGLE);
   }
 }

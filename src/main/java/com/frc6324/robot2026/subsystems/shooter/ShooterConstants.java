@@ -9,6 +9,8 @@ import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
 import com.frc6324.lib.UninstantiableClass;
 import com.frc6324.robot2026.Constants;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
+import edu.wpi.first.math.interpolation.InverseInterpolator;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.*;
 
@@ -19,10 +21,42 @@ public final class ShooterConstants {
   public static final double APPROX_FUEL_PER_SECOND = 1;
   public static final double TIME_TO_LAUNCH_FUEL = (1 / APPROX_FUEL_PER_SECOND);
 
+  public static final InterpolatingTreeMap<Double, Angle> HOOD_ANGLE_MAP =
+      new InterpolatingTreeMap<>(
+          InverseInterpolator.forDouble(), (a1, a2, t) -> a1.plus(a2.minus(a1).times(t)));
+
+  public static final InterpolatingTreeMap<Double, AngularVelocity> HUB_FLYWHEEL_VELOCITY_MAP =
+      new InterpolatingTreeMap<>(
+          InverseInterpolator.forDouble(), (v1, v2, t) -> v1.plus(v2.minus(v1).times(t)));
+
+  public static final InterpolatingTreeMap<Double, AngularVelocity> PASSING_FLYWHEEL_VELOCITY_MAP =
+      new InterpolatingTreeMap<>(
+          InverseInterpolator.forDouble(), (v1, v2, t) -> v1.plus(v2.minus(v1).times(t)));
+
+  static {
+    final double thresh = 3;
+    final double max = 6;
+
+    HOOD_ANGLE_MAP.put(0.0, HoodConstants.HOOD_STOW_ANGLE);
+    HOOD_ANGLE_MAP.put(thresh, HoodConstants.HOOD_MAX_ANGLE);
+    HOOD_ANGLE_MAP.put(max, HoodConstants.HOOD_MAX_ANGLE);
+
+    final AngularVelocity initialVelocity = RPM.of(2250);
+    final AngularVelocity maxVelocity = RPM.of(3500);
+
+    HUB_FLYWHEEL_VELOCITY_MAP.put(0.0, initialVelocity);
+    HUB_FLYWHEEL_VELOCITY_MAP.put(thresh, initialVelocity);
+    HUB_FLYWHEEL_VELOCITY_MAP.put(max, maxVelocity);
+
+    PASSING_FLYWHEEL_VELOCITY_MAP.put(0.0, RPM.of(300));
+    PASSING_FLYWHEEL_VELOCITY_MAP.put(2.0, RPM.of(1000));
+    PASSING_FLYWHEEL_VELOCITY_MAP.put(4.0, RPM.of(2250));
+  }
+
   /** Constants for the shooter's hood. */
   @UninstantiableClass
   public static final class HoodConstants {
-    public static final int HOOD_MOTOR_ID = 30;
+    public static final int HOOD_MOTOR_ID = 40;
     public static final double HOOD_REDUCTION = 9;
 
     /** The translation from the robot's center to the axle the hood is mounted on. */
@@ -93,13 +127,15 @@ public final class ShooterConstants {
 
   @UninstantiableClass
   public static final class FlywheelConstants {
-    public static final int FLYWHEEL_LEADER_ID = 31;
-    public static final int FLYWHEEL_FOLLOWER_ID = 32;
+    public static final int FLYWHEEL_LEADER_ID = 41;
+    public static final int FLYWHEEL_FOLLOWER_ID = 42;
     // Accounts for loss of speed due to compression, slip and others that we can't explicitly model
     // in sim
     public static final double FLYWHEEL_EFFICIENCY = 0.7;
     public static final double FLYWHEEL_BACKSPIN_EFFICIENCY = 0.4;
     public static final Distance FLYWHEEL_RADIUS = Inches.of(1.5);
+
+    public static final AngularVelocity FLYWHEEL_VELOCITY_TOLERANCE = RadiansPerSecond.one();
 
     public static final MotorAlignmentValue FLYWHEEL_MOTOR_ALIGNMENT = MotorAlignmentValue.Opposed;
 

@@ -19,14 +19,13 @@ import static com.frc6324.robot2026.Constants.*;
 
 import com.frc6324.lib.util.IOLayer;
 import com.frc6324.robot2026.commands.DriveCommands;
-import com.frc6324.robot2026.subsystems.climber.*;
+import com.frc6324.robot2026.commands.ShootIntoHubCommand;
 import com.frc6324.robot2026.subsystems.drive.*;
 import com.frc6324.robot2026.subsystems.drive.DriveIO.DriveIOReplay;
+import com.frc6324.robot2026.subsystems.indexer.*;
 import com.frc6324.robot2026.subsystems.intake.*;
 import com.frc6324.robot2026.subsystems.rollers.*;
-import com.frc6324.robot2026.subsystems.shooter.Shooter;
-import com.frc6324.robot2026.subsystems.shooter.ShooterIOSim;
-import com.frc6324.robot2026.subsystems.shooter.ShooterIOTalonFX;
+import com.frc6324.robot2026.subsystems.shooter.*;
 import com.frc6324.robot2026.subsystems.vision.apriltag.*;
 import com.frc6324.robot2026.subsystems.vision.objdetect.*;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -37,7 +36,9 @@ import org.littletonrobotics.junction.LoggedPowerDistribution;
 
 @SuppressWarnings("unused")
 public class RobotContainer {
+  private final Indexer indexer;
   private final Intake intake;
+  private final Rollers rollers;
   private final Shooter shooter;
   private final SwerveDrive drive;
 
@@ -55,20 +56,26 @@ public class RobotContainer {
         final DriveIOCTRE driveIO = new DriveIOCTRE();
         drive = new SwerveDrive(driveIO);
 
+        indexer = new Indexer(new IndexerIOTalonFX());
         intake = new Intake(new IntakeIOTalonFX());
+        rollers = new Rollers(new RollerIOTalonFX());
         shooter = new Shooter(new ShooterIOTalonFX());
       }
       case SIM -> {
         final DriveIOSim driveIO = new DriveIOSim();
         drive = new SwerveDrive(driveIO);
 
+        indexer = new Indexer(new IndexerIOSim());
         intake = new Intake(new IntakeIOSim());
+        rollers = new Rollers(new RollerIOSim());
         shooter = new Shooter(new ShooterIOSim());
       }
       default -> {
         drive = new SwerveDrive(new DriveIOReplay());
 
+        indexer = new Indexer(IOLayer::replay);
         intake = new Intake(IOLayer::replay);
+        rollers = new Rollers(IOLayer::replay);
         shooter = new Shooter(IOLayer::replay);
       }
     }
@@ -78,24 +85,15 @@ public class RobotContainer {
 
   private void configureBindings() {
     drive.setDefaultCommand(DriveCommands.joystickDrive(drive, controller.getHID()));
-    shooter.setDefaultCommand(
-        Commands.runOnce(shooter::spinUpShooter, shooter).andThen(shooter.idle()));
 
     controller
-        .x()
-        .whileTrue(Commands.run(shooter::pass, shooter))
-        .onFalse(
-            Commands.run(
-                () -> {
-                  shooter.spinUpShooter();
-                  shooter.stowHood();
-                },
-                shooter));
-
-    controller
-        .y()
+        .leftTrigger()
         .whileTrue(Commands.run(intake::deploy, intake).until(intake::isDeployed))
         .onFalse(Commands.run(intake::stow, intake).until(intake::isStowed));
+
+    controller
+        .rightTrigger()
+        .whileTrue(new ShootIntoHubCommand(drive, controller, shooter, indexer));
   }
 
   public Command getAutonomousCommand() {

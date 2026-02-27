@@ -24,12 +24,10 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import lombok.experimental.ExtensionMethod;
 
 @ExtensionMethod(PoseExtensions.class)
+@SuppressWarnings("unused")
 public final class AutoOperateCommand extends Command {
   private static final double TRIGGER_THRESHOLD = 0.5;
 
-  private static final double HUB_PID_KP = 2;
-  private static final double HUB_PID_KI = 0;
-  private static final double HUB_PID_KD = 0.01;
   private static final double HUB_ROTATION_TOLERANCE = Units.degreesToRadians(5);
 
   private double allianceStart = 0;
@@ -46,7 +44,7 @@ public final class AutoOperateCommand extends Command {
           .withDriveRequestType(SwerveDrive.DRIVE_REQUEST)
           .withSteerRequestType(SwerveDrive.STEER_REQUEST)
           .withDesaturateWheelSpeeds(true)
-          .withHeadingPID(HUB_PID_KP, HUB_PID_KI, HUB_PID_KD);
+          .withHeadingPID(DriveCommands.POINTING_KP, 0, DriveCommands.POINTING_KD);
 
   private final SwerveRequest.ApplyRobotSpeeds autointakeRequest =
       new SwerveRequest.ApplyRobotSpeeds();

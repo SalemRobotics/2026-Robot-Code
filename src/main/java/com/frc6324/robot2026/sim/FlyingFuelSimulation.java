@@ -176,7 +176,7 @@ public final class FlyingFuelSimulation implements GamePiece {
   /**
    * Updates this simulation's position and velocity over a given period of time.
    *
-   * <p>This method should only be called by an instance of {@link SimulatedArena} unless you know
+   * <p>This method should only be called by an instance of {@link RebuiltArena} unless you know
    * what you're doing!
    *
    * @param hitFloorCallback The callback to call if this fuel hits the ground.

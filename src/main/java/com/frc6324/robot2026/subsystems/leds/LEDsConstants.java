@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj.util.Color;
 @UninstantiableClass
 public final class LEDsConstants {
   public static final int LED_RIO_PWM_PORT = 0;
-  public static final int LED_BUFFER_LENGTH = 8;
+  public static final int LED_BUFFER_LENGTH = 14;
 
   public static final Color LED_DEFAULT_COLOR = new Color(0, 51, 160);
   public static final LEDPattern LED_DEFAULT_PATTERN = LEDPattern.solid(LED_DEFAULT_COLOR);

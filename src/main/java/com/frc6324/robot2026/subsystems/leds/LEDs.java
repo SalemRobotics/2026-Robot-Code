@@ -5,8 +5,10 @@ import static com.frc6324.robot2026.subsystems.leds.LEDsConstants.*;
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 public final class LEDs extends SubsystemBase {
@@ -26,18 +28,20 @@ public final class LEDs extends SubsystemBase {
       LED_ESTOP_PATTERN.applyTo(buffer);
     } else if (RobotController.isBrownedOut()) {
       LED_BROWNOUT_PATTERN.applyTo(buffer);
-    } else
-      switch (currentState) {
-        case INACTIVE -> LED_DEFAULT_PATTERN.applyTo(buffer);
-      }
+    } else {
+      currentState.pattern.applyTo(buffer);
+    }
   }
 
   /**
    * An enum representing the current state of the robot's LEDs, used for other subsystems to set
    * their state.
    */
+  @RequiredArgsConstructor
   public enum LEDState {
     /** LEDs are inactive, being either red (for an e-stop) or blue (default) */
-    INACTIVE,
+    INACTIVE(LED_DEFAULT_PATTERN);
+
+    public final LEDPattern pattern;
   }
 }
