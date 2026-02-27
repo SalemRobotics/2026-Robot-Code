@@ -91,7 +91,7 @@ public class AprilTagIOPhoton implements AprilTagIO {
         final Optional<Pose2d> odomPoseOpt = odometryPoseAtTime.samplePoseAt(timestamp);
         Optional<EstimatedRobotPose> constrainedSolvePNPOpt = Optional.empty();
 
-        if (cameraMatrix != null && distCoeffs != null && odomPoseOpt.isPresent()) {
+        if (false && cameraMatrix != null && distCoeffs != null && odomPoseOpt.isPresent()) {
           final Pose2d odomPose = odomPoseOpt.get();
 
           constrainedSolvePNPOpt =

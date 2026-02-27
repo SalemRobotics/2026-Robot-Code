@@ -59,7 +59,7 @@ public class RollerIOTalonFX implements RollerIO {
     }
 
     // Set the update frequency to that of the robot code
-    rollerSignals.setUpdateFrequencyForAll(Hertz.of(50));
+    rollerSignals.setUpdateFrequencyForAll(Hertz.of(100));
     // Disable all unneccesary status signals to save CAN bus utilization
     ParentDevice.optimizeBusUtilizationForAll(0, leader, follower);
 

@@ -4,10 +4,14 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.Slot1Configs;
+import com.ctre.phoenix6.configs.Slot2Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
 import com.frc6324.lib.UninstantiableClass;
 import com.frc6324.robot2026.Constants;
@@ -28,30 +32,31 @@ public final class IntakeConstants {
   public static final Angle INTAKE_DEPLOY_TOLERANCE = Degrees.of(2);
   public static final Angle INTAKE_STOWED_POSITION = Rotations.of(0);
 
-  // TalonFX configurations
-  public static final CurrentLimitsConfigs CURRENT_LIMITS =
-      new CurrentLimitsConfigs()
-          .withStatorCurrentLimit(Amps.of(70))
-          .withStatorCurrentLimitEnable(true)
-          .withSupplyCurrentLimit(Amps.of(45))
-          .withSupplyCurrentLimitEnable(true);
-
-  public static final Slot0Configs DEPLOY_GAINS =
-      new Slot0Configs().withKP(80).withKD(2).withKV(1).withKA(0.25).withKS(0.1);
-  public static final Slot1Configs SPRING_GAINS =
-      new Slot1Configs().withKP(5).withKD(0.001).withKS(0.01);
-  public static final MotionMagicConfigs MOTION_MAGIC =
-      new MotionMagicConfigs()
-          .withMotionMagicCruiseVelocity(RotationsPerSecond.of(5))
-          .withMotionMagicAcceleration(RotationsPerSecondPerSecond.of(25))
-          .withMotionMagicJerk(0);
-
   public static final TalonFXConfiguration INTAKE_MOTOR_CONFIG =
       new TalonFXConfiguration()
-          .withCurrentLimits(CURRENT_LIMITS)
-          .withSlot0(DEPLOY_GAINS)
-          .withSlot1(SPRING_GAINS)
-          .withMotionMagic(MOTION_MAGIC);
+          // CURRENT LIMITS
+          .withCurrentLimits(
+              new CurrentLimitsConfigs()
+                  .withStatorCurrentLimit(Amps.of(70))
+                  .withStatorCurrentLimitEnable(true)
+                  .withSupplyCurrentLimit(Amps.of(45))
+                  .withSupplyCurrentLimitEnable(true))
+          .withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(9))
+          // MOTION MAGIC
+          .withMotionMagic(
+              new MotionMagicConfigs()
+                  .withMotionMagicCruiseVelocity(RotationsPerSecond.of(5))
+                  .withMotionMagicAcceleration(RotationsPerSecondPerSecond.of(25))
+                  .withMotionMagicJerk(0))
+          // MOTOR OUTPUT
+          .withMotorOutput(new MotorOutputConfigs().withInverted(InvertedValue.Clockwise_Positive))
+          // DEPLOY GAINS
+          .withSlot0(new Slot0Configs().withKP(80).withKD(2).withKV(1).withKA(0.25).withKS(0.1))
+          // SPRING GAINS
+          .withSlot1(new Slot1Configs().withKP(5).withKD(0.001).withKS(0.01))
+          // SHAKE GAINS
+          .withSlot2(new Slot2Configs().withKP(60).withKD(2).withKS(0.1));
+
   public static final int INTAKE_DEPLOY_SLOT = 0;
   public static final int INTAKE_SPRING_SLOT = 1;
 

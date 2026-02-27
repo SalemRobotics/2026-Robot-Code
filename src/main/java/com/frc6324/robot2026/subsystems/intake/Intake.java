@@ -3,6 +3,7 @@ package com.frc6324.robot2026.subsystems.intake;
 import static com.frc6324.robot2026.subsystems.intake.IntakeConstants.*;
 import static edu.wpi.first.units.Units.*;
 
+import com.frc6324.lib.util.CommonUtils;
 import com.frc6324.robot2026.sim.MapleSimManager;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -12,8 +13,10 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import lombok.experimental.ExtensionMethod;
 import org.littletonrobotics.junction.Logger;
 
+@ExtensionMethod(CommonUtils.class)
 public final class Intake extends SubsystemBase {
   private final IntakeIO io;
   private final IntakeInputsAutoLogged inputs = new IntakeInputsAutoLogged();
@@ -50,9 +53,8 @@ public final class Intake extends SubsystemBase {
     io.updateInputs(inputs);
     Logger.processInputs("Intake/Deploy", inputs);
 
-    final double factor =
-        inputs.motorPosition.in(Rotations) / INTAKE_DEPLOYED_POSITION.in(Rotations);
-    extensionDistance = INTAKE_EXTENSION.times(factor);
+    // Unary minus is there bc the motor is inverted IRL
+    extensionDistance = inputs.motorPosition.getDistanceTraveled(INTAKE_EXTENSION);
   }
 
   @Override

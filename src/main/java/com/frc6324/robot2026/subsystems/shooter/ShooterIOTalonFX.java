@@ -87,13 +87,14 @@ public class ShooterIOTalonFX implements ShooterIO {
     signals.addSignals(flywheelSignals);
     signals.addSignals(flywheelFollowerSignals);
 
-    tryUntilOk(5, () -> hoodTalon.getConfigurator().apply(HOOD_MOTOR_CONFIG));
-    tryUntilOk(5, () -> hoodTalon.setNeutralMode(NeutralModeValue.Brake));
+    tryUntilOk(5, () -> hoodTalon.getConfigurator().apply(HOOD_MOTOR_CONFIG, 0.25));
+    tryUntilOk(5, () -> hoodTalon.setNeutralMode(NeutralModeValue.Brake, 0.25));
+    tryUntilOk(5, () -> hoodTalon.setPosition(0, 0.25));
 
-    tryUntilOk(5, () -> flywheelLeader.getConfigurator().apply(FLYWHEEL_MOTOR_CONFIG));
-    tryUntilOk(5, () -> flywheelLeader.setNeutralMode(NeutralModeValue.Coast));
-    tryUntilOk(5, () -> flywheelFollower.getConfigurator().apply(FLYWHEEL_MOTOR_CONFIG));
-    tryUntilOk(5, () -> flywheelFollower.setNeutralMode(NeutralModeValue.Coast));
+    tryUntilOk(5, () -> flywheelLeader.getConfigurator().apply(FLYWHEEL_MOTOR_CONFIG, 0.25));
+    tryUntilOk(5, () -> flywheelLeader.setNeutralMode(NeutralModeValue.Coast, 0.25));
+    tryUntilOk(5, () -> flywheelFollower.getConfigurator().apply(FLYWHEEL_MOTOR_CONFIG, 0.25));
+    tryUntilOk(5, () -> flywheelFollower.setNeutralMode(NeutralModeValue.Coast, 0.25));
 
     signals.setUpdateFrequencyForAll(Hertz.of(100));
     ParentDevice.optimizeBusUtilizationForAll(0, hoodTalon, flywheelLeader, flywheelFollower);

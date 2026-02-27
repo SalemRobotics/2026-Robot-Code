@@ -4,11 +4,16 @@ import static com.frc6324.robot2026.subsystems.drive.DrivetrainConstants.*;
 
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.StatusSignalCollection;
+import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.hardware.*;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import com.ctre.phoenix6.swerve.SwerveModule;
 import com.frc6324.robot2026.generated.TunerConstants;
 import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagIOPhoton.OdometryPoseGetter;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.RobotBase;
 import org.littletonrobotics.junction.Logger;
@@ -23,7 +28,6 @@ public sealed class DriveIOCTRE extends SwerveDrivetrain<TalonFX, TalonFX, CANco
   private final StatusSignal<Angle> pitchSignal;
   private final StatusSignal<LinearAcceleration> accelerationX;
   private final StatusSignal<LinearAcceleration> accelerationY;
-  private final SwerveDriveState state;
 
   public DriveIOCTRE() {
     super(
@@ -31,7 +35,7 @@ public sealed class DriveIOCTRE extends SwerveDrivetrain<TalonFX, TalonFX, CANco
         TalonFX::new,
         CANcoder::new,
         TunerConstants.DrivetrainConstants,
-        ODOMETRY_UPDATE_FREQUENCY,
+        50,
         ODOMETRY_STDDEVS,
         DEFAULT_VISION_STDDEVS,
         SwerveDrive.regulateModuleConstantsForSimulation(
@@ -45,8 +49,6 @@ public sealed class DriveIOCTRE extends SwerveDrivetrain<TalonFX, TalonFX, CANco
       super.resetPose(STARTING_POSE);
     }
 
-    // Get the state and pigeon of the drivetrain
-    state = getState();
     Pigeon2 pigeon = getPigeon2();
 
     // Store signals from the pigeon we care about
@@ -67,6 +69,15 @@ public sealed class DriveIOCTRE extends SwerveDrivetrain<TalonFX, TalonFX, CANco
 
     // Set signal update frequencies
     gyroscopeSignals.setUpdateFrequencyForAll(100);
+  }
+
+  @Override
+  public void addVisionMeasurement(
+      Pose2d visionRobotPoseMeters,
+      double timestampSeconds,
+      Matrix<N3, N1> visionMeasurementStdDevs) {
+    super.addVisionMeasurement(
+        visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
   }
 
   @Override
@@ -98,10 +109,10 @@ public sealed class DriveIOCTRE extends SwerveDrivetrain<TalonFX, TalonFX, CANco
   @Override
   public void updateInputs(DriveInputs inputs) {
     // Update the last known odometry
-    DrivingUtils.updateOdometry(state.Pose, state.Speeds);
+    DrivingUtils.updateOdometry(getState().Pose, getState().Speeds);
 
     // Copy the recorded state into the inputs
-    inputs.copyFromState(state);
+    inputs.copyFromState(getState());
 
     // Rip the gyro angle straight from the pigeon
     inputs.GyroAngle = getPigeon2().getRotation2d();

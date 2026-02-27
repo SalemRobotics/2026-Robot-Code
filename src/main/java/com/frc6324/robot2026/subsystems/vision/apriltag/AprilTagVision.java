@@ -2,6 +2,7 @@ package com.frc6324.robot2026.subsystems.vision.apriltag;
 
 import static com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagConstants.*;
 
+import com.frc6324.lib.util.VirtualSubsystem;
 import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagIO.VisionEstimation;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
@@ -11,11 +12,10 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.ArrayList;
 import org.littletonrobotics.junction.Logger;
 
-public class AprilTagVision extends SubsystemBase {
+public class AprilTagVision extends VirtualSubsystem {
   private final AprilTagIO[] io;
   private final VisionInputsAutoLogged[] inputs;
   private final Alert[] disconnectedAlerts;
@@ -129,6 +129,9 @@ public class AprilTagVision extends SubsystemBase {
     }
 
     // Log vision summary data
+    Logger.recordOutput(
+        "Vision/AprilTag/Consumers",
+        consumers.stream().map(c -> c.getClass().getSimpleName()).toArray(String[]::new));
     Logger.recordOutput("Vision/AprilTag/Summary/RobotPoses", allRobotPoses.toArray(Pose2d[]::new));
     Logger.recordOutput(
         "Vision/AprilTag/Summary/RobotPosesAccepted", allRobotPosesAccepted.toArray(Pose2d[]::new));

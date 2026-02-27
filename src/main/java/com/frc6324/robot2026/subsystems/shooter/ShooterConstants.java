@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.*;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
 import com.frc6324.lib.UninstantiableClass;
@@ -34,30 +35,23 @@ public final class ShooterConstants {
           InverseInterpolator.forDouble(), (v1, v2, t) -> v1.plus(v2.minus(v1).times(t)));
 
   static {
-    final double thresh = 3;
-    final double max = 6;
+    HUB_FLYWHEEL_VELOCITY_MAP.put(0.0, RPM.of(2100));
+    HUB_FLYWHEEL_VELOCITY_MAP.put(1.0, RPM.of(2100));
+    HUB_FLYWHEEL_VELOCITY_MAP.put(1.304, RPM.of(0));
+    HUB_FLYWHEEL_VELOCITY_MAP.put(1.75, RPM.of(2350));
+    HUB_FLYWHEEL_VELOCITY_MAP.put(2.003, RPM.of(2350));
+    HUB_FLYWHEEL_VELOCITY_MAP.put(2.3, RPM.of(2450));
 
-    HOOD_ANGLE_MAP.put(0.0, HoodConstants.HOOD_STOW_ANGLE);
-    HOOD_ANGLE_MAP.put(thresh, HoodConstants.HOOD_MAX_ANGLE);
-    HOOD_ANGLE_MAP.put(max, HoodConstants.HOOD_MAX_ANGLE);
-
-    final AngularVelocity initialVelocity = RPM.of(2250);
-    final AngularVelocity maxVelocity = RPM.of(3500);
-
-    HUB_FLYWHEEL_VELOCITY_MAP.put(0.0, initialVelocity);
-    HUB_FLYWHEEL_VELOCITY_MAP.put(thresh, initialVelocity);
-    HUB_FLYWHEEL_VELOCITY_MAP.put(max, maxVelocity);
-
-    PASSING_FLYWHEEL_VELOCITY_MAP.put(0.0, RPM.of(300));
-    PASSING_FLYWHEEL_VELOCITY_MAP.put(2.0, RPM.of(1000));
-    PASSING_FLYWHEEL_VELOCITY_MAP.put(4.0, RPM.of(2250));
+    HOOD_ANGLE_MAP.put(0.0, Rotations.of(0));
+    HOOD_ANGLE_MAP.put(2.0, Rotations.of(0));
+    HOOD_ANGLE_MAP.put(2.3, Rotations.of(0.1));
   }
 
   /** Constants for the shooter's hood. */
   @UninstantiableClass
   public static final class HoodConstants {
     public static final int HOOD_MOTOR_ID = 40;
-    public static final double HOOD_REDUCTION = 9;
+    public static final double HOOD_REDUCTION = 5;
 
     /** The translation from the robot's center to the axle the hood is mounted on. */
     public static final Translation3d ROBOT_TO_HOOD_AXLE =
@@ -97,7 +91,7 @@ public final class ShooterConstants {
 
     /** The PID gains for the hood motor to reach target positions. */
     public static final Slot0Configs HOOD_GAINS =
-        new Slot0Configs().withKP(225).withKI(10).withKD(15).withKS(2.5).withKV(4).withKA(2);
+        new Slot0Configs().withKP(50).withKI(5).withKD(1).withKG(2.6);
 
     /** The feedback information (gear ratios) for the hood's motor. */
     public static final FeedbackConfigs HOOD_FEEDBACK =
@@ -109,6 +103,8 @@ public final class ShooterConstants {
             .withCurrentLimits(HOOD_CURRENT_LIMITS)
             .withSlot0(HOOD_GAINS)
             .withMotionMagic(HOOD_MOTION_MAGIC)
+            .withMotorOutput(
+                new MotorOutputConfigs().withInverted(InvertedValue.Clockwise_Positive))
             .withFeedback(HOOD_FEEDBACK);
 
     /** The gearbox for the hood's motor. */
@@ -147,7 +143,7 @@ public final class ShooterConstants {
             .withSupplyCurrentLimitEnable(true);
 
     public static final Slot0Configs FLYWHEEL_GAINS =
-        new Slot0Configs().withKP(2).withKD(0.0025).withKS(2.5);
+        new Slot0Configs().withKP(10).withKI(5).withKD(0.1).withKS(10).withKV(0.175);
 
     public static final TalonFXConfiguration FLYWHEEL_MOTOR_CONFIG =
         new TalonFXConfiguration()

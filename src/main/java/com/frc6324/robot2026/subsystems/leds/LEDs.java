@@ -2,16 +2,16 @@ package com.frc6324.robot2026.subsystems.leds;
 
 import static com.frc6324.robot2026.subsystems.leds.LEDsConstants.*;
 
+import com.frc6324.lib.util.VirtualSubsystem;
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-public final class LEDs extends SubsystemBase {
+public final class LEDs extends VirtualSubsystem {
   private final AddressableLED leds = new AddressableLED(LED_RIO_PWM_PORT);
   private final AddressableLEDBuffer buffer = new AddressableLEDBuffer(LED_BUFFER_LENGTH);
   @Setter private LEDState currentState = LEDState.INACTIVE;

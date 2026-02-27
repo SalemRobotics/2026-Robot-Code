@@ -16,6 +16,8 @@
 package com.frc6324.robot2026;
 
 import com.ctre.phoenix6.SignalLogger;
+import com.frc6324.lib.util.LoggedTracer;
+import com.frc6324.lib.util.VirtualSubsystem;
 import com.frc6324.robot2026.sim.MapleSimManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -104,8 +106,10 @@ public class Robot extends LoggedRobot {
     final Optional<Alliance> selfAllianceOpt = DriverStation.getAlliance();
 
     // Ignore and return true in practice where we don't set the game message
-    if (autoWinner.isEmpty() && selfAllianceOpt.isEmpty()) {
+    if (!DriverStation.isFMSAttached() && autoWinner.isEmpty()) {
       return true;
+    } else if (autoWinner.isEmpty() || selfAllianceOpt.isEmpty()) {
+      return false;
     }
 
     final Alliance inactiveFirst = autoWinner.get();
@@ -133,12 +137,19 @@ public class Robot extends LoggedRobot {
 
           Logger.recordOutput("Robot/Used Memory %", utilization * 100);
         });
+    Logger.runEveryN(5, System::gc);
 
     // Set thread to highest priority to improve performance
     // Threads.setCurrentThreadPriority(true, 99);
 
     // Runs the command scheduler
+
+    LoggedTracer.reset();
+    VirtualSubsystem.allPeriodics();
+    LoggedTracer.record("Virtual Subsystems");
+
     CommandScheduler.getInstance().run();
+    LoggedTracer.record("Command Scheduler");
 
     // Set the thread to low priority to let other things run (such as NT)
     // Threads.setCurrentThreadPriority(false, 10);

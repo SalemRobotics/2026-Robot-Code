@@ -6,6 +6,7 @@ import com.frc6324.lib.UninstantiableClass;
 import com.frc6324.lib.util.FieldConstants;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Frequency;
@@ -19,26 +20,28 @@ public final class AprilTagConstants {
   public static final AprilTagFieldLayout APRILTAG_LAYOUT =
       FieldConstants.DEFAULT_APRILTAG_TYPE.getLayout();
 
-  public static final String[] CAMERA_NAMES = {
-    "Front Left", "Back Left", "Front Right", "Back Right"
-  };
-  public static final double[] CAMERA_STDDEV_FACTORS = {1, 1, 1, 1};
+  public static final String[] CAMERA_NAMES = {"Front Luma", "Back Luma"};
+  public static final double[] CAMERA_STDDEV_FACTORS = {1, 1};
   public static final Resolution[] CAMERA_RESOLUTIONS = {
-    new Resolution(1280, 800),
-    new Resolution(1280, 800),
-    new Resolution(1280, 800),
-    new Resolution(1280, 800)
+    new Resolution(1280, 800), new Resolution(1280, 800)
   };
-  public static final double[] CAMERA_LATENCIES = {30, 30, 30, 30};
-  public static final double[] CAMERA_FPS = {60, 60, 60, 60};
+  public static final double[] CAMERA_LATENCIES = {30, 30};
+  public static final double[] CAMERA_FPS = {30, 30};
   public static final Rotation2d[] CAMERA_FOVS = {
-    Rotation2d.fromDegrees(70),
-    Rotation2d.fromDegrees(110),
-    Rotation2d.fromDegrees(70),
-    Rotation2d.fromDegrees(110)
+    Rotation2d.fromDegrees(80), Rotation2d.fromDegrees(80)
   };
   public static final Transform3d[] ROBOT_TO_CAMERAS = {
-    new Transform3d(), new Transform3d(), new Transform3d(), new Transform3d()
+    new Transform3d(
+        Units.inchesToMeters(-11),
+        Units.inchesToMeters(-6.25),
+        Units.inchesToMeters(16.5),
+        new Rotation3d(0, Units.degreesToRadians(20), 0)),
+    new Transform3d(
+        // TODO: actually find these lol
+        Units.inchesToMeters(-12.704),
+        Units.inchesToMeters(-3.36),
+        Units.inchesToMeters(16.5),
+        new Rotation3d(0, Units.degreesToRadians(20), 0)),
   };
 
   public static final Frequency UPDATE_THREAD_FREQUENCY = Hertz.of(30);

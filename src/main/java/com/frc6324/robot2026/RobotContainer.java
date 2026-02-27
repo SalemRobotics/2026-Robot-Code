@@ -24,6 +24,7 @@ import com.frc6324.robot2026.subsystems.drive.*;
 import com.frc6324.robot2026.subsystems.drive.DriveIO.DriveIOReplay;
 import com.frc6324.robot2026.subsystems.indexer.*;
 import com.frc6324.robot2026.subsystems.intake.*;
+import com.frc6324.robot2026.subsystems.leds.LEDs;
 import com.frc6324.robot2026.subsystems.rollers.*;
 import com.frc6324.robot2026.subsystems.shooter.*;
 import com.frc6324.robot2026.subsystems.vision.apriltag.*;
@@ -36,8 +37,10 @@ import org.littletonrobotics.junction.LoggedPowerDistribution;
 
 @SuppressWarnings("unused")
 public class RobotContainer {
+  private final AprilTagVision apriltag;
   private final Indexer indexer;
   private final Intake intake;
+  private final LEDs leds = new LEDs();
   private final Rollers rollers;
   private final Shooter shooter;
   private final SwerveDrive drive;
@@ -56,6 +59,9 @@ public class RobotContainer {
         final DriveIOCTRE driveIO = new DriveIOCTRE();
         drive = new SwerveDrive(driveIO);
 
+        apriltag =
+            new AprilTagVision(new AprilTagIOPhoton(driveIO), new AprilTagIOPhoton(driveIO))
+                .withConsumer(drive);
         indexer = new Indexer(new IndexerIOTalonFX());
         intake = new Intake(new IntakeIOTalonFX());
         rollers = new Rollers(new RollerIOTalonFX());
@@ -65,6 +71,9 @@ public class RobotContainer {
         final DriveIOSim driveIO = new DriveIOSim();
         drive = new SwerveDrive(driveIO);
 
+        apriltag =
+            new AprilTagVision(
+                new AprilTagIOSim(driveIO, drive), new AprilTagIOSim(driveIO, drive));
         indexer = new Indexer(new IndexerIOSim());
         intake = new Intake(new IntakeIOSim());
         rollers = new Rollers(new RollerIOSim());
@@ -73,6 +82,7 @@ public class RobotContainer {
       default -> {
         drive = new SwerveDrive(new DriveIOReplay());
 
+        apriltag = new AprilTagVision(IOLayer::replay, IOLayer::replay);
         indexer = new Indexer(IOLayer::replay);
         intake = new Intake(IOLayer::replay);
         rollers = new Rollers(IOLayer::replay);

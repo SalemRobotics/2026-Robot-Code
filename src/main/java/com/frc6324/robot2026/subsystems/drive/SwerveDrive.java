@@ -11,6 +11,7 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstants.ClosedLoopOutputType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.ApplyRobotSpeeds;
 import com.ctre.phoenix6.swerve.SwerveRequest.SwerveDriveBrake;
+import com.frc6324.lib.util.FieldConstants.Hub;
 import com.frc6324.lib.util.PoseExtensions.PoseSupplier;
 import com.frc6324.robot2026.generated.TunerConstants;
 import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagVision.VisionConsumer;
@@ -169,6 +170,9 @@ public final class SwerveDrive extends SubsystemBase implements VisionConsumer, 
     io.logModuleStates(inputs);
 
     Logger.recordOutput("Drive/UpdateLatency", Timer.getFPGATimestamp() - timestamp);
+    Logger.recordOutput(
+        "Robot/DistanceToHub",
+        Hub.TOP_CENTER_POINT.toTranslation2d().minus(getPose().getTranslation()).getNorm());
   }
 
   /**

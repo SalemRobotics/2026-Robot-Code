@@ -27,7 +27,7 @@ public final class DrivetrainConstants {
   public static final Time ODOMETRY_PERIOD = Hertz.of(ODOMETRY_UPDATE_FREQUENCY).asPeriod();
 
   public static final Vector<N3> ODOMETRY_STDDEVS =
-      VecBuilder.fill(0.02, 0.02, Units.degreesToRadians(2.5));
+      VecBuilder.fill(0.002, 0.002, Units.degreesToRadians(0.25));
   public static final Vector<N3> DEFAULT_VISION_STDDEVS =
       VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(5));
   public static final String[] MODULE_NAMES = {"FrontLeft", "FrontRight", "BackLeft", "BackRight"};
