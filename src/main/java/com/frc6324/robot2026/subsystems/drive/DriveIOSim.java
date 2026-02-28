@@ -29,7 +29,7 @@ public final class DriveIOSim extends DriveIOCTRE {
   }
 
   @Override
-  public void updateInputs(DriveInputs inputs) {
+  public void updateInputs(final DriveInputs inputs) {
     driveSimulation.update();
     super.updateInputs(inputs);
   }

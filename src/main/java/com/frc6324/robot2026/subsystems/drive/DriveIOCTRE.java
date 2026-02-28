@@ -35,7 +35,7 @@ public sealed class DriveIOCTRE extends SwerveDrivetrain<TalonFX, TalonFX, CANco
         TalonFX::new,
         CANcoder::new,
         TunerConstants.DrivetrainConstants,
-        50,
+        ODOMETRY_UPDATE_FREQUENCY,
         ODOMETRY_STDDEVS,
         DEFAULT_VISION_STDDEVS,
         SwerveDrive.regulateModuleConstantsForSimulation(
@@ -89,8 +89,8 @@ public sealed class DriveIOCTRE extends SwerveDrivetrain<TalonFX, TalonFX, CANco
 
     for (int i = 0; i < 4; i++) {
       // Get the current module and its name
-      SwerveModule<?, ?, CANcoder> module = getModule(i);
-      String name = MODULE_NAMES[i];
+      final SwerveModule<?, ?, CANcoder> module = getModule(i);
+      final String name = MODULE_NAMES[i];
 
       // Log steering information
       Logger.recordOutput(
@@ -107,12 +107,14 @@ public sealed class DriveIOCTRE extends SwerveDrivetrain<TalonFX, TalonFX, CANco
   }
 
   @Override
-  public void updateInputs(DriveInputs inputs) {
+  public void updateInputs(final DriveInputs inputs) {
+    final SwerveDriveState state = getState();
+
     // Update the last known odometry
-    DrivingUtils.updateOdometry(getState().Pose, getState().Speeds);
+    DrivingUtils.updateOdometry(state.Pose, state.Speeds);
 
     // Copy the recorded state into the inputs
-    inputs.copyFromState(getState());
+    inputs.copyFromState(state);
 
     // Rip the gyro angle straight from the pigeon
     inputs.GyroAngle = getPigeon2().getRotation2d();
@@ -124,12 +126,12 @@ public sealed class DriveIOCTRE extends SwerveDrivetrain<TalonFX, TalonFX, CANco
     inputs.YawVelocity = yawVelocity.getValue();
 
     // Get all of the other gyro values we care about
-    Angle roll = rollSignal.getValue();
-    Angle pitch = pitchSignal.getValue();
-    AngularVelocity rollVelocity = rollVelocitySignal.getValue();
-    AngularVelocity pitchVelocity = pitchVelocitySignal.getValue();
-    LinearAcceleration accelX = accelerationX.getValue();
-    LinearAcceleration accelY = accelerationY.getValue();
+    final Angle roll = rollSignal.getValue();
+    final Angle pitch = pitchSignal.getValue();
+    final AngularVelocity rollVelocity = rollVelocitySignal.getValue();
+    final AngularVelocity pitchVelocity = pitchVelocitySignal.getValue();
+    final LinearAcceleration accelX = accelerationX.getValue();
+    final LinearAcceleration accelY = accelerationY.getValue();
 
     // Send all of the tilt values to the driving safety util
     DrivingUtils.updateTilt(roll, pitch, rollVelocity, pitchVelocity, accelX, accelY);

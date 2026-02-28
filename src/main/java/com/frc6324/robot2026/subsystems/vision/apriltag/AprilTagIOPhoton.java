@@ -73,6 +73,7 @@ public class AprilTagIOPhoton implements AprilTagIO {
     for (final PhotonPipelineResult result : allResults) {
       final double timestamp = result.getTimestampSeconds();
       final EstimatedRobotPose estimatedPose;
+      final EstimationStrategy strategy;
 
       // If the result doesn't have targets or is stale, skip it
       if (!result.hasTargets() || Timer.getFPGATimestamp() - timestamp > MAX_LATENCY_SECS) {
@@ -87,6 +88,7 @@ public class AprilTagIOPhoton implements AprilTagIO {
           poseEstimator.estimateCoprocMultiTagPose(result);
       if (multitagOpt.isPresent()) {
         estimatedPose = multitagOpt.get();
+        strategy = EstimationStrategy.Multitag;
       } else {
         final Optional<Pose2d> odomPoseOpt = odometryPoseAtTime.samplePoseAt(timestamp);
         Optional<EstimatedRobotPose> constrainedSolvePNPOpt = Optional.empty();
@@ -106,9 +108,11 @@ public class AprilTagIOPhoton implements AprilTagIO {
 
         if (constrainedSolvePNPOpt.isPresent()) {
           estimatedPose = constrainedSolvePNPOpt.get();
+          strategy = EstimationStrategy.ConstrainedSolvePNP;
         } else {
           // It is safe to call `.get` here since we already know that the result has targets
           estimatedPose = poseEstimator.estimateAverageBestTargetsPose(result).get();
+          strategy = EstimationStrategy.Singletag;
         }
       }
 
@@ -133,7 +137,8 @@ public class AprilTagIOPhoton implements AprilTagIO {
               timestamp,
               totalAmbiguity / numTags,
               totalDistance / numTags,
-              numTags));
+              numTags,
+              strategy));
     }
 
     this.tagsSeen.set(tagsSeen);

@@ -95,11 +95,24 @@ public class RobotContainer {
 
   private void configureBindings() {
     drive.setDefaultCommand(DriveCommands.joystickDrive(drive, controller.getHID()));
+    shooter.setDefaultCommand(
+        shooter.run(
+            () -> {
+              shooter.stowHood();
+              shooter.stopFlywheel();
+            }));
+    rollers.setDefaultCommand(rollers.run(rollers::coastRollers));
 
     controller
         .leftTrigger()
-        .whileTrue(Commands.run(intake::deploy, intake).until(intake::isDeployed))
-        .onFalse(Commands.run(intake::stow, intake).until(intake::isStowed));
+        .whileTrue(
+            Commands.run(
+                () -> {
+                  intake.deploy();
+                  rollers.spinRollers();
+                },
+                intake,
+                rollers));
 
     controller
         .rightTrigger()

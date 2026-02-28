@@ -80,7 +80,7 @@ public class RollerIOTalonFX implements RollerIO {
 
   @Override
   public void start() {
-    leader.setControl(spinRequest);
+    leader.set(0.75);
     follower.setControl(followerRequest);
   }
 

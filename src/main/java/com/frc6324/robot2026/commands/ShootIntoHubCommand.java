@@ -1,5 +1,8 @@
 package com.frc6324.robot2026.commands;
 
+import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.SHOOTER_POSITION;
+import static edu.wpi.first.units.Units.Meters;
+
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.frc6324.lib.util.FieldConstants;
 import com.frc6324.robot2026.subsystems.drive.SwerveDrive;
@@ -10,6 +13,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import org.littletonrobotics.junction.Logger;
 
 /** A command that forces the drivetrain to point at the hub and shoot into it. */
 public class ShootIntoHubCommand extends Command {
@@ -62,7 +66,8 @@ public class ShootIntoHubCommand extends Command {
     linearVelocity = linearVelocity.times(SwerveDrive.getMaxLinearSpeed());
 
     // Calculate the translation difference to the target
-    final Translation2d diff = hubTranslation.minus(drive.getPose().getTranslation());
+    final Translation2d diff =
+        hubTranslation.minus(drive.getPose().plus(SHOOTER_POSITION).getTranslation());
     // Calculate the angle that delta needs
     final Rotation2d facing = diff.getAngle();
 
@@ -75,6 +80,9 @@ public class ShootIntoHubCommand extends Command {
 
     final double dist = diff.getNorm();
     shooter.shootIntoHub(dist);
+
+    Logger.recordOutput("DriveCommands/ShootIntoHub/TargetFacing", facing);
+    Logger.recordOutput("DriveCommands/ShootIntoHub/DistanceToHub", Meters.of(dist));
 
     if (shooter.atTargetVelocity() && !commandedFeederWheel) {
       indexer.runKickerWheel();

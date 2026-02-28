@@ -94,7 +94,7 @@ public final class DrivingUtils {
    */
   public static boolean shouldLimitMotion() {
     // Calculate the magnitude of the known tilt
-    double tiltMagnitude = Math.hypot(rollDegrees, pitchDegrees);
+    final double tiltMagnitude = Math.hypot(rollDegrees, pitchDegrees);
 
     if (tiltMagnitude < TILT_LOOKAHEAD_THRESHOLD) {
       // No need to look ahead, current tilt is fine
@@ -102,11 +102,11 @@ public final class DrivingUtils {
     }
 
     // Predict the robot's future tilt
-    double rollLookahead = predictRoll();
-    double pitchLookahead = predictPitch();
+    final double rollLookahead = predictRoll();
+    final double pitchLookahead = predictPitch();
 
     // Calculate the magnitude of the future tilt
-    double lookeaheadMagnitude = Math.hypot(rollLookahead, pitchLookahead);
+    final double lookeaheadMagnitude = Math.hypot(rollLookahead, pitchLookahead);
 
     if (lookeaheadMagnitude > MAX_ACCEPTABLE_TILT) {
       // Return the tilt being at too great
@@ -122,8 +122,8 @@ public final class DrivingUtils {
 
   private static double predictRoll() {
     // Use velocity & acceleration to predict where roll will be
-    double velocityRoll = rollDegrees + rollVelocityDPS * LOOKAHEAD_TIME;
-    double accelerationRoll =
+    final double velocityRoll = rollDegrees + rollVelocityDPS * LOOKAHEAD_TIME;
+    final double accelerationRoll =
         rollDegrees + Math.toDegrees(Math.atan2(accelYMPSsq, GRAVITY_CONSTANT)) * LOOKAHEAD_TIME;
 
     // Return the weighted roll
@@ -132,8 +132,8 @@ public final class DrivingUtils {
 
   private static double predictPitch() {
     // Use velocity & acceleration to predict where pitch will be
-    double velocityPitch = pitchDegrees + pitchVelocityDPS * LOOKAHEAD_TIME;
-    double accelerationPitch =
+    final double velocityPitch = pitchDegrees + pitchVelocityDPS * LOOKAHEAD_TIME;
+    final double accelerationPitch =
         pitchDegrees + Math.toDegrees(Math.atan2(accelXMPSsq, GRAVITY_CONSTANT)) * LOOKAHEAD_TIME;
 
     // Return the weighted pitch
@@ -159,16 +159,17 @@ public final class DrivingUtils {
    * @param lookaheadPeriod How many seconds in the future to estimate.
    * @return The pose of the robot in {@code lookaheadPeriod} seconds.
    */
-  public static Pose2d estimateFuturePose(double lookaheadPeriod) {
-    Translation2d translationRate =
+  public static Pose2d estimateFuturePose(final double lookaheadPeriod) {
+    final Translation2d translationRate =
         new Translation2d(
             currentSpeeds.vxMetersPerSecond + accelXMPSsq * lookaheadPeriod,
             currentSpeeds.vyMetersPerSecond + accelYMPSsq * lookaheadPeriod);
-    Translation2d translation =
+    final Translation2d translation =
         currentPose.getTranslation().plus(translationRate.times(lookaheadPeriod));
 
-    Rotation2d rotationalRate = new Rotation2d(currentSpeeds.omegaRadiansPerSecond);
-    Rotation2d rotation = currentPose.getRotation().plus(rotationalRate.times(lookaheadPeriod));
+    final Rotation2d rotationalRate =
+        Rotation2d.fromRadians(currentSpeeds.omegaRadiansPerSecond * lookaheadPeriod);
+    final Rotation2d rotation = currentPose.getRotation().plus(rotationalRate);
 
     return new Pose2d(translation, rotation);
   }

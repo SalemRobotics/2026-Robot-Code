@@ -9,15 +9,20 @@ import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
 import com.frc6324.lib.UninstantiableClass;
 import com.frc6324.robot2026.Constants;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
 import edu.wpi.first.math.interpolation.InverseInterpolator;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.*;
 
 @UninstantiableClass
 public final class ShooterConstants {
   public static final CANBus SHOOTER_CAN_BUS = Constants.CANIVORE;
+  public static final Transform2d SHOOTER_POSITION =
+      new Transform2d(Units.inchesToMeters(-6), Units.inchesToMeters(6), Rotation2d.kZero);
 
   public static final double APPROX_FUEL_PER_SECOND = 1;
   public static final double TIME_TO_LAUNCH_FUEL = (1 / APPROX_FUEL_PER_SECOND);
@@ -35,16 +40,36 @@ public final class ShooterConstants {
           InverseInterpolator.forDouble(), (v1, v2, t) -> v1.plus(v2.minus(v1).times(t)));
 
   static {
-    HUB_FLYWHEEL_VELOCITY_MAP.put(0.0, RPM.of(2100));
-    HUB_FLYWHEEL_VELOCITY_MAP.put(1.0, RPM.of(2100));
-    HUB_FLYWHEEL_VELOCITY_MAP.put(1.304, RPM.of(0));
-    HUB_FLYWHEEL_VELOCITY_MAP.put(1.75, RPM.of(2350));
-    HUB_FLYWHEEL_VELOCITY_MAP.put(2.003, RPM.of(2350));
-    HUB_FLYWHEEL_VELOCITY_MAP.put(2.3, RPM.of(2450));
+    HUB_FLYWHEEL_VELOCITY_MAP.put(0.0, RotationsPerSecond.of(34));
+    HUB_FLYWHEEL_VELOCITY_MAP.put(1.2, RotationsPerSecond.of(34));
+    HUB_FLYWHEEL_VELOCITY_MAP.put(1.5, RotationsPerSecond.of(35.25));
+    HUB_FLYWHEEL_VELOCITY_MAP.put(1.75, RotationsPerSecond.of(36.75));
+    HUB_FLYWHEEL_VELOCITY_MAP.put(2.0, RotationsPerSecond.of(37.75));
+    HUB_FLYWHEEL_VELOCITY_MAP.put(2.25, RotationsPerSecond.of(39));
+    HUB_FLYWHEEL_VELOCITY_MAP.put(2.5, RotationsPerSecond.of(40.25));
+    HUB_FLYWHEEL_VELOCITY_MAP.put(2.75, RotationsPerSecond.of(41.5));
+    HUB_FLYWHEEL_VELOCITY_MAP.put(3.0, RotationsPerSecond.of(42.75));
+    HUB_FLYWHEEL_VELOCITY_MAP.put(3.25, RotationsPerSecond.of(44));
+    HUB_FLYWHEEL_VELOCITY_MAP.put(3.5, RotationsPerSecond.of(45.25));
+    HUB_FLYWHEEL_VELOCITY_MAP.put(3.75, RotationsPerSecond.of(45.25));
+    HUB_FLYWHEEL_VELOCITY_MAP.put(4.0, RotationsPerSecond.of(46.25));
+    HUB_FLYWHEEL_VELOCITY_MAP.put(4.25, RotationsPerSecond.of(47));
+    HUB_FLYWHEEL_VELOCITY_MAP.put(4.5, RotationsPerSecond.of(47.75));
+    HUB_FLYWHEEL_VELOCITY_MAP.put(5.0, RotationsPerSecond.of(48.75));
+    HUB_FLYWHEEL_VELOCITY_MAP.put(5.3, RotationsPerSecond.of(50.5));
 
-    HOOD_ANGLE_MAP.put(0.0, Rotations.of(0));
-    HOOD_ANGLE_MAP.put(2.0, Rotations.of(0));
-    HOOD_ANGLE_MAP.put(2.3, Rotations.of(0.1));
+    // TODO: velocities from 2 -> 6 (steps of 0.25)
+
+    // TODO: find correspondence between hood angles & velocities at distance
+    // (map should have a point for every velocity map entry)
+    HOOD_ANGLE_MAP.put(0.0, Rotations.of(0.15));
+    HOOD_ANGLE_MAP.put(3.5, Rotations.of(0.15));
+    HOOD_ANGLE_MAP.put(3.75, Rotations.of(0.225));
+    HOOD_ANGLE_MAP.put(4.0, Rotations.of(0.3));
+    HOOD_ANGLE_MAP.put(4.25, Rotations.of(0.3));
+    HOOD_ANGLE_MAP.put(4.5, Rotations.of(0.35));
+    HOOD_ANGLE_MAP.put(5.0, Rotations.of(0.3875));
+    HOOD_ANGLE_MAP.put(5.3, Rotations.of(0.4));
   }
 
   /** Constants for the shooter's hood. */
@@ -101,7 +126,7 @@ public final class ShooterConstants {
     public static final TalonFXConfiguration HOOD_MOTOR_CONFIG =
         new TalonFXConfiguration()
             .withCurrentLimits(HOOD_CURRENT_LIMITS)
-            .withSlot0(HOOD_GAINS)
+            .withSlot0(new Slot0Configs().withKP(175).withKI(10).withKD(6).withKG(2.6))
             .withMotionMagic(HOOD_MOTION_MAGIC)
             .withMotorOutput(
                 new MotorOutputConfigs().withInverted(InvertedValue.Clockwise_Positive))
