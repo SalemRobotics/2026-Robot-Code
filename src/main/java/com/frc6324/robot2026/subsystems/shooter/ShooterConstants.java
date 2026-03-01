@@ -126,7 +126,7 @@ public final class ShooterConstants {
     public static final TalonFXConfiguration HOOD_MOTOR_CONFIG =
         new TalonFXConfiguration()
             .withCurrentLimits(HOOD_CURRENT_LIMITS)
-            .withSlot0(new Slot0Configs().withKP(175).withKI(10).withKD(6).withKG(2.6))
+            .withSlot0(new Slot0Configs().withKP(175).withKI(10).withKD(3.5).withKG(2.6))
             .withMotionMagic(HOOD_MOTION_MAGIC)
             .withMotorOutput(
                 new MotorOutputConfigs().withInverted(InvertedValue.Clockwise_Positive))
