@@ -44,12 +44,12 @@ public final class AprilTagConstants {
         new Rotation3d(0, Units.degreesToRadians(20), 0)),
   };
 
-  public static final Frequency UPDATE_THREAD_FREQUENCY = Hertz.of(30);
+  public static final Frequency UPDATE_THREAD_FREQUENCY = Hertz.of(60);
 
   public static final boolean HEADING_FREE = false;
   public static final double HEADING_FACTOR = 10;
 
-  public static final double LINEAR_STDDEV_BASELINE = Units.inchesToMeters(2);
+  public static final double LINEAR_STDDEV_BASELINE = Units.inchesToMeters(1);
   public static final double ANGULAR_STDDEV_BASELINE = Units.degreesToRadians(2.5);
 
   public static final double MAX_LATENCY_SECS = 2;

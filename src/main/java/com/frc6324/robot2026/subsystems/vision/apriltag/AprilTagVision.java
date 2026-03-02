@@ -2,6 +2,7 @@ package com.frc6324.robot2026.subsystems.vision.apriltag;
 
 import static com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagConstants.*;
 
+import com.frc6324.lib.util.LoggedTracer;
 import com.frc6324.lib.util.VirtualSubsystem;
 import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagIO.VisionEstimation;
 import edu.wpi.first.math.Matrix;
@@ -129,14 +130,13 @@ public class AprilTagVision extends VirtualSubsystem {
     }
 
     // Log vision summary data
-    Logger.recordOutput(
-        "Vision/AprilTag/Consumers",
-        consumers.stream().map(c -> c.getClass().getSimpleName()).toArray(String[]::new));
     Logger.recordOutput("Vision/AprilTag/Summary/RobotPoses", allRobotPoses.toArray(Pose2d[]::new));
     Logger.recordOutput(
         "Vision/AprilTag/Summary/RobotPosesAccepted", allRobotPosesAccepted.toArray(Pose2d[]::new));
     Logger.recordOutput(
         "Vision/AprilTag/Summary/RobotPosesRejected", allRobotPosesRejected.toArray(Pose2d[]::new));
+
+    LoggedTracer.record("Vision periodic");
   }
 
   /**

@@ -79,14 +79,12 @@ public class IndexerIOTalonFX implements IndexerIO {
 
   @Override
   public void setKickerVelocity(AngularVelocity velocity) {
-    kicker.set(1);
-    // kicker.setControl(kickerRequest.withVelocity(velocity));
+    kicker.setControl(kickerRequest.withVelocity(velocity));
   }
 
   @Override
   public void setSpinnerVelocity(AngularVelocity velocity) {
-    spinner.set(0.75);
-    // spinner.setControl(spinnerRequest.withVelocity(velocity));
+    spinner.setControl(spinnerRequest.withVelocity(velocity));
   }
 
   @Override

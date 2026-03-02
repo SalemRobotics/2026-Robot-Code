@@ -19,7 +19,8 @@ import static com.frc6324.robot2026.Constants.*;
 
 import com.frc6324.lib.util.IOLayer;
 import com.frc6324.robot2026.commands.DriveCommands;
-import com.frc6324.robot2026.commands.ShootIntoHubCommand;
+import com.frc6324.robot2026.commands.ShooterCommands.PassToAllianceZoneCommand;
+import com.frc6324.robot2026.commands.ShooterCommands.ShootIntoHubCommand;
 import com.frc6324.robot2026.subsystems.drive.*;
 import com.frc6324.robot2026.subsystems.drive.DriveIO.DriveIOReplay;
 import com.frc6324.robot2026.subsystems.indexer.*;
@@ -48,6 +49,7 @@ public class RobotContainer {
   private final PowerDistribution pdh = new PowerDistribution();
   private final LoggedPowerDistribution loggedPDH =
       LoggedPowerDistribution.getInstance(pdh.getModule(), pdh.getType());
+
   private final CommandXboxController controller =
       new CommandXboxController(DRIVER_CONTROLLER_PORT);
 
@@ -117,6 +119,7 @@ public class RobotContainer {
     controller
         .rightTrigger()
         .whileTrue(new ShootIntoHubCommand(drive, controller, shooter, indexer));
+    controller.a().whileTrue(new PassToAllianceZoneCommand(drive, controller, shooter, indexer));
   }
 
   public Command getAutonomousCommand() {

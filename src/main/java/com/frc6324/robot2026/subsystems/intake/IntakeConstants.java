@@ -10,6 +10,7 @@ import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.Slot1Configs;
 import com.ctre.phoenix6.configs.Slot2Configs;
+import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
@@ -23,46 +24,48 @@ import edu.wpi.first.units.measure.*;
 public final class IntakeConstants {
   public static final CANBus INTAKE_CAN_BUS = Constants.CANIVORE;
   public static final int INTAKE_MOTOR_ID = 20;
+  public static final double INTAKE_REDUCTION = 9;
+
+  public static final int INTAKE_DEPLOY_SLOT = 0;
+  public static final int INTAKE_SPRING_SLOT = 1;
+  public static final int INTAKE_SHAKE_SLOT = 2;
 
   public static final Distance INTAKE_WIDTH = Inches.of(27);
   public static final Distance INTAKE_EXTENSION = Inches.of(12);
 
   // Deployment setpoints
+  public static final Angle INTAKE_MAX_POSITION = Rotations.of(3.8);
   public static final Angle INTAKE_DEPLOYED_POSITION = Rotations.of(3.77);
   public static final Angle INTAKE_DEPLOY_TOLERANCE = Degrees.of(2);
   public static final Angle INTAKE_STOWED_POSITION = Rotations.of(0);
 
   public static final TalonFXConfiguration INTAKE_MOTOR_CONFIG =
       new TalonFXConfiguration()
-          // CURRENT LIMITS
           .withCurrentLimits(
               new CurrentLimitsConfigs()
                   .withStatorCurrentLimit(Amps.of(70))
                   .withStatorCurrentLimitEnable(true)
                   .withSupplyCurrentLimit(Amps.of(45))
                   .withSupplyCurrentLimitEnable(true))
-          .withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(9))
-          // MOTION MAGIC
+          .withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(INTAKE_REDUCTION))
           .withMotionMagic(
               new MotionMagicConfigs()
                   .withMotionMagicCruiseVelocity(RotationsPerSecond.of(5))
                   .withMotionMagicAcceleration(RotationsPerSecondPerSecond.of(25))
                   .withMotionMagicJerk(0))
-          // MOTOR OUTPUT
           .withMotorOutput(new MotorOutputConfigs().withInverted(InvertedValue.Clockwise_Positive))
-          // DEPLOY GAINS
           .withSlot0(new Slot0Configs().withKP(80).withKD(2).withKV(1).withKA(0.25).withKS(0.1))
-          // SPRING GAINS
           .withSlot1(new Slot1Configs().withKP(5).withKD(0.001).withKS(0.01))
-          // SHAKE GAINS
-          .withSlot2(new Slot2Configs().withKP(60).withKD(2).withKS(0.1));
-
-  public static final int INTAKE_DEPLOY_SLOT = 0;
-  public static final int INTAKE_SPRING_SLOT = 1;
+          .withSlot2(new Slot2Configs().withKP(60).withKD(2).withKS(0.1))
+          .withSoftwareLimitSwitch(
+              new SoftwareLimitSwitchConfigs()
+                  .withForwardSoftLimitThreshold(INTAKE_MAX_POSITION)
+                  .withForwardSoftLimitEnable(true)
+                  .withReverseSoftLimitThreshold(Rotations.zero())
+                  .withReverseSoftLimitEnable(true));
 
   // Simulation constants for the extension/retraction motor
   public static final double INTAKE_MOI = 0.2;
-  public static final double INTAKE_REDUCTION = 9;
   public static final DCMotor INTAKE_GEARBOX = DCMotor.getKrakenX60Foc(1);
   public static final MotorType INTAKE_MOTOR_TYPE = MotorType.KrakenX60;
   public static final Rotation3d INTAKE_MECHANISM_ROTATION =

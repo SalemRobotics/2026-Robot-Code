@@ -86,6 +86,7 @@ public class AprilTagIOPhoton implements AprilTagIO {
       // 3. Average of targets using ambiguity as weight
       final Optional<EstimatedRobotPose> multitagOpt =
           poseEstimator.estimateCoprocMultiTagPose(result);
+
       if (multitagOpt.isPresent()) {
         estimatedPose = multitagOpt.get();
         strategy = EstimationStrategy.Multitag;
@@ -93,7 +94,7 @@ public class AprilTagIOPhoton implements AprilTagIO {
         final Optional<Pose2d> odomPoseOpt = odometryPoseAtTime.samplePoseAt(timestamp);
         Optional<EstimatedRobotPose> constrainedSolvePNPOpt = Optional.empty();
 
-        if (false && cameraMatrix != null && distCoeffs != null && odomPoseOpt.isPresent()) {
+        if (cameraMatrix != null && distCoeffs != null && odomPoseOpt.isPresent()) {
           final Pose2d odomPose = odomPoseOpt.get();
 
           constrainedSolvePNPOpt =

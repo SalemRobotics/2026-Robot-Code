@@ -10,10 +10,11 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.StatusSignalCollection;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.*;
 
@@ -22,8 +23,11 @@ public class ShooterIOTalonFX implements ShooterIO {
   protected final TalonFX flywheelLeader = new TalonFX(FLYWHEEL_LEADER_ID, SHOOTER_CAN_BUS);
   protected final TalonFX flywheelFollower = new TalonFX(FLYWHEEL_FOLLOWER_ID, SHOOTER_CAN_BUS);
 
-  private final MotionMagicTorqueCurrentFOC hoodRequest = new MotionMagicTorqueCurrentFOC(0);
-  private final VelocityTorqueCurrentFOC flywheelRequest = new VelocityTorqueCurrentFOC(0);
+  // Control requests (have higher update frequencies to make PID smoother-ish and stick faster to )
+  private final PositionTorqueCurrentFOC hoodRequest =
+      new PositionTorqueCurrentFOC(0).withUpdateFreqHz(Hertz.of(500));
+  private final VelocityTorqueCurrentFOC flywheelRequest =
+      new VelocityTorqueCurrentFOC(0).withUpdateFreqHz(Hertz.of(250));
   private final Follower followerRequest =
       new Follower(FLYWHEEL_LEADER_ID, FLYWHEEL_MOTOR_ALIGNMENT);
 
@@ -93,6 +97,9 @@ public class ShooterIOTalonFX implements ShooterIO {
 
     tryUntilOk(5, () -> flywheelLeader.getConfigurator().apply(FLYWHEEL_MOTOR_CONFIG, 0.25));
     tryUntilOk(5, () -> flywheelLeader.setNeutralMode(NeutralModeValue.Coast, 0.25));
+
+    // Invert the config & apply
+    FLYWHEEL_MOTOR_CONFIG.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     tryUntilOk(5, () -> flywheelFollower.getConfigurator().apply(FLYWHEEL_MOTOR_CONFIG, 0.25));
     tryUntilOk(5, () -> flywheelFollower.setNeutralMode(NeutralModeValue.Coast, 0.25));
 

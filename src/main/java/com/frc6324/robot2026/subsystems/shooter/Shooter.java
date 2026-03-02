@@ -6,6 +6,7 @@ import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.Flywheel
 import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.HoodConstants.*;
 import static edu.wpi.first.units.Units.*;
 
+import com.frc6324.lib.util.LoggedTracer;
 import com.frc6324.robot2026.sim.MapleSimManager;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -20,8 +21,7 @@ public final class Shooter extends SubsystemBase {
   private final ShooterInputsAutoLogged inputs = new ShooterInputsAutoLogged();
 
   private Angle hoodSetpoint = Rotations.zero();
-  private boolean currentlyShooting = false;
-
+  private boolean hoodAtSetpoint = false;
   private AngularVelocity flywheelSetpoint = RadiansPerSecond.zero();
   private boolean flywheelAtSetpoint = false;
 
@@ -32,6 +32,10 @@ public final class Shooter extends SubsystemBase {
    */
   public Shooter(ShooterIO io) {
     this.io = io;
+  }
+
+  public boolean atTargetHoodAngle() {
+    return hoodAtSetpoint;
   }
 
   /**
@@ -60,10 +64,11 @@ public final class Shooter extends SubsystemBase {
     io.updateInputs(inputs);
     Logger.processInputs("Shooter", inputs);
 
-    Logger.recordOutput("Shooter/CurrentlyShooting", currentlyShooting);
-
     flywheelAtSetpoint =
         inputs.flywheelLeaderVelocity.isNear(flywheelSetpoint, FLYWHEEL_VELOCITY_TOLERANCE);
+    hoodAtSetpoint = inputs.hoodPosition.isNear(hoodSetpoint, HOOD_TOLERANCE);
+
+    LoggedTracer.record("Shooter periodic");
   }
 
   /**
@@ -74,8 +79,6 @@ public final class Shooter extends SubsystemBase {
   private void setFlywheelVelocity(AngularVelocity velocity) {
     io.setFlywheelVelocity(velocity);
     flywheelSetpoint = velocity;
-
-    currentlyShooting = true;
   }
 
   /**
@@ -93,23 +96,18 @@ public final class Shooter extends SubsystemBase {
     final Angle shooterAngle = inputs.hoodPosition;
     final double shooterAngleRads = shooterAngle.in(Radians);
 
-    Rotation3d rot = new Rotation3d(0, shooterAngleRads, 0);
-    Translation3d translation = ROBOT_TO_HOOD_AXLE.plus(HOOD_AXLE_TO_HOOD.rotateBy(rot));
-
-    Pose3d hoodPose = new Pose3d(translation, new Rotation3d(0, Math.PI + shooterAngleRads, 0));
+    final Rotation3d rot = new Rotation3d(0, shooterAngleRads, 0);
+    final Translation3d translation = ROBOT_TO_HOOD_AXLE.plus(HOOD_AXLE_TO_HOOD.rotateBy(rot));
+    final Pose3d hoodPose =
+        new Pose3d(translation, new Rotation3d(0, Math.PI + shooterAngleRads, 0));
 
     Logger.recordOutput("Shooter/HoodPosition", hoodPose);
 
-    final MapleSimManager manager = MapleSimManager.getInstance();
-
-    manager.setShooterState(
-        translation.plus(HOOD_SHOOTING_OFFSET),
-        inputs.flywheelLeaderVelocity,
-        NINETY_DEGREES.minus(inputs.hoodPosition));
-
-    if (currentlyShooting && shooterAngle.isNear(hoodSetpoint, HOOD_TOLERANCE)) {
-      manager.launchFuel();
-    }
+    MapleSimManager.getInstance()
+        .setShooterState(
+            translation.plus(HOOD_SIM_SHOOTING_OFFSET),
+            inputs.flywheelLeaderVelocity,
+            NINETY_DEGREES.minus(inputs.hoodPosition));
   }
 
   /**
@@ -128,8 +126,6 @@ public final class Shooter extends SubsystemBase {
   /** Commands the flywheel to coast out to conserve battery voltage. */
   public void stopFlywheel() {
     io.coastFlywheel();
-
-    currentlyShooting = false;
   }
 
   /** Commands the hood to stow when it isn't being used. */

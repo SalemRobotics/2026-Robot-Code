@@ -2,6 +2,7 @@ package com.frc6324.robot2026.subsystems.leds;
 
 import static com.frc6324.robot2026.subsystems.leds.LEDsConstants.*;
 
+import com.frc6324.lib.util.LoggedTracer;
 import com.frc6324.lib.util.VirtualSubsystem;
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
@@ -31,6 +32,8 @@ public final class LEDs extends VirtualSubsystem {
     } else {
       currentState.pattern.applyTo(buffer);
     }
+
+    LoggedTracer.record("LEDs periodic");
   }
 
   /**

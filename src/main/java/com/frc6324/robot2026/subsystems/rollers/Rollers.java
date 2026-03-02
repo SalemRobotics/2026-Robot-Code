@@ -1,5 +1,6 @@
 package com.frc6324.robot2026.subsystems.rollers;
 
+import com.frc6324.lib.util.LoggedTracer;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -51,6 +52,8 @@ public final class Rollers extends SubsystemBase {
         followerDisconnectedDebouncer.calculate(!inputs.followerConnected);
     leaderDisconnectedAlert.set(leaderDisconnected);
     followerDisconnectedAlert.set(followerDisconnected);
+
+    LoggedTracer.record("Rollers periodic");
   }
 
   /** Starts the intake's rollers. */

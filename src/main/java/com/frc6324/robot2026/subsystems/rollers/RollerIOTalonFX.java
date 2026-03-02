@@ -9,9 +9,10 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.StatusSignalCollection;
 import com.ctre.phoenix6.controls.CoastOut;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.TorqueCurrentFOC;
+import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.frc6324.robot2026.Constants;
 import edu.wpi.first.units.measure.*;
@@ -21,7 +22,8 @@ public class RollerIOTalonFX implements RollerIO {
   protected final TalonFX follower = new TalonFX(ROLLER_FOLLOWER_ID, ROLLER_CAN_BUS);
 
   private final Follower followerRequest = new Follower(ROLLER_LEADER_ID, ROLLER_ALIGNMENT);
-  private final TorqueCurrentFOC spinRequest = new TorqueCurrentFOC(ROLLER_SPIN_CURRENT);
+  private final VelocityTorqueCurrentFOC spinRequest =
+      new VelocityTorqueCurrentFOC(0).withVelocity(ROLLER_SPIN_VELOCITY);
   private final CoastOut coast = new CoastOut();
 
   private final StatusSignal<AngularVelocity> leaderVelocity = leader.getVelocity();
@@ -65,6 +67,7 @@ public class RollerIOTalonFX implements RollerIO {
 
     // Configure both of the motors
     tryUntilOk(5, () -> leader.getConfigurator().apply(ROLLER_MOTOR_CONFIG, 0.25));
+    ROLLER_MOTOR_CONFIG.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     tryUntilOk(5, () -> follower.getConfigurator().apply(ROLLER_MOTOR_CONFIG, 0.25));
 
     // Configure the motors to brake when stopped
@@ -80,7 +83,7 @@ public class RollerIOTalonFX implements RollerIO {
 
   @Override
   public void start() {
-    leader.set(0.75);
+    leader.setControl(spinRequest);
     follower.setControl(followerRequest);
   }
 

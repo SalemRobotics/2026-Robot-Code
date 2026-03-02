@@ -4,14 +4,11 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.*;
-import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import com.ctre.phoenix6.signals.*;
 import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
 import com.frc6324.lib.UninstantiableClass;
 import com.frc6324.robot2026.Constants;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
 import edu.wpi.first.math.interpolation.InverseInterpolator;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -58,11 +55,8 @@ public final class ShooterConstants {
     HUB_FLYWHEEL_VELOCITY_MAP.put(5.0, RotationsPerSecond.of(48.75));
     HUB_FLYWHEEL_VELOCITY_MAP.put(5.3, RotationsPerSecond.of(50.5));
 
-    // TODO: velocities from 2 -> 6 (steps of 0.25)
-
-    // TODO: find correspondence between hood angles & velocities at distance
-    // (map should have a point for every velocity map entry)
     HOOD_ANGLE_MAP.put(0.0, Rotations.of(0.15));
+    // All angles here stay the same, so it isn't worth adding them
     HOOD_ANGLE_MAP.put(3.5, Rotations.of(0.15));
     HOOD_ANGLE_MAP.put(3.75, Rotations.of(0.225));
     HOOD_ANGLE_MAP.put(4.0, Rotations.of(0.3));
@@ -82,8 +76,6 @@ public final class ShooterConstants {
     public static final Translation3d ROBOT_TO_HOOD_AXLE =
         new Translation3d(Inches.of(-1.75), Inches.of(0.75), Inches.of(17.5));
 
-    // CAD centroid: -110.334 mm, -22.4069 mm, 60.9053 mm
-
     /** The translation from the axle the hood is mounted on to the hood itself. */
     public static final Translation3d HOOD_AXLE_TO_HOOD =
         new Translation3d(-0.110334, 0, -0.0609053);
@@ -92,45 +84,35 @@ public final class ShooterConstants {
      * The offset from the {@link #HOOD_AXLE_TO_HOOD} translation that gets the center point of the
      * hood.
      */
-    public static final Translation3d HOOD_SHOOTING_OFFSET = new Translation3d(0, -0.0224069, 0);
+    public static final Translation3d HOOD_SIM_SHOOTING_OFFSET =
+        new Translation3d(0, -0.0224069, 0);
 
     // Setpoint values & tolerance
-    public static final Angle HOOD_STOW_ANGLE = Degrees.zero();
-    public static final Angle HOOD_MAX_ANGLE = Degrees.of(25);
-    public static final Angle HOOD_TOLERANCE = Degrees.of(2.5);
-
-    /** The current limits for the hood's motor. */
-    public static final CurrentLimitsConfigs HOOD_CURRENT_LIMITS =
-        new CurrentLimitsConfigs()
-            .withStatorCurrentLimit(Amps.of(70))
-            .withStatorCurrentLimitEnable(true)
-            .withSupplyCurrentLimit(Amps.of(45))
-            .withSupplyCurrentLimitEnable(true);
-
-    /** Configuration values for the hood motor's Motion Magic&reg; controls. */
-    public static final MotionMagicConfigs HOOD_MOTION_MAGIC =
-        new MotionMagicConfigs()
-            .withMotionMagicCruiseVelocity(RotationsPerSecond.of(1))
-            .withMotionMagicAcceleration(RotationsPerSecondPerSecond.of(5))
-            .withMotionMagicJerk(RotationsPerSecondPerSecond.per(Second).of(100));
-
-    /** The PID gains for the hood motor to reach target positions. */
-    public static final Slot0Configs HOOD_GAINS =
-        new Slot0Configs().withKP(50).withKI(5).withKD(1).withKG(2.6);
-
-    /** The feedback information (gear ratios) for the hood's motor. */
-    public static final FeedbackConfigs HOOD_FEEDBACK =
-        new FeedbackConfigs().withSensorToMechanismRatio(HOOD_REDUCTION);
+    public static final Angle HOOD_STOW_ANGLE = Rotations.of(0.05);
+    public static final Angle HOOD_MAX_ANGLE = Rotations.of(0.5);
+    public static final Angle HOOD_TOLERANCE = Rotations.of(0.01);
 
     /** The full configuration for the hood's {@link com.ctre.phoenix6.hardware.TalonFX TalonFX}. */
     public static final TalonFXConfiguration HOOD_MOTOR_CONFIG =
         new TalonFXConfiguration()
-            .withCurrentLimits(HOOD_CURRENT_LIMITS)
-            .withSlot0(new Slot0Configs().withKP(175).withKI(10).withKD(3.5).withKG(2.6))
-            .withMotionMagic(HOOD_MOTION_MAGIC)
+            .withCurrentLimits(
+                new CurrentLimitsConfigs()
+                    .withStatorCurrentLimit(Amps.of(70))
+                    .withStatorCurrentLimitEnable(true)
+                    .withSupplyCurrentLimit(Amps.of(40))
+                    .withSupplyCurrentLimitEnable(true))
+            .withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(HOOD_REDUCTION))
             .withMotorOutput(
-                new MotorOutputConfigs().withInverted(InvertedValue.Clockwise_Positive))
-            .withFeedback(HOOD_FEEDBACK);
+                new MotorOutputConfigs()
+                    .withControlTimesyncFreqHz(Hertz.of(100))
+                    .withInverted(InvertedValue.Clockwise_Positive))
+            .withSlot0(new Slot0Configs().withKP(175).withKI(10).withKD(3.5).withKG(2.6))
+            .withSoftwareLimitSwitch(
+                new SoftwareLimitSwitchConfigs()
+                    .withForwardSoftLimitThreshold(HOOD_MAX_ANGLE)
+                    .withForwardSoftLimitEnable(true)
+                    .withReverseSoftLimitThreshold(Rotations.zero())
+                    .withReverseSoftLimitEnable(true));
 
     /** The gearbox for the hood's motor. */
     public static final DCMotor HOOD_GEARBOX = DCMotor.getKrakenX44Foc(1);
@@ -156,24 +138,19 @@ public final class ShooterConstants {
     public static final double FLYWHEEL_BACKSPIN_EFFICIENCY = 0.4;
     public static final Distance FLYWHEEL_RADIUS = Inches.of(1.5);
 
-    public static final AngularVelocity FLYWHEEL_VELOCITY_TOLERANCE = RadiansPerSecond.one();
-
+    public static final AngularVelocity FLYWHEEL_VELOCITY_TOLERANCE = RotationsPerSecond.of(1.5);
     public static final MotorAlignmentValue FLYWHEEL_MOTOR_ALIGNMENT = MotorAlignmentValue.Opposed;
-
-    public static final CurrentLimitsConfigs FLYWHEEL_CURRENT_LIMITS =
-        new CurrentLimitsConfigs()
-            .withStatorCurrentLimit(Amps.of(120))
-            .withStatorCurrentLimitEnable(true)
-            .withSupplyCurrentLimit(Amps.of(100))
-            .withSupplyCurrentLimitEnable(true);
-
-    public static final Slot0Configs FLYWHEEL_GAINS =
-        new Slot0Configs().withKP(10).withKI(5).withKD(0.1).withKS(10).withKV(0.175);
 
     public static final TalonFXConfiguration FLYWHEEL_MOTOR_CONFIG =
         new TalonFXConfiguration()
-            .withSlot0(FLYWHEEL_GAINS)
-            .withCurrentLimits(FLYWHEEL_CURRENT_LIMITS);
+            .withCurrentLimits(
+                new CurrentLimitsConfigs()
+                    .withStatorCurrentLimit(Amps.of(120))
+                    .withStatorCurrentLimitEnable(true)
+                    .withSupplyCurrentLimit(Amps.of(100))
+                    .withSupplyCurrentLimitEnable(true))
+            .withSlot0(
+                new Slot0Configs().withKP(10).withKI(5).withKD(0.1).withKS(10).withKV(0.175));
 
     public static final DCMotor FLYWHEEL_GEARBOX = DCMotor.getKrakenX60Foc(2);
     public static final MotorType FLYWHEEL_MOTOR_TYPE = MotorType.KrakenX60;
