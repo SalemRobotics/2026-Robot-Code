@@ -8,14 +8,14 @@ import static edu.wpi.first.units.Units.Hertz;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.StatusSignalCollection;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.frc6324.lib.util.PhoenixUtil;
+
 import edu.wpi.first.units.measure.*;
 
 public class ShooterIOTalonFX implements ShooterIO {
@@ -56,7 +56,7 @@ public class ShooterIOTalonFX implements ShooterIO {
   private final StatusSignal<Voltage> flywheelMotorVoltage = flywheelLeader.getMotorVoltage();
   private final StatusSignal<Current> flywheelStatorCurrent = flywheelLeader.getStatorCurrent();
   private final StatusSignal<Current> flywheelTorqueCurrent = flywheelLeader.getTorqueCurrent();
-  private final BaseStatusSignal[] flywheelSignals = {
+  private final BaseStatusSignal[] flywheelLeaderSignals = {
     flywheelVelocity,
     flywheelAcceleration,
     flywheelPIDSetpoint,
@@ -84,26 +84,20 @@ public class ShooterIOTalonFX implements ShooterIO {
     flywheelFollowerTorqueCurrent
   };
 
-  private final StatusSignalCollection signals = new StatusSignalCollection();
-
   public ShooterIOTalonFX() {
-    signals.addSignals(hoodSignals);
-    signals.addSignals(flywheelSignals);
-    signals.addSignals(flywheelFollowerSignals);
-
     tryUntilOk(5, () -> hoodTalon.getConfigurator().apply(HOOD_MOTOR_CONFIG, 0.25));
-    tryUntilOk(5, () -> hoodTalon.setNeutralMode(NeutralModeValue.Brake, 0.25));
     tryUntilOk(5, () -> hoodTalon.setPosition(0, 0.25));
 
+    // Apply the config to the leader
     tryUntilOk(5, () -> flywheelLeader.getConfigurator().apply(FLYWHEEL_MOTOR_CONFIG, 0.25));
-    tryUntilOk(5, () -> flywheelLeader.setNeutralMode(NeutralModeValue.Coast, 0.25));
 
-    // Invert the config & apply
+    // Invert the config & apply to the follower
     FLYWHEEL_MOTOR_CONFIG.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     tryUntilOk(5, () -> flywheelFollower.getConfigurator().apply(FLYWHEEL_MOTOR_CONFIG, 0.25));
-    tryUntilOk(5, () -> flywheelFollower.setNeutralMode(NeutralModeValue.Coast, 0.25));
 
-    signals.setUpdateFrequencyForAll(Hertz.of(100));
+    PhoenixUtil.addSignals(hoodTalon, hoodSignals);
+    PhoenixUtil.addSignals(flywheelLeader, flywheelLeaderSignals);
+    PhoenixUtil.addSignals(flywheelFollower, flywheelFollowerSignals);
     ParentDevice.optimizeBusUtilizationForAll(0, hoodTalon, flywheelLeader, flywheelFollower);
   }
 
@@ -131,10 +125,8 @@ public class ShooterIOTalonFX implements ShooterIO {
 
   @Override
   public void updateInputs(ShooterInputs inputs) {
-    signals.refreshAll();
-
     inputs.hoodConnected = BaseStatusSignal.isAllGood(hoodSignals);
-    inputs.flywheelLeaderConnected = BaseStatusSignal.isAllGood(flywheelSignals);
+    inputs.flywheelLeaderConnected = BaseStatusSignal.isAllGood(flywheelLeaderSignals);
     inputs.flywheelFollowerConnected = BaseStatusSignal.isAllGood(flywheelFollowerSignals);
 
     inputs.hoodPosition = hoodPosition.getValue();

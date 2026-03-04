@@ -2,16 +2,14 @@ package com.frc6324.robot2026.subsystems.intake;
 
 import static com.frc6324.lib.util.PhoenixUtil.tryUntilOk;
 import static com.frc6324.robot2026.subsystems.intake.IntakeConstants.*;
-import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.frc6324.robot2026.Constants;
+import com.frc6324.lib.util.PhoenixUtil;
 import edu.wpi.first.units.measure.*;
-import edu.wpi.first.wpilibj.RobotBase;
 
 public class IntakeIOTalonFX implements IntakeIO {
   protected final TalonFX talon = new TalonFX(INTAKE_MOTOR_ID, INTAKE_CAN_BUS);
@@ -37,16 +35,12 @@ public class IntakeIOTalonFX implements IntakeIO {
   };
 
   public IntakeIOTalonFX() {
+    PhoenixUtil.addSignals(talon, signals);
+    talon.optimizeBusUtilization(0);
+
     // Set configurations for the motor
     tryUntilOk(5, () -> talon.getConfigurator().apply(INTAKE_MOTOR_CONFIG));
     tryUntilOk(5, () -> talon.setNeutralMode(NeutralModeValue.Coast));
-
-    if (RobotBase.isReal() && INTAKE_CAN_BUS == Constants.CANIVORE) {
-      BaseStatusSignal.waitForAll(1, signals);
-    }
-
-    BaseStatusSignal.setUpdateFrequencyForAll(Hertz.of(50), signals);
-    talon.optimizeBusUtilization(0);
   }
 
   @Override
@@ -66,7 +60,7 @@ public class IntakeIOTalonFX implements IntakeIO {
 
   @Override
   public void updateInputs(IntakeInputs inputs) {
-    inputs.motorConnected = BaseStatusSignal.refreshAll(signals).isOK();
+    inputs.motorConnected = BaseStatusSignal.isAllGood(signals);
 
     inputs.motorPosition = deployPosition.getValue();
     inputs.positionError = positionError.getValueAsDouble();

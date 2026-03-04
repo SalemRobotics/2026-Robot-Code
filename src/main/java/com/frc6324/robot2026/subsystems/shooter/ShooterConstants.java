@@ -105,7 +105,8 @@ public final class ShooterConstants {
             .withMotorOutput(
                 new MotorOutputConfigs()
                     .withControlTimesyncFreqHz(Hertz.of(100))
-                    .withInverted(InvertedValue.Clockwise_Positive))
+                    .withInverted(InvertedValue.Clockwise_Positive)
+                    .withNeutralMode(NeutralModeValue.Brake))
             .withSlot0(new Slot0Configs().withKP(175).withKI(10).withKD(3.5).withKG(2.6))
             .withSoftwareLimitSwitch(
                 new SoftwareLimitSwitchConfigs()
@@ -149,6 +150,9 @@ public final class ShooterConstants {
                     .withStatorCurrentLimitEnable(true)
                     .withSupplyCurrentLimit(Amps.of(100))
                     .withSupplyCurrentLimitEnable(true))
+            .withMotorOutput(new MotorOutputConfigs()
+              .withInverted(InvertedValue.CounterClockwise_Positive)
+              .withNeutralMode(NeutralModeValue.Brake))
             .withSlot0(
                 new Slot0Configs().withKP(10).withKI(5).withKD(0.1).withKS(10).withKV(0.175));
 
