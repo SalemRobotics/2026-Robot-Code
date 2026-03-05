@@ -30,7 +30,7 @@ public final class IndexerConstants {
           // FEEDBACK
           .withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(9))
           // GAINS
-          .withSlot0(new Slot0Configs().withKP(5).withKD(1).withKV(1).withKA(0).withKS(1));
+          .withSlot0(new Slot0Configs().withKP(25).withKD(0.5).withKV(0.05).withKS(2.6));
 
   public static final TalonFXConfiguration INDEXER_KICKER_CONFIG =
       new TalonFXConfiguration()
@@ -44,7 +44,7 @@ public final class IndexerConstants {
           // FEEDBACK
           .withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(3))
           // GAINS
-          .withSlot0(new Slot0Configs().withKP(5).withKD(1).withKV(1).withKA(0).withKS(1));
+          .withSlot0(new Slot0Configs().withKP(6).withKV(0.15).withKS(5));
 
   public static final DCMotor INDEXER_KICKER_GEARBOX = DCMotor.getKrakenX44Foc(1);
   public static final MotorType INDEXER_KICKER_MOTOR_TYPE = MotorType.KrakenX44;

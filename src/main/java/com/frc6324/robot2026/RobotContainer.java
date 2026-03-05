@@ -19,8 +19,7 @@ import static com.frc6324.robot2026.Constants.*;
 
 import com.frc6324.lib.util.IOLayer;
 import com.frc6324.robot2026.commands.DriveCommands;
-import com.frc6324.robot2026.commands.ShooterCommands.PassToAllianceZoneCommand;
-import com.frc6324.robot2026.commands.ShooterCommands.ShootIntoHubCommand;
+import com.frc6324.robot2026.commands.ShooterCommands.*;
 import com.frc6324.robot2026.subsystems.drive.*;
 import com.frc6324.robot2026.subsystems.drive.DriveIO.DriveIOReplay;
 import com.frc6324.robot2026.subsystems.indexer.*;
@@ -97,12 +96,13 @@ public class RobotContainer {
 
   private void configureBindings() {
     drive.setDefaultCommand(DriveCommands.joystickDrive(drive, controller.getHID()));
-    shooter.setDefaultCommand(
-        shooter.run(
+    shooter.setDefaultCommand(new IdleShooterCommand(shooter, drive));
+    indexer.setDefaultCommand(
+        Commands.run(
             () -> {
-              shooter.stowHood();
-              shooter.stopFlywheel();
-            }));
+              indexer.stopIndexerWheel();
+            },
+            indexer));
     rollers.setDefaultCommand(rollers.run(rollers::coastRollers));
 
     controller

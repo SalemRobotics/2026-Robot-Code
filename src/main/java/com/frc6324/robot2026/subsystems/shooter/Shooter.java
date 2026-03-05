@@ -56,7 +56,7 @@ public final class Shooter extends SubsystemBase {
     setHoodAngle(HOOD_MAX_ANGLE);
 
     AngularVelocity targetVelocity = PASSING_FLYWHEEL_VELOCITY_MAP.get(distanceToZone);
-    setFlywheelVelocity(targetVelocity);
+    setFlywheelVelocity(targetVelocity, FLYWHEEL_SHOOTING_SLOT);
   }
 
   @Override
@@ -68,6 +68,11 @@ public final class Shooter extends SubsystemBase {
         inputs.flywheelLeaderVelocity.isNear(flywheelSetpoint, FLYWHEEL_VELOCITY_TOLERANCE);
     hoodAtSetpoint = inputs.hoodPosition.isNear(hoodSetpoint, HOOD_TOLERANCE);
 
+    Logger.recordOutput("Shooter/Hood Setpoint", hoodSetpoint);
+    Logger.recordOutput("Shooter/Hood At Setpoint", hoodAtSetpoint);
+    Logger.recordOutput("Shooter/Flywheel Setpoint", flywheelSetpoint);
+    Logger.recordOutput("Shooter/Flywheel At Setpoint", flywheelAtSetpoint);
+
     LoggedTracer.record("Shooter periodic");
   }
 
@@ -76,8 +81,8 @@ public final class Shooter extends SubsystemBase {
    *
    * @param velocity The velocity setpoint.
    */
-  private void setFlywheelVelocity(AngularVelocity velocity) {
-    io.setFlywheelVelocity(velocity);
+  private void setFlywheelVelocity(AngularVelocity velocity, int slot) {
+    io.setFlywheelVelocity(velocity, slot);
     flywheelSetpoint = velocity;
   }
 
@@ -101,7 +106,7 @@ public final class Shooter extends SubsystemBase {
     final Pose3d hoodPose =
         new Pose3d(translation, new Rotation3d(0, Math.PI + shooterAngleRads, 0));
 
-    Logger.recordOutput("Shooter/HoodPosition", hoodPose);
+    Logger.recordOutput("Shooter/HoodMechanismPosition", hoodPose);
 
     MapleSimManager.getInstance()
         .setShooterState(
@@ -120,7 +125,14 @@ public final class Shooter extends SubsystemBase {
     AngularVelocity targetVelocity = HUB_FLYWHEEL_VELOCITY_MAP.get(distanceToHub);
 
     setHoodAngle(hoodAngle);
-    setFlywheelVelocity(targetVelocity);
+    setFlywheelVelocity(targetVelocity, FLYWHEEL_SHOOTING_SLOT);
+  }
+
+  public void spinUpForHubShot(double distanceToHub) {
+    final Angle angle = HOOD_ANGLE_MAP.get(distanceToHub);
+    setHoodAngle(angle);
+
+    setFlywheelVelocity(FLYWHEEL_IDLE_SPEED, FLYWHEEL_SPINUP_SLOT);
   }
 
   /** Commands the flywheel to coast out to conserve battery voltage. */

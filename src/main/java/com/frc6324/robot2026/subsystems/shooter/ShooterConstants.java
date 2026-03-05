@@ -55,15 +55,24 @@ public final class ShooterConstants {
     HUB_FLYWHEEL_VELOCITY_MAP.put(5.0, RotationsPerSecond.of(48.75));
     HUB_FLYWHEEL_VELOCITY_MAP.put(5.3, RotationsPerSecond.of(50.5));
 
+    PASSING_FLYWHEEL_VELOCITY_MAP.put(0.0, RotationsPerSecond.of(20));
+    PASSING_FLYWHEEL_VELOCITY_MAP.put(3.4, RotationsPerSecond.of(43));
+    PASSING_FLYWHEEL_VELOCITY_MAP.put(4.1, RotationsPerSecond.of(46));
+    PASSING_FLYWHEEL_VELOCITY_MAP.put(4.75, RotationsPerSecond.of(48));
+    PASSING_FLYWHEEL_VELOCITY_MAP.put(5.5, RotationsPerSecond.of(51));
+    PASSING_FLYWHEEL_VELOCITY_MAP.put(6.0, RotationsPerSecond.of(56));
+    PASSING_FLYWHEEL_VELOCITY_MAP.put(7.0, RotationsPerSecond.of(60));
+    PASSING_FLYWHEEL_VELOCITY_MAP.put(8.8, RotationsPerSecond.of(62.5));
+    PASSING_FLYWHEEL_VELOCITY_MAP.put(16.0, RotationsPerSecond.of(62.5));
+
     HOOD_ANGLE_MAP.put(0.0, Rotations.of(0.15));
-    // All angles here stay the same, so it isn't worth adding them
     HOOD_ANGLE_MAP.put(3.5, Rotations.of(0.15));
     HOOD_ANGLE_MAP.put(3.75, Rotations.of(0.225));
     HOOD_ANGLE_MAP.put(4.0, Rotations.of(0.3));
     HOOD_ANGLE_MAP.put(4.25, Rotations.of(0.3));
     HOOD_ANGLE_MAP.put(4.5, Rotations.of(0.35));
     HOOD_ANGLE_MAP.put(5.0, Rotations.of(0.3875));
-    HOOD_ANGLE_MAP.put(5.3, Rotations.of(0.4));
+    HOOD_ANGLE_MAP.put(7.0, Rotations.of(0.4));
   }
 
   /** Constants for the shooter's hood. */
@@ -89,7 +98,7 @@ public final class ShooterConstants {
 
     // Setpoint values & tolerance
     public static final Angle HOOD_STOW_ANGLE = Rotations.of(0.05);
-    public static final Angle HOOD_MAX_ANGLE = Rotations.of(0.5);
+    public static final Angle HOOD_MAX_ANGLE = Rotations.of(0.6);
     public static final Angle HOOD_TOLERANCE = Rotations.of(0.01);
 
     /** The full configuration for the hood's {@link com.ctre.phoenix6.hardware.TalonFX TalonFX}. */
@@ -139,6 +148,7 @@ public final class ShooterConstants {
     public static final double FLYWHEEL_BACKSPIN_EFFICIENCY = 0.4;
     public static final Distance FLYWHEEL_RADIUS = Inches.of(1.5);
 
+    public static final AngularVelocity FLYWHEEL_IDLE_SPEED = RPM.of(1500);
     public static final AngularVelocity FLYWHEEL_VELOCITY_TOLERANCE = RotationsPerSecond.of(1.5);
     public static final MotorAlignmentValue FLYWHEEL_MOTOR_ALIGNMENT = MotorAlignmentValue.Opposed;
 
@@ -150,11 +160,16 @@ public final class ShooterConstants {
                     .withStatorCurrentLimitEnable(true)
                     .withSupplyCurrentLimit(Amps.of(100))
                     .withSupplyCurrentLimitEnable(true))
-            .withMotorOutput(new MotorOutputConfigs()
-              .withInverted(InvertedValue.CounterClockwise_Positive)
-              .withNeutralMode(NeutralModeValue.Brake))
-            .withSlot0(
-                new Slot0Configs().withKP(10).withKI(5).withKD(0.1).withKS(10).withKV(0.175));
+            .withMotorOutput(
+                new MotorOutputConfigs()
+                    .withControlTimesyncFreqHz(Hertz.of(100))
+                    .withInverted(InvertedValue.CounterClockwise_Positive)
+                    .withNeutralMode(NeutralModeValue.Brake))
+            .withSlot0(new Slot0Configs().withKP(10).withKI(5).withKD(0.1).withKS(10).withKV(0.175))
+            .withSlot1(new Slot1Configs().withKP(5).withKI(5).withKS(0.05).withKS(10).withKV(0.75));
+
+    public static final int FLYWHEEL_SHOOTING_SLOT = 0;
+    public static final int FLYWHEEL_SPINUP_SLOT = 1;
 
     public static final DCMotor FLYWHEEL_GEARBOX = DCMotor.getKrakenX60Foc(2);
     public static final MotorType FLYWHEEL_MOTOR_TYPE = MotorType.KrakenX60;

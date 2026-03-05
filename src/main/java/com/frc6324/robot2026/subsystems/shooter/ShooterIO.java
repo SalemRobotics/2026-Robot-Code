@@ -9,7 +9,7 @@ import org.littletonrobotics.junction.AutoLog;
 public interface ShooterIO {
   default void coastFlywheel() {}
 
-  default void setFlywheelVelocity(AngularVelocity velocity) {}
+  default void setFlywheelVelocity(AngularVelocity velocity, int slot) {}
 
   default void setHoodAngle(Angle angle) {}
 

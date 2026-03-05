@@ -15,7 +15,6 @@ import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.frc6324.lib.util.PhoenixUtil;
-
 import edu.wpi.first.units.measure.*;
 
 public class ShooterIOTalonFX implements ShooterIO {
@@ -25,9 +24,17 @@ public class ShooterIOTalonFX implements ShooterIO {
 
   // Control requests (have higher update frequencies to make PID smoother-ish and stick faster to )
   private final PositionTorqueCurrentFOC hoodRequest =
-      new PositionTorqueCurrentFOC(0).withUpdateFreqHz(Hertz.of(500));
+      new PositionTorqueCurrentFOC(0)
+          .withSlot(0)
+          .withUpdateFreqHz(Hertz.of(500))
+          .withUseTimesync(true);
+
   private final VelocityTorqueCurrentFOC flywheelRequest =
-      new VelocityTorqueCurrentFOC(0).withUpdateFreqHz(Hertz.of(250));
+      new VelocityTorqueCurrentFOC(0)
+          .withSlot(0)
+          .withUpdateFreqHz(Hertz.of(1000))
+          .withUseTimesync(true);
+
   private final Follower followerRequest =
       new Follower(FLYWHEEL_LEADER_ID, FLYWHEEL_MOTOR_ALIGNMENT);
 
@@ -108,8 +115,8 @@ public class ShooterIOTalonFX implements ShooterIO {
   }
 
   @Override
-  public void setFlywheelVelocity(AngularVelocity velocity) {
-    flywheelLeader.setControl(flywheelRequest.withVelocity(velocity));
+  public void setFlywheelVelocity(AngularVelocity velocity, int slot) {
+    flywheelLeader.setControl(flywheelRequest.withVelocity(velocity).withSlot(slot));
     flywheelFollower.setControl(followerRequest);
   }
 

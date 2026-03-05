@@ -6,6 +6,8 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.frc6324.lib.UninstantiableClass;
 import com.frc6324.lib.util.FieldConstants;
 import com.frc6324.lib.util.FieldConstants.LinesVertical;
+import com.frc6324.lib.util.PoseExtensions;
+import com.frc6324.lib.util.PoseExtensions.PoseSupplier;
 import com.frc6324.robot2026.sim.MapleSimManager;
 import com.frc6324.robot2026.subsystems.drive.SwerveDrive;
 import com.frc6324.robot2026.subsystems.indexer.Indexer;
@@ -22,8 +24,10 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import java.util.List;
+import lombok.experimental.ExtensionMethod;
 import org.littletonrobotics.junction.Logger;
 
+@ExtensionMethod(PoseExtensions.class)
 @UninstantiableClass
 public final class ShooterCommands {
   private ShooterCommands() {
@@ -65,6 +69,14 @@ public final class ShooterCommands {
     abstract void commandShooter(double distanceToTarget);
 
     @Override
+    public void end(boolean interrupted) {
+      shooter.stopFlywheel();
+
+      indexer.stopKickerWheel();
+      indexer.stopIndexerWheel();
+    }
+
+    @Override
     public final void execute() {
       // Get the linear velocity for the drivetrain
       Translation2d linearVelocity = DriveCommands.getLinearVelocityFromJoysticks(controller);
@@ -79,7 +91,8 @@ public final class ShooterCommands {
       final Pose2d shooterPosition = robotPose.transformBy(SHOOTER_POSITION);
 
       // Calculate the linear distance to the target
-      final Translation2d delta = getTarget().minus(shooterPosition.getTranslation());
+      final Translation2d target = getTarget();
+      final Translation2d delta = target.minus(shooterPosition.getTranslation());
       final Rotation2d facing = delta.getAngle();
 
       drive.setControl(request.withTargetDirection(facing));
@@ -111,6 +124,7 @@ public final class ShooterCommands {
         MapleSimManager.getInstance().launchFuel();
       }
 
+      Logger.recordOutput(logKey + "/TargetPose", target);
       Logger.recordOutput(logKey + "/TargetHeading", facing);
       Logger.recordOutput(logKey + "/DistanceToTarget", distance);
       Logger.recordOutput(logKey + "/Indexing", index);
@@ -210,14 +224,76 @@ public final class ShooterCommands {
           List.of(
               new Translation2d(x, FieldConstants.FIELD_WIDTH / 5),
               new Translation2d(x, FieldConstants.FIELD_WIDTH / 4),
-              new Translation2d(x, FieldConstants.FIELD_WIDTH * (3 / 4)),
-              new Translation2d(x, FieldConstants.FIELD_WIDTH * (4 / 5)));
+              new Translation2d(x, FieldConstants.FIELD_WIDTH * 0.75),
+              new Translation2d(x, FieldConstants.FIELD_WIDTH * 0.8));
+
+      Logger.recordOutput(
+          logKey + "/AllPassingPoses", allianceZoneTranslations.toArray(Translation2d[]::new));
       super.initialize();
     }
 
     @Override
     boolean shouldIndex(Rotation2d targetFacing, double distanceToTarget) {
       return true;
+    }
+  }
+
+  public static class IdleShooterCommand extends Command {
+    private final Shooter shooter;
+    private final PoseSupplier robotPoseSupplier;
+
+    private double allianceZoneStart;
+    private double allianceZoneEnd;
+
+    private double trenchStart;
+    private double trenchEnd;
+
+    public IdleShooterCommand(Shooter shooter, SwerveDrive drive) {
+      this.shooter = shooter;
+      this.robotPoseSupplier = drive;
+
+      addRequirements(shooter);
+    }
+
+    @Override
+    public void initialize() {
+      switch (DriverStation.getAlliance().orElse(Alliance.Blue)) {
+        case Blue -> {
+          allianceZoneStart = 0;
+          allianceZoneEnd = LinesVertical.ALLIANCE_ZONE;
+
+          trenchStart = LinesVertical.ALLIANCE_ZONE;
+          trenchEnd = LinesVertical.NEUTRAL_ZONE_NEAR;
+        }
+        case Red -> {
+          allianceZoneStart = LinesVertical.OPP_ALIANCE_ZONE;
+          allianceZoneEnd = FieldConstants.FIELD_LENGTH;
+
+          trenchStart = LinesVertical.NEUTRAL_ZONE_FAR;
+          trenchEnd = LinesVertical.OPP_ALIANCE_ZONE;
+        }
+      }
+    }
+
+    @Override
+    public void execute() {
+      final Pose2d robotPose = robotPoseSupplier.getPose();
+
+      if (robotPose.boundedWithinX(allianceZoneStart, allianceZoneEnd)) {
+        final Pose2d hub = FieldConstants.getAllianceHub();
+        final double dist = robotPose.getTranslation().getDistance(hub.getTranslation());
+
+        // Spin up the shooter to a low velocity in the alliance zone to minimize overhead & current
+        // use
+        shooter.spinUpForHubShot(dist);
+      } else {
+        shooter.stopFlywheel();
+      }
+
+      if (robotPose.boundedWithinX(trenchStart, trenchEnd)) {
+        // Stow the hood if we're going under the trench
+        shooter.stowHood();
+      }
     }
   }
 }

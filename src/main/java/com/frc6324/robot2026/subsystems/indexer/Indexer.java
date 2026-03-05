@@ -26,7 +26,7 @@ public final class Indexer extends SubsystemBase {
   }
 
   public void runIndexerWheel() {
-    motorsIO.setSpinnerVelocity(RPM.of(640));
+    motorsIO.setSpinnerVelocity(RPM.of(450));
   }
 
   public void runKickerWheel() {
