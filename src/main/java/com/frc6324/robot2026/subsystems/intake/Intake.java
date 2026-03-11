@@ -38,11 +38,15 @@ public final class Intake extends SubsystemBase {
   }
 
   public void deploy() {
-    io.deploy();
+    io.setPosition(INTAKE_DEPLOYED_POSITION);
   }
 
   public boolean isDeployed() {
     return inputs.motorPosition.isNear(INTAKE_DEPLOYED_POSITION, INTAKE_DEPLOY_TOLERANCE);
+  }
+
+  public boolean isRetracted() {
+    return inputs.motorPosition.isNear(INTAKE_RETRACTED_POSITION, INTAKE_DEPLOY_TOLERANCE);
   }
 
   public boolean isStowed() {
@@ -60,6 +64,10 @@ public final class Intake extends SubsystemBase {
     LoggedTracer.record("Intake periodic");
   }
 
+  public void retract() {
+    io.setPosition(INTAKE_RETRACTED_POSITION);
+  }
+
   @Override
   public void simulationPeriodic() {
     Translation3d mechTranslation =
@@ -75,6 +83,6 @@ public final class Intake extends SubsystemBase {
   }
 
   public void stow() {
-    io.stow();
+    io.setPosition(INTAKE_STOWED_POSITION);
   }
 }

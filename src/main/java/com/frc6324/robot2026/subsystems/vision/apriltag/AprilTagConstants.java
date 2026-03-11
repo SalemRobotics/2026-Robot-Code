@@ -20,7 +20,7 @@ public final class AprilTagConstants {
   public static final AprilTagFieldLayout APRILTAG_LAYOUT =
       FieldConstants.DEFAULT_APRILTAG_TYPE.getLayout();
 
-  public static final String[] CAMERA_NAMES = {"Front Luma", "Back Luma"};
+  public static final String[] CAMERA_NAMES = {"Front Tag Camera"};
   public static final double[] CAMERA_STDDEV_FACTORS = {1, 1};
   public static final Resolution[] CAMERA_RESOLUTIONS = {
     new Resolution(1280, 800), new Resolution(1280, 800)

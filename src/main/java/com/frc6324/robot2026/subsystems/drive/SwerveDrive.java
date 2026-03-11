@@ -24,7 +24,6 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -163,13 +162,10 @@ public final class SwerveDrive extends SubsystemBase implements VisionConsumer, 
 
   @Override
   public void periodic() {
-    final double timestamp = Timer.getFPGATimestamp();
-
     io.updateInputs(inputs);
     Logger.processInputs("Drive", inputs);
     io.logModuleStates(inputs);
 
-    Logger.recordOutput("Drive/UpdateLatency", Timer.getFPGATimestamp() - timestamp);
     LoggedTracer.record("Drive periodic");
   }
 

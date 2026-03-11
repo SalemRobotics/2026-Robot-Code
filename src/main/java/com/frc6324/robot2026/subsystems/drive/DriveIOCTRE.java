@@ -12,9 +12,12 @@ import com.frc6324.robot2026.generated.TunerConstants;
 import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagIOPhoton.OdometryPoseGetter;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.*;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
 import org.littletonrobotics.junction.Logger;
 
@@ -28,6 +31,8 @@ public sealed class DriveIOCTRE extends SwerveDrivetrain<TalonFX, TalonFX, CANco
   private final StatusSignal<Angle> pitchSignal;
   private final StatusSignal<LinearAcceleration> accelerationX;
   private final StatusSignal<LinearAcceleration> accelerationY;
+
+  private boolean hasAppliedOperatorPerspective = false;
 
   public DriveIOCTRE() {
     super(
@@ -108,6 +113,23 @@ public sealed class DriveIOCTRE extends SwerveDrivetrain<TalonFX, TalonFX, CANco
 
   @Override
   public void updateInputs(final DriveInputs inputs) {
+    /*
+     * Periodically try to apply the operator perspective.
+     * If we haven't applied the operator perspective before, then we should apply it regardless of DS state.
+     * This allows us to correct the perspective in case the robot code restarts mid-match.
+     * Otherwise, only check and apply the operator perspective if the DS is disabled.
+     * This ensures driving behavior doesn't change until an explicit disable event occurs during testing.
+     */
+    if (!hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
+      DriverStation.getAlliance()
+          .ifPresent(
+              allianceColor -> {
+                setOperatorPerspectiveForward(
+                    allianceColor == Alliance.Red ? Rotation2d.k180deg : Rotation2d.kZero);
+                hasAppliedOperatorPerspective = true;
+              });
+    }
+
     final SwerveDriveState state = getState();
 
     // Update the last known odometry

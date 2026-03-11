@@ -1,8 +1,10 @@
 package com.frc6324.robot2026.subsystems.indexer;
 
+import static com.frc6324.robot2026.subsystems.indexer.IndexerConstants.*;
 import static edu.wpi.first.units.Units.RPM;
 
 import com.frc6324.lib.util.LoggedTracer;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
@@ -26,14 +28,19 @@ public final class Indexer extends SubsystemBase {
   }
 
   public void runIndexerWheel() {
-    motorsIO.setSpinnerVelocity(RPM.of(450));
+    final AngularVelocity addition = INDEXER_SPINNER_SHAKE_ADDITION.times(Math.random());
+    final AngularVelocity velocity = INDEXER_SPINNER_VELOCITY.plus(addition);
+
+    Logger.recordOutput("Indexer/SpinnerVelocitySetpoint", velocity);
+    motorsIO.setSpinnerVelocity(velocity);
   }
 
   public void runKickerWheel() {
-    motorsIO.setKickerVelocity(RPM.of(2400));
+    motorsIO.setKickerVelocity(INDEXER_KICKER_VELOCITY);
   }
 
   public void stopIndexerWheel() {
+    Logger.recordOutput("Indexer/SpinnerVelocitySetpoint", RPM.zero());
     motorsIO.stopSpinner();
   }
 

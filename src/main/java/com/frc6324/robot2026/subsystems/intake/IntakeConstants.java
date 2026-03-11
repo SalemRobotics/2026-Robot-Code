@@ -26,7 +26,7 @@ public final class IntakeConstants {
   public static final int INTAKE_MOTOR_ID = 20;
   public static final double INTAKE_REDUCTION = 9;
 
-  public static final int INTAKE_DEPLOY_SLOT = 0;
+  public static final int INTAKE_MOVE_SLOT = 0;
   public static final int INTAKE_SPRING_SLOT = 1;
   public static final int INTAKE_SHAKE_SLOT = 2;
 
@@ -37,6 +37,7 @@ public final class IntakeConstants {
   public static final Angle INTAKE_MAX_POSITION = Rotations.of(3.8);
   public static final Angle INTAKE_DEPLOYED_POSITION = Rotations.of(3.77);
   public static final Angle INTAKE_DEPLOY_TOLERANCE = Degrees.of(2);
+  public static final Angle INTAKE_RETRACTED_POSITION = Rotations.of(1);
   public static final Angle INTAKE_STOWED_POSITION = Rotations.of(0);
 
   public static final TalonFXConfiguration INTAKE_MOTOR_CONFIG =

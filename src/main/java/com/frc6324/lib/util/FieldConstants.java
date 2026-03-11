@@ -327,6 +327,13 @@ public final class FieldConstants {
     };
   }
 
+  public static boolean isInAllianceZone(Pose2d pose) {
+    return switch (DriverStation.getAlliance().orElse(Alliance.Blue)) {
+      case Blue -> pose.getX() < LinesVertical.ALLIANCE_ZONE;
+      case Red -> pose.getX() > LinesVertical.OPP_ALIANCE_ZONE;
+    };
+  }
+
   @RequiredArgsConstructor
   public enum FieldType {
     ANDYMARK("andymark"),

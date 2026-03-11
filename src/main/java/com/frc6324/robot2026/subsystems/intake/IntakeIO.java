@@ -7,11 +7,9 @@ import org.littletonrobotics.junction.AutoLog;
 
 @FunctionalInterface
 public interface IntakeIO {
-  default void deploy() {}
+  default void setPosition(Angle position) {}
 
   default void spring() {}
-
-  default void stow() {}
 
   /**
    * Updates a set of loggable inputs for the intake.

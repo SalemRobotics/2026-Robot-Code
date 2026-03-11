@@ -31,14 +31,6 @@ public final class Rollers extends SubsystemBase {
     followerDisconnectedAlert.set(false);
   }
 
-  /**
-   * Commands the rollers to coast out to save power when they aren't actively being used (e.g.
-   * under the trench)
-   */
-  public void coastRollers() {
-    io.coast();
-  }
-
   @Override
   public void periodic() {
     // Update & log inputs

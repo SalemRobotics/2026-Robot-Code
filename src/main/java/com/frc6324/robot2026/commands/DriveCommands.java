@@ -95,8 +95,7 @@ public final class DriveCommands {
     return drive.run(
         () -> {
           // Get the linear velocity
-          Translation2d linearVelocity =
-              getLinearVelocityFromJoysticks(-controller.getLeftY(), -controller.getLeftX());
+          Translation2d linearVelocity = getLinearVelocityFromJoysticks(controller);
           // Multiply the linear velocity by the drivetrain's max speed
           linearVelocity = linearVelocity.times(SwerveDrive.getMaxLinearSpeed());
 

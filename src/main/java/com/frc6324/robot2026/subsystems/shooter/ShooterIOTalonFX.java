@@ -92,15 +92,14 @@ public class ShooterIOTalonFX implements ShooterIO {
   };
 
   public ShooterIOTalonFX() {
-    tryUntilOk(5, () -> hoodTalon.getConfigurator().apply(HOOD_MOTOR_CONFIG, 0.25));
-    tryUntilOk(5, () -> hoodTalon.setPosition(0, 0.25));
+    tryUntilOk(5, () -> hoodTalon.getConfigurator().apply(HOOD_MOTOR_CONFIG));
 
     // Apply the config to the leader
-    tryUntilOk(5, () -> flywheelLeader.getConfigurator().apply(FLYWHEEL_MOTOR_CONFIG, 0.25));
+    tryUntilOk(5, () -> flywheelLeader.getConfigurator().apply(FLYWHEEL_MOTOR_CONFIG));
 
     // Invert the config & apply to the follower
     FLYWHEEL_MOTOR_CONFIG.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-    tryUntilOk(5, () -> flywheelFollower.getConfigurator().apply(FLYWHEEL_MOTOR_CONFIG, 0.25));
+    tryUntilOk(5, () -> flywheelFollower.getConfigurator().apply(FLYWHEEL_MOTOR_CONFIG));
 
     PhoenixUtil.addSignals(hoodTalon, hoodSignals);
     PhoenixUtil.addSignals(flywheelLeader, flywheelLeaderSignals);

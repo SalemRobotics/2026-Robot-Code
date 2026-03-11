@@ -44,18 +44,13 @@ public class IntakeIOTalonFX implements IntakeIO {
   }
 
   @Override
-  public void deploy() {
-    talon.setControl(request.withPosition(INTAKE_DEPLOYED_POSITION).withSlot(INTAKE_DEPLOY_SLOT));
+  public void setPosition(Angle position) {
+    talon.setControl(request.withPosition(position).withSlot(INTAKE_MOVE_SLOT));
   }
 
   @Override
   public void spring() {
     talon.setControl(request.withPosition(INTAKE_DEPLOYED_POSITION).withSlot(INTAKE_SPRING_SLOT));
-  }
-
-  @Override
-  public void stow() {
-    talon.setControl(request.withPosition(INTAKE_STOWED_POSITION).withSlot(INTAKE_DEPLOY_SLOT));
   }
 
   @Override

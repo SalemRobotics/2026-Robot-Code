@@ -19,6 +19,7 @@ import static com.frc6324.robot2026.Constants.*;
 
 import com.frc6324.lib.util.IOLayer;
 import com.frc6324.robot2026.commands.DriveCommands;
+import com.frc6324.robot2026.commands.ShooterCommands;
 import com.frc6324.robot2026.commands.ShooterCommands.*;
 import com.frc6324.robot2026.subsystems.drive.*;
 import com.frc6324.robot2026.subsystems.drive.DriveIO.DriveIOReplay;
@@ -60,9 +61,7 @@ public class RobotContainer {
         final DriveIOCTRE driveIO = new DriveIOCTRE();
         drive = new SwerveDrive(driveIO);
 
-        apriltag =
-            new AprilTagVision(new AprilTagIOPhoton(driveIO), new AprilTagIOPhoton(driveIO))
-                .withConsumer(drive);
+        apriltag = new AprilTagVision(new AprilTagIOPhoton(driveIO)).withConsumer(drive);
         indexer = new Indexer(new IndexerIOTalonFX());
         intake = new Intake(new IntakeIOTalonFX());
         rollers = new Rollers(new RollerIOTalonFX());
@@ -72,9 +71,7 @@ public class RobotContainer {
         final DriveIOSim driveIO = new DriveIOSim();
         drive = new SwerveDrive(driveIO);
 
-        apriltag =
-            new AprilTagVision(
-                new AprilTagIOSim(driveIO, drive), new AprilTagIOSim(driveIO, drive));
+        apriltag = new AprilTagVision(new AprilTagIOSim(driveIO, drive));
         indexer = new Indexer(new IndexerIOSim());
         intake = new Intake(new IntakeIOSim());
         rollers = new Rollers(new RollerIOSim());
@@ -83,7 +80,7 @@ public class RobotContainer {
       default -> {
         drive = new SwerveDrive(new DriveIOReplay());
 
-        apriltag = new AprilTagVision(IOLayer::replay, IOLayer::replay);
+        apriltag = new AprilTagVision(IOLayer::replay);
         indexer = new Indexer(IOLayer::replay);
         intake = new Intake(IOLayer::replay);
         rollers = new Rollers(IOLayer::replay);
@@ -97,13 +94,14 @@ public class RobotContainer {
   private void configureBindings() {
     drive.setDefaultCommand(DriveCommands.joystickDrive(drive, controller.getHID()));
     shooter.setDefaultCommand(new IdleShooterCommand(shooter, drive));
+
     indexer.setDefaultCommand(
         Commands.run(
             () -> {
               indexer.stopIndexerWheel();
+              indexer.stopKickerWheel();
             },
             indexer));
-    rollers.setDefaultCommand(rollers.run(rollers::coastRollers));
 
     controller
         .leftTrigger()
@@ -114,12 +112,15 @@ public class RobotContainer {
                   rollers.spinRollers();
                 },
                 intake,
-                rollers));
+                rollers))
+        .onFalse(rollers.run(rollers::stopRollers));
+
+    controller.a().whileTrue(Commands.run(intake::retract, intake));
 
     controller
         .rightTrigger()
-        .whileTrue(new ShootIntoHubCommand(drive, controller, shooter, indexer));
-    controller.a().whileTrue(new PassToAllianceZoneCommand(drive, controller, shooter, indexer));
+        .whileTrue(
+            ShooterCommands.genericShootCommand(drive, indexer, intake, shooter, controller));
   }
 
   public Command getAutonomousCommand() {

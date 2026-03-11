@@ -139,7 +139,7 @@ public class Robot extends LoggedRobot {
 
           Logger.recordOutput("Robot/Used Memory %", utilization * 100);
         });
-    Logger.runEveryN(5, System::gc);
+    Logger.runEveryN(10, System::gc);
 
     // Set thread to highest priority to improve performance
     // Threads.setCurrentThreadPriority(true, 99);
@@ -184,14 +184,14 @@ public class Robot extends LoggedRobot {
   public void autonomousPeriodic() {}
 
   @Override
-  public void autonomousExit() {}
-
-  @Override
-  public void teleopInit() {
+  public void autonomousExit() {
     if (DriverStation.isFMSAttached()) {
       autoWinner = Optional.empty();
     }
+  }
 
+  @Override
+  public void teleopInit() {
     // If an auto command is running, cancel it
     if (autonomousCommand != null) {
       autonomousCommand.cancel();

@@ -61,10 +61,10 @@ public class IndexerIOTalonFX implements IndexerIO {
     PhoenixUtil.addSignals(spinner, spinnerSignals);
     ParentDevice.optimizeBusUtilizationForAll(0, kicker, spinner);
 
-    tryUntilOk(5, () -> kicker.getConfigurator().apply(INDEXER_KICKER_CONFIG, 0.25));
-    tryUntilOk(5, () -> kicker.setNeutralMode(NeutralModeValue.Brake, 0.25));
-    tryUntilOk(5, () -> spinner.getConfigurator().apply(INDEXER_SPINNER_CONFIG, 0.25));
-    tryUntilOk(5, () -> spinner.setNeutralMode(NeutralModeValue.Brake, 0.25));
+    tryUntilOk(5, () -> kicker.getConfigurator().apply(INDEXER_KICKER_CONFIG));
+    tryUntilOk(5, () -> kicker.setNeutralMode(NeutralModeValue.Brake));
+    tryUntilOk(5, () -> spinner.getConfigurator().apply(INDEXER_SPINNER_CONFIG));
+    tryUntilOk(5, () -> spinner.setNeutralMode(NeutralModeValue.Brake));
   }
 
   @Override

@@ -7,7 +7,6 @@ import static edu.wpi.first.units.Units.Hertz;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.StatusSignalCollection;
-import com.ctre.phoenix6.controls.CoastOut;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.ParentDevice;
@@ -23,8 +22,7 @@ public class RollerIOTalonFX implements RollerIO {
 
   private final Follower followerRequest = new Follower(ROLLER_LEADER_ID, ROLLER_ALIGNMENT);
   private final VelocityTorqueCurrentFOC spinRequest =
-      new VelocityTorqueCurrentFOC(0).withVelocity(ROLLER_SPIN_VELOCITY);
-  private final CoastOut coast = new CoastOut();
+      new VelocityTorqueCurrentFOC(ROLLER_SPIN_VELOCITY).withSlot(0);
 
   private final StatusSignal<AngularVelocity> leaderVelocity = leader.getVelocity();
   private final StatusSignal<AngularAcceleration> leaderAcceleration = leader.getAcceleration();
@@ -66,25 +64,18 @@ public class RollerIOTalonFX implements RollerIO {
     ParentDevice.optimizeBusUtilizationForAll(0, leader, follower);
 
     // Configure both of the motors
-    tryUntilOk(5, () -> leader.getConfigurator().apply(ROLLER_MOTOR_CONFIG, 0.25));
+    tryUntilOk(5, () -> leader.getConfigurator().apply(ROLLER_MOTOR_CONFIG));
     ROLLER_MOTOR_CONFIG.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-    tryUntilOk(5, () -> follower.getConfigurator().apply(ROLLER_MOTOR_CONFIG, 0.25));
+    tryUntilOk(5, () -> follower.getConfigurator().apply(ROLLER_MOTOR_CONFIG));
 
     // Configure the motors to brake when stopped
-    tryUntilOk(5, () -> leader.setNeutralMode(NeutralModeValue.Brake, 0.25));
-    tryUntilOk(5, () -> follower.setNeutralMode(NeutralModeValue.Brake, 0.25));
-  }
-
-  @Override
-  public void coast() {
-    leader.setControl(coast);
-    follower.setControl(coast);
+    tryUntilOk(5, () -> leader.setNeutralMode(NeutralModeValue.Brake));
+    tryUntilOk(5, () -> follower.setNeutralMode(NeutralModeValue.Brake));
   }
 
   @Override
   public void start() {
-    leader.set(1);
-    // leader.setControl(spinRequest);
+    leader.setControl(spinRequest);
     follower.setControl(followerRequest);
   }
 

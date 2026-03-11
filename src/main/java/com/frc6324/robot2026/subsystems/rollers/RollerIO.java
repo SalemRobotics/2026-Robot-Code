@@ -7,8 +7,6 @@ import org.littletonrobotics.junction.AutoLog;
 
 @FunctionalInterface
 public interface RollerIO {
-  default void coast() {}
-
   default void start() {}
 
   default void stop() {}

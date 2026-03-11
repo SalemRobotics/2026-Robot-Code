@@ -56,14 +56,14 @@ public final class ShooterConstants {
     HUB_FLYWHEEL_VELOCITY_MAP.put(5.3, RotationsPerSecond.of(50.5));
 
     PASSING_FLYWHEEL_VELOCITY_MAP.put(0.0, RotationsPerSecond.of(20));
-    PASSING_FLYWHEEL_VELOCITY_MAP.put(3.4, RotationsPerSecond.of(43));
-    PASSING_FLYWHEEL_VELOCITY_MAP.put(4.1, RotationsPerSecond.of(46));
-    PASSING_FLYWHEEL_VELOCITY_MAP.put(4.75, RotationsPerSecond.of(48));
-    PASSING_FLYWHEEL_VELOCITY_MAP.put(5.5, RotationsPerSecond.of(51));
-    PASSING_FLYWHEEL_VELOCITY_MAP.put(6.0, RotationsPerSecond.of(56));
-    PASSING_FLYWHEEL_VELOCITY_MAP.put(7.0, RotationsPerSecond.of(60));
-    PASSING_FLYWHEEL_VELOCITY_MAP.put(8.8, RotationsPerSecond.of(62.5));
-    PASSING_FLYWHEEL_VELOCITY_MAP.put(16.0, RotationsPerSecond.of(62.5));
+    PASSING_FLYWHEEL_VELOCITY_MAP.put(3.4, RotationsPerSecond.of(42));
+    PASSING_FLYWHEEL_VELOCITY_MAP.put(4.1, RotationsPerSecond.of(45));
+    PASSING_FLYWHEEL_VELOCITY_MAP.put(4.75, RotationsPerSecond.of(47));
+    PASSING_FLYWHEEL_VELOCITY_MAP.put(5.5, RotationsPerSecond.of(50));
+    PASSING_FLYWHEEL_VELOCITY_MAP.put(6.0, RotationsPerSecond.of(55));
+    PASSING_FLYWHEEL_VELOCITY_MAP.put(7.0, RotationsPerSecond.of(59));
+    PASSING_FLYWHEEL_VELOCITY_MAP.put(8.8, RotationsPerSecond.of(61.5));
+    PASSING_FLYWHEEL_VELOCITY_MAP.put(16.0, RotationsPerSecond.of(61.5));
 
     HOOD_ANGLE_MAP.put(0.0, Rotations.of(0.15));
     HOOD_ANGLE_MAP.put(3.5, Rotations.of(0.15));
@@ -116,7 +116,7 @@ public final class ShooterConstants {
                     .withControlTimesyncFreqHz(Hertz.of(100))
                     .withInverted(InvertedValue.Clockwise_Positive)
                     .withNeutralMode(NeutralModeValue.Brake))
-            .withSlot0(new Slot0Configs().withKP(175).withKI(10).withKD(3.5).withKG(2.6))
+            .withSlot0(new Slot0Configs().withKP(200).withKI(15).withKD(3.5).withKG(2.6))
             .withSoftwareLimitSwitch(
                 new SoftwareLimitSwitchConfigs()
                     .withForwardSoftLimitThreshold(HOOD_MAX_ANGLE)
