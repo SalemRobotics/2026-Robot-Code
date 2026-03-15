@@ -30,8 +30,8 @@ public final class DriveCommands {
   static final double CONTROLLER_INPUT_EXP = 2;
   static final double DEADBAND = 0.1;
 
-  static final double POINTING_KP = 5;
-  static final double POINTING_KD = 0.01;
+  static final double POINTING_KP = 10;
+  static final double POINTING_KD = 0.02;
   static final Angle POINTING_TOLERANCE = Degrees.of(1);
 
   @Contract(value = "_ -> fail", pure = true)

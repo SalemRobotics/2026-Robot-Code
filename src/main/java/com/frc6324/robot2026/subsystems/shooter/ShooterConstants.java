@@ -21,7 +21,7 @@ public final class ShooterConstants {
   public static final Transform2d SHOOTER_POSITION =
       new Transform2d(Units.inchesToMeters(-6), Units.inchesToMeters(6), Rotation2d.kZero);
 
-  public static final double APPROX_FUEL_PER_SECOND = 1;
+  public static final double APPROX_FUEL_PER_SECOND = 5;
   public static final double TIME_TO_LAUNCH_FUEL = (1 / APPROX_FUEL_PER_SECOND);
 
   public static final InterpolatingTreeMap<Double, Angle> HOOD_ANGLE_MAP =
@@ -99,7 +99,7 @@ public final class ShooterConstants {
     // Setpoint values & tolerance
     public static final Angle HOOD_STOW_ANGLE = Rotations.of(0.05);
     public static final Angle HOOD_MAX_ANGLE = Rotations.of(0.6);
-    public static final Angle HOOD_TOLERANCE = Rotations.of(0.01);
+    public static final Angle HOOD_TOLERANCE = Rotations.of(0.05);
 
     /** The full configuration for the hood's {@link com.ctre.phoenix6.hardware.TalonFX TalonFX}. */
     public static final TalonFXConfiguration HOOD_MOTOR_CONFIG =
@@ -149,7 +149,7 @@ public final class ShooterConstants {
     public static final Distance FLYWHEEL_RADIUS = Inches.of(1.5);
 
     public static final AngularVelocity FLYWHEEL_IDLE_SPEED = RPM.of(1500);
-    public static final AngularVelocity FLYWHEEL_VELOCITY_TOLERANCE = RotationsPerSecond.of(1.5);
+    public static final AngularVelocity FLYWHEEL_VELOCITY_TOLERANCE = RotationsPerSecond.of(5);
     public static final MotorAlignmentValue FLYWHEEL_MOTOR_ALIGNMENT = MotorAlignmentValue.Opposed;
 
     public static final TalonFXConfiguration FLYWHEEL_MOTOR_CONFIG =

@@ -49,8 +49,8 @@ public final class AprilTagConstants {
   public static final boolean HEADING_FREE = false;
   public static final double HEADING_FACTOR = 10;
 
-  public static final double LINEAR_STDDEV_BASELINE = Units.inchesToMeters(1);
-  public static final double ANGULAR_STDDEV_BASELINE = Units.degreesToRadians(2.5);
+  public static final double LINEAR_STDDEV_BASELINE = Units.inchesToMeters(0.25);
+  public static final double ANGULAR_STDDEV_BASELINE = Units.degreesToRadians(1.25);
 
   public static final double MAX_LATENCY_SECS = 2;
   public static final double MAX_AMBIGUITY = 0.2;

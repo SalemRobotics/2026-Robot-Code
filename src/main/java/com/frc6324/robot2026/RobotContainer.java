@@ -18,6 +18,8 @@ package com.frc6324.robot2026;
 import static com.frc6324.robot2026.Constants.*;
 
 import com.frc6324.lib.util.IOLayer;
+import com.frc6324.robot2026.commands.AutoCommands;
+import com.frc6324.robot2026.commands.AutoCommands.AllianceSide;
 import com.frc6324.robot2026.commands.DriveCommands;
 import com.frc6324.robot2026.commands.ShooterCommands;
 import com.frc6324.robot2026.commands.ShooterCommands.*;
@@ -26,6 +28,7 @@ import com.frc6324.robot2026.subsystems.drive.DriveIO.DriveIOReplay;
 import com.frc6324.robot2026.subsystems.indexer.*;
 import com.frc6324.robot2026.subsystems.intake.*;
 import com.frc6324.robot2026.subsystems.leds.LEDs;
+import com.frc6324.robot2026.subsystems.leds.LEDs.LEDState;
 import com.frc6324.robot2026.subsystems.rollers.*;
 import com.frc6324.robot2026.subsystems.shooter.*;
 import com.frc6324.robot2026.subsystems.vision.apriltag.*;
@@ -35,6 +38,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import org.littletonrobotics.junction.LoggedPowerDistribution;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 @SuppressWarnings("unused")
 public class RobotContainer {
@@ -49,6 +53,8 @@ public class RobotContainer {
   private final PowerDistribution pdh = new PowerDistribution();
   private final LoggedPowerDistribution loggedPDH =
       LoggedPowerDistribution.getInstance(pdh.getModule(), pdh.getType());
+  private final LoggedDashboardChooser<Command> autoChooser =
+      new LoggedDashboardChooser<>("Auto Selection");
 
   private final CommandXboxController controller =
       new CommandXboxController(DRIVER_CONTROLLER_PORT);
@@ -88,6 +94,14 @@ public class RobotContainer {
       }
     }
 
+    autoChooser.addDefaultOption("No Auto", Commands.none());
+    autoChooser.addOption(
+        "Left Trench Auto",
+        AutoCommands.trenchAuto(drive, indexer, intake, rollers, shooter, AllianceSide.Left));
+    autoChooser.addOption(
+        "Right Trench Auto",
+        AutoCommands.trenchAuto(drive, indexer, intake, rollers, shooter, AllianceSide.Right));
+
     configureBindings();
   }
 
@@ -96,31 +110,45 @@ public class RobotContainer {
     shooter.setDefaultCommand(new IdleShooterCommand(shooter, drive));
 
     indexer.setDefaultCommand(
-        Commands.run(
+        indexer.run(
             () -> {
               indexer.stopIndexerWheel();
               indexer.stopKickerWheel();
-            },
-            indexer));
+            }));
+    rollers.setDefaultCommand(rollers.run(rollers::stopRollers));
 
     controller
         .leftTrigger()
         .whileTrue(
-            Commands.run(
+            Commands.runEnd(
                 () -> {
                   intake.deploy();
                   rollers.spinRollers();
+                  LEDs.setState(LEDState.INTAKING);
                 },
+                () -> LEDs.setState(LEDState.INACTIVE),
                 intake,
                 rollers))
         .onFalse(rollers.run(rollers::stopRollers));
 
-    controller.a().whileTrue(Commands.run(intake::retract, intake));
+    controller.a().whileTrue(intake.run(intake::retract));
+    controller
+        .b()
+        .whileTrue(
+            Commands.run(
+                () -> {
+                  intake.deploy();
+                  rollers.outtake();
+                },
+                rollers,
+                intake));
+    controller.b().whileTrue(rollers.run(rollers::outtake));
 
     controller
         .rightTrigger()
         .whileTrue(
-            ShooterCommands.genericShootCommand(drive, indexer, intake, shooter, controller));
+            ShooterCommands.genericShootCommand(
+                drive, indexer, intake, rollers, shooter, controller));
   }
 
   public Command getAutonomousCommand() {

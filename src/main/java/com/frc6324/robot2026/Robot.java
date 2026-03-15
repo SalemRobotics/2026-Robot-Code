@@ -139,7 +139,6 @@ public class Robot extends LoggedRobot {
 
           Logger.recordOutput("Robot/Used Memory %", utilization * 100);
         });
-    Logger.runEveryN(10, System::gc);
 
     // Set thread to highest priority to improve performance
     // Threads.setCurrentThreadPriority(true, 99);

@@ -2,7 +2,7 @@ package com.frc6324.robot2026.subsystems.indexer;
 
 import static com.frc6324.lib.util.PhoenixUtil.tryUntilOk;
 import static com.frc6324.robot2026.subsystems.indexer.IndexerConstants.*;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.Hertz;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
@@ -20,46 +20,30 @@ public class IndexerIOTalonFX implements IndexerIO {
   private final VelocityTorqueCurrentFOC kickerRequest =
       new VelocityTorqueCurrentFOC(0).withOverrideCoastDurNeutral(true);
   private final VelocityTorqueCurrentFOC spinnerRequest =
-      new VelocityTorqueCurrentFOC(0).withOverrideCoastDurNeutral(true);
+      new VelocityTorqueCurrentFOC(0)
+          .withOverrideCoastDurNeutral(true)
+          .withUpdateFreqHz(Hertz.of(500));
 
   private final StatusSignal<AngularVelocity> kickerVelocity = kicker.getVelocity();
-  private final StatusSignal<AngularAcceleration> kickerAcceleration = kicker.getAcceleration();
   private final StatusSignal<Voltage> kickerVoltage = kicker.getMotorVoltage();
   private final StatusSignal<Current> kickerStatorCurrent = kicker.getStatorCurrent();
-  private final StatusSignal<Current> kickerTorqueCurrent = kicker.getTorqueCurrent();
-  private final StatusSignal<Double> kickerTargetVelocity = kicker.getClosedLoopReference();
-  private final StatusSignal<Double> kickerPIDOutput = kicker.getClosedLoopOutput();
   private final BaseStatusSignal[] kickerSignals = {
-    kickerVelocity,
-    kickerAcceleration,
-    kickerVoltage,
-    kickerStatorCurrent,
-    kickerTorqueCurrent,
-    kickerTargetVelocity,
-    kickerPIDOutput,
+    kickerVelocity, kickerVoltage, kickerStatorCurrent,
   };
 
   private final StatusSignal<AngularVelocity> spinnerVelocity = spinner.getVelocity();
-  private final StatusSignal<AngularAcceleration> spinnerAcceleration = spinner.getAcceleration();
   private final StatusSignal<Voltage> spinnerVoltage = spinner.getMotorVoltage();
   private final StatusSignal<Current> spinnerStatorCurrent = spinner.getStatorCurrent();
-  private final StatusSignal<Current> spinnerTorqueCurent = spinner.getTorqueCurrent();
-  private final StatusSignal<Double> spinnerTargetVelocity = spinner.getClosedLoopReference();
-  private final StatusSignal<Double> spinnerPIDOutput = spinner.getClosedLoopOutput();
   private final BaseStatusSignal[] spinnerSignals = {
-    spinnerVelocity,
-    spinnerAcceleration,
-    spinnerVoltage,
-    spinnerStatorCurrent,
-    spinnerTorqueCurent,
-    spinnerTargetVelocity,
-    spinnerPIDOutput,
+    spinnerVelocity, spinnerVoltage, spinnerStatorCurrent,
   };
 
   public IndexerIOTalonFX() {
     PhoenixUtil.addSignals(kicker, kickerSignals);
     PhoenixUtil.addSignals(spinner, spinnerSignals);
     ParentDevice.optimizeBusUtilizationForAll(0, kicker, spinner);
+
+    spinner.setSafetyEnabled(false);
 
     tryUntilOk(5, () -> kicker.getConfigurator().apply(INDEXER_KICKER_CONFIG));
     tryUntilOk(5, () -> kicker.setNeutralMode(NeutralModeValue.Brake));
@@ -91,20 +75,12 @@ public class IndexerIOTalonFX implements IndexerIO {
   public void updateInputs(IndexerInputs inputs) {
     inputs.kickerMotorConnected = BaseStatusSignal.isAllGood(kickerSignals);
     inputs.kickerVelocity = kickerVelocity.getValue();
-    inputs.kickerAcceleration = kickerAcceleration.getValue();
     inputs.kickerMotorVoltage = kickerVoltage.getValue();
     inputs.kickerStatorCurrent = kickerStatorCurrent.getValue();
-    inputs.kickerTorqueCurrent = kickerTorqueCurrent.getValue();
-    inputs.kickerTargetVelocity = RotationsPerSecond.of(kickerTargetVelocity.getValue());
-    inputs.kickerPIDOutput = kickerPIDOutput.getValueAsDouble();
 
     inputs.spinnerMotorConnected = BaseStatusSignal.isAllGood(spinnerSignals);
     inputs.spinnerVelocity = spinnerVelocity.getValue();
-    inputs.spinnerAcceleration = spinnerAcceleration.getValue();
     inputs.spinnerMotorVoltage = spinnerVoltage.getValue();
     inputs.spinnerStatorCurrent = spinnerStatorCurrent.getValue();
-    inputs.spinnerTorqueCurrent = spinnerTorqueCurent.getValue();
-    inputs.spinnerTargetVelocity = RotationsPerSecond.of(spinnerTargetVelocity.getValue());
-    inputs.spinnerPIDOutput = spinnerPIDOutput.getValueAsDouble();
   }
 }

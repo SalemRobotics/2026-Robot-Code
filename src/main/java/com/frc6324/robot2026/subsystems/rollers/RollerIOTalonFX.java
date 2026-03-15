@@ -21,29 +21,20 @@ public class RollerIOTalonFX implements RollerIO {
   protected final TalonFX follower = new TalonFX(ROLLER_FOLLOWER_ID, ROLLER_CAN_BUS);
 
   private final Follower followerRequest = new Follower(ROLLER_LEADER_ID, ROLLER_ALIGNMENT);
-  private final VelocityTorqueCurrentFOC spinRequest =
-      new VelocityTorqueCurrentFOC(ROLLER_SPIN_VELOCITY).withSlot(0);
+  private final VelocityTorqueCurrentFOC spinRequest = new VelocityTorqueCurrentFOC(0).withSlot(0);
 
   private final StatusSignal<AngularVelocity> leaderVelocity = leader.getVelocity();
-  private final StatusSignal<AngularAcceleration> leaderAcceleration = leader.getAcceleration();
   private final StatusSignal<Voltage> leaderMotorVoltage = leader.getMotorVoltage();
   private final StatusSignal<Current> leaderStatorCurrent = leader.getStatorCurrent();
-  private final StatusSignal<Current> leaderTorqueCurrent = leader.getTorqueCurrent();
   private final BaseStatusSignal[] leaderSignals = {
-    leaderVelocity, leaderAcceleration, leaderMotorVoltage, leaderStatorCurrent, leaderTorqueCurrent
+    leaderVelocity, leaderMotorVoltage, leaderStatorCurrent
   };
 
   private final StatusSignal<AngularVelocity> followerVelocity = follower.getVelocity();
-  private final StatusSignal<AngularAcceleration> followerAcceleration = follower.getAcceleration();
   private final StatusSignal<Voltage> followerMotorVoltage = follower.getMotorVoltage();
   private final StatusSignal<Current> followerStatorCurrent = follower.getStatorCurrent();
-  private final StatusSignal<Current> followerTorqueCurrent = follower.getTorqueCurrent();
   private final BaseStatusSignal[] followerSignals = {
-    followerVelocity,
-    followerAcceleration,
-    followerMotorVoltage,
-    followerStatorCurrent,
-    followerTorqueCurrent
+    followerVelocity, followerMotorVoltage, followerStatorCurrent,
   };
 
   private final StatusSignalCollection rollerSignals = new StatusSignalCollection();
@@ -75,7 +66,7 @@ public class RollerIOTalonFX implements RollerIO {
 
   @Override
   public void start() {
-    leader.setControl(spinRequest);
+    leader.setControl(spinRequest.withVelocity(ROLLER_SPIN_VELOCITY));
     follower.setControl(followerRequest);
   }
 
@@ -86,6 +77,12 @@ public class RollerIOTalonFX implements RollerIO {
   }
 
   @Override
+  public void outtake() {
+    leader.setControl(spinRequest.withVelocity(ROLLER_OUTTAKE_VELOCITY));
+    follower.setControl(followerRequest);
+  }
+
+  @Override
   public void updateInputs(RollerInputs inputs) {
     rollerSignals.refreshAll();
 
@@ -93,15 +90,11 @@ public class RollerIOTalonFX implements RollerIO {
     inputs.followerConnected = BaseStatusSignal.isAllGood(followerSignals);
 
     inputs.leaderVelocity = leaderVelocity.getValue();
-    inputs.leaderAcceleration = leaderAcceleration.getValue();
     inputs.leaderMotorVoltage = leaderMotorVoltage.getValue();
     inputs.leaderStatorCurrent = leaderStatorCurrent.getValue();
-    inputs.leaderTorqueCurrent = leaderTorqueCurrent.getValue();
 
     inputs.followerVelocity = followerVelocity.getValue();
-    inputs.followerAcceleration = followerAcceleration.getValue();
     inputs.followerMotorVoltage = followerMotorVoltage.getValue();
     inputs.followerStatorCurrent = followerStatorCurrent.getValue();
-    inputs.followerTorqueCurrent = followerTorqueCurrent.getValue();
   }
 }

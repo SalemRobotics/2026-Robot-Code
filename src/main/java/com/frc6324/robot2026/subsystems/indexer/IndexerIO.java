@@ -23,19 +23,11 @@ public interface IndexerIO {
     public boolean kickerMotorConnected = false;
 
     public AngularVelocity spinnerVelocity = RadiansPerSecond.zero();
-    public AngularAcceleration spinnerAcceleration = RadiansPerSecondPerSecond.zero();
     public Voltage spinnerMotorVoltage = Volts.zero();
     public Current spinnerStatorCurrent = Amps.zero();
-    public Current spinnerTorqueCurrent = Amps.zero();
-    public AngularVelocity spinnerTargetVelocity = RadiansPerSecond.zero();
-    public double spinnerPIDOutput = 0;
 
     public AngularVelocity kickerVelocity = RadiansPerSecond.zero();
-    public AngularAcceleration kickerAcceleration = RadiansPerSecondPerSecond.zero();
     public Voltage kickerMotorVoltage = Volts.zero();
     public Current kickerStatorCurrent = Amps.zero();
-    public Current kickerTorqueCurrent = Amps.zero();
-    public AngularVelocity kickerTargetVelocity = RadiansPerSecond.zero();
-    public double kickerPIDOutput = 0;
   }
 }

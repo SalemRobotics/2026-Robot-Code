@@ -129,13 +129,6 @@ public class AprilTagVision extends VirtualSubsystem {
       allRobotPosesRejected.addAll(robotPosesRejected);
     }
 
-    // Log vision summary data
-    Logger.recordOutput("Vision/AprilTag/Summary/RobotPoses", allRobotPoses.toArray(Pose2d[]::new));
-    Logger.recordOutput(
-        "Vision/AprilTag/Summary/RobotPosesAccepted", allRobotPosesAccepted.toArray(Pose2d[]::new));
-    Logger.recordOutput(
-        "Vision/AprilTag/Summary/RobotPosesRejected", allRobotPosesRejected.toArray(Pose2d[]::new));
-
     LoggedTracer.record("Vision periodic");
   }
 

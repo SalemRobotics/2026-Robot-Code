@@ -7,8 +7,10 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
 import com.frc6324.lib.UninstantiableClass;
 import com.frc6324.robot2026.Constants;
@@ -30,12 +32,13 @@ public final class IndexerConstants {
           // CURRENT LIMITS
           .withCurrentLimits(
               new CurrentLimitsConfigs()
-                  .withStatorCurrentLimit(Amps.of(80))
+                  .withStatorCurrentLimit(Amps.of(120))
                   .withStatorCurrentLimitEnable(true)
-                  .withSupplyCurrentLimit(Amps.of(60))
+                  .withSupplyCurrentLimit(Amps.of(120))
                   .withSupplyCurrentLimitEnable(true))
           // FEEDBACK
           .withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(9))
+          .withMotorOutput(new MotorOutputConfigs().withInverted(InvertedValue.Clockwise_Positive))
           // GAINS
           .withSlot0(new Slot0Configs().withKP(25).withKD(0.5).withKV(0.05).withKS(2.6));
 

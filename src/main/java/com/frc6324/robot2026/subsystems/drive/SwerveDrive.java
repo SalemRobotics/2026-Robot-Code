@@ -164,7 +164,6 @@ public final class SwerveDrive extends SubsystemBase implements VisionConsumer, 
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Drive", inputs);
-    io.logModuleStates(inputs);
 
     LoggedTracer.record("Drive periodic");
   }

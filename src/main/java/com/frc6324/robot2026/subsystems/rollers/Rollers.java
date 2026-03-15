@@ -57,4 +57,8 @@ public final class Rollers extends SubsystemBase {
   public void stopRollers() {
     io.stop();
   }
+
+  public void outtake() {
+    io.outtake();
+  }
 }

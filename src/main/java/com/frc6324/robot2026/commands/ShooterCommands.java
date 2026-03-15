@@ -15,8 +15,12 @@ import com.frc6324.robot2026.subsystems.drive.DrivingUtils;
 import com.frc6324.robot2026.subsystems.drive.SwerveDrive;
 import com.frc6324.robot2026.subsystems.indexer.Indexer;
 import com.frc6324.robot2026.subsystems.intake.Intake;
+import com.frc6324.robot2026.subsystems.leds.LEDs;
+import com.frc6324.robot2026.subsystems.leds.LEDs.LEDState;
+import com.frc6324.robot2026.subsystems.rollers.Rollers;
 import com.frc6324.robot2026.subsystems.shooter.Shooter;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -24,6 +28,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -55,6 +60,7 @@ public final class ShooterCommands {
       SwerveDrive drive,
       Indexer indexer,
       Intake intake,
+      Rollers rollers,
       Shooter shooter,
       CommandXboxController controller) {
     final Allocated<Boolean> inAllianceZone = new Allocated<>(false);
@@ -78,10 +84,12 @@ public final class ShooterCommands {
               inAllianceZone.set(inAlliance);
               if (inAlliance) {
                 Logger.recordOutput("Commands/ShootCommand/Phase", "Hub");
-                return new ShootIntoHubCommand(drive, indexer, intake, shooter, controller);
+                return new DriverShootIntoHubCommand(
+                    drive, indexer, intake, rollers, shooter, controller);
               } else {
                 Logger.recordOutput("Commands/ShootCommand/Phase", "Passing");
-                return new PassToAllianceZoneCommand(drive, indexer, intake, shooter, controller);
+                return new PassToAllianceZoneCommand(
+                    drive, indexer, intake, rollers, shooter, controller);
               }
             },
             Set.of(drive, indexer, intake, shooter))
@@ -89,61 +97,56 @@ public final class ShooterCommands {
   }
 
   abstract static class AbstractShootAtCommand extends Command {
-    protected final XboxController controller;
     protected final SwerveDrive drive;
     protected final Indexer indexer;
     protected final Intake intake;
+    protected final Rollers rollers;
     protected final Shooter shooter;
     protected final String logKey;
-    private final double driveSpeedReduction;
-    private final SwerveRequest.FieldCentricFacingAngle request =
+
+    protected SwerveRequest.FieldCentricFacingAngle request =
         new SwerveRequest.FieldCentricFacingAngle()
             .withDriveRequestType(SwerveDrive.DRIVE_REQUEST)
             .withSteerRequestType(SwerveDrive.STEER_REQUEST)
             .withHeadingPID(DriveCommands.POINTING_KP, 0, DriveCommands.POINTING_KD)
             .withDesaturateWheelSpeeds(true);
+
     private boolean kickerRunning = false;
-    private boolean sendIntakeOut = false;
+    private boolean sendingIntakeOut = false;
+    private final Timer intakeCommandTimeout = new Timer();
 
     protected AbstractShootAtCommand(
         SwerveDrive drive,
         Indexer indexer,
         Intake intake,
+        Rollers rollers,
         Shooter shooter,
-        CommandXboxController controller,
-        String name,
-        double driveSpeedReduction) {
+        String name) {
       this.drive = drive;
       this.indexer = indexer;
       this.intake = intake;
+      this.rollers = rollers;
       this.shooter = shooter;
-      this.controller = controller.getHID();
       this.logKey = "Commands/" + name;
-      this.driveSpeedReduction = driveSpeedReduction;
 
-      addRequirements(drive, shooter, indexer);
+      addRequirements(drive, indexer, intake, rollers, shooter);
     }
+
+    protected void applyDriverInput() {}
 
     abstract void commandShooter(double distanceToTarget);
 
     @Override
     public void end(boolean interrupted) {
       shooter.stopFlywheel();
+      rollers.stopRollers();
 
       indexer.stopKickerWheel();
       indexer.stopIndexerWheel();
     }
 
     @Override
-    public final void execute() {
-      // Get the linear velocity for the drivetrain
-      Translation2d linearVelocity = DriveCommands.getLinearVelocityFromJoysticks(controller);
-      linearVelocity = linearVelocity.times(SwerveDrive.getMaxLinearSpeed() / driveSpeedReduction);
-
-      // Apply the velocities to the swerve request
-      request.VelocityX = linearVelocity.getX();
-      request.VelocityY = linearVelocity.getY();
-
+    public void execute() {
       // Get the robot and shooter's positions
       final Pose2d robotPose = drive.getPose();
       final Pose2d shooterPosition = robotPose.transformBy(SHOOTER_POSITION);
@@ -169,19 +172,18 @@ public final class ShooterCommands {
           kickerRunning = true;
         }
 
-        if (sendIntakeOut) {
-          if (intake.isDeployed()) {
-            sendIntakeOut = false;
-          } else {
-            // Send the intake out
-            intake.deploy();
+        final boolean intakeTimedOut = intakeCommandTimeout.hasElapsed(0.420);
+        if (sendingIntakeOut) {
+          if (intakeTimedOut || intake.isDeployed()) {
+            intake.retract();
+            sendingIntakeOut = false;
+            intakeCommandTimeout.restart();
           }
         } else {
-          if (intake.isRetracted()) {
-            sendIntakeOut = true;
-          } else {
-            // Send the intake in
-            intake.retract();
+          if (intakeTimedOut || intake.isRetracted()) {
+            intake.deploy();
+            sendingIntakeOut = true;
+            intakeCommandTimeout.restart();
           }
         }
       } else {
@@ -203,7 +205,7 @@ public final class ShooterCommands {
       Logger.recordOutput(logKey + "/TargetHeading", facing);
       Logger.recordOutput(logKey + "/DistanceToTarget", distance);
       Logger.recordOutput(logKey + "/Indexing", index);
-      Logger.recordOutput(logKey + "/SendingIntakeOut", sendIntakeOut);
+      Logger.recordOutput(logKey + "/SendingIntakeOut", sendingIntakeOut);
     }
 
     /**
@@ -219,7 +221,10 @@ public final class ShooterCommands {
       indexer.stopKickerWheel();
 
       kickerRunning = false;
-      sendIntakeOut = !intake.isDeployed();
+      sendingIntakeOut = !intake.isDeployed();
+      intakeCommandTimeout.start();
+
+      rollers.spinRollers();
     }
 
     /**
@@ -235,21 +240,30 @@ public final class ShooterCommands {
   public static class ShootIntoHubCommand extends AbstractShootAtCommand {
     private static final double CLOSE_ANGLE_TOLERANCE = Units.degreesToRadians(7.5);
     private static final double TOLERANCE_DECAY_PER_METER = Units.degreesToRadians(-1);
+
+    private final Debouncer debouncer = new Debouncer(0.25);
     private Translation2d hubTranslation;
 
     public ShootIntoHubCommand(
         SwerveDrive drive,
         Indexer indexer,
         Intake intake,
+        Rollers rollers,
         Shooter shooter,
-        CommandXboxController controller) {
-      super(drive, indexer, intake, shooter, controller, "ShootIntoHub", 3);
+        String name) {
+      super(drive, indexer, intake, rollers, shooter, name);
     }
 
     @Override
     void commandShooter(double distanceToTarget) {
       Logger.recordOutput(logKey + "/DistanceToHub", distanceToTarget);
       shooter.shootIntoHub(distanceToTarget);
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+      LEDs.setState(LEDState.INACTIVE);
+      super.end(interrupted);
     }
 
     @Override
@@ -261,6 +275,8 @@ public final class ShooterCommands {
     public void initialize() {
       hubTranslation = FieldConstants.getAllianceHub().getTranslation();
       super.initialize();
+
+      LEDs.setState(LEDState.SHOOTING);
     }
 
     @Override
@@ -268,32 +284,76 @@ public final class ShooterCommands {
       final double tolerance = CLOSE_ANGLE_TOLERANCE + TOLERANCE_DECAY_PER_METER * distanceToTarget;
 
       final Rotation2d robotYaw = drive.getPose().getRotation();
-      final boolean atRobotAngle = MathUtil.isNear(robotYaw.getRadians(), targetFacing.getRadians(), tolerance);
+      final boolean atRobotAngle =
+          MathUtil.isNear(robotYaw.getRadians(), targetFacing.getRadians(), tolerance);
       final boolean atHoodAngle = shooter.atTargetHoodAngle();
       final boolean atFlyVelocity = shooter.atTargetVelocity();
 
-      Logger.recordOutput(logKey + "/RobotAtAngle", atRobotAngle);
+      Logger.recordOutput(logKey + "/AtRobotAngle", atRobotAngle);
       Logger.recordOutput(logKey + "/AtHoodSetpoint", atHoodAngle);
       Logger.recordOutput(logKey + "/AtTargetVelocity", atFlyVelocity);
-      return atRobotAngle && atHoodAngle && atFlyVelocity;
+
+      final boolean should = atRobotAngle && atHoodAngle && atFlyVelocity;
+      return debouncer.calculate(should);
+    }
+  }
+
+  public static class DriverShootIntoHubCommand extends ShootIntoHubCommand {
+    private final XboxController controller;
+
+    public DriverShootIntoHubCommand(
+        SwerveDrive drive,
+        Indexer indexer,
+        Intake intake,
+        Rollers rollers,
+        Shooter shooter,
+        CommandXboxController controller) {
+      super(drive, indexer, intake, rollers, shooter, "ShootIntoHub");
+      this.controller = controller.getHID();
+    }
+
+    @Override
+    protected void applyDriverInput() {
+      Translation2d velocity = DriveCommands.getLinearVelocityFromJoysticks(controller);
+      velocity = velocity.times(SwerveDrive.getMaxLinearSpeed() / 3);
+
+      request.VelocityX = velocity.getX();
+      request.VelocityY = velocity.getY();
     }
   }
 
   public static class PassToAllianceZoneCommand extends AbstractShootAtCommand {
+    private final XboxController controller;
     private List<Translation2d> allianceZoneTranslations;
+    private boolean underTrench;
 
     public PassToAllianceZoneCommand(
         SwerveDrive drive,
         Indexer indexer,
         Intake intake,
+        Rollers rollers,
         Shooter shooter,
         CommandXboxController controller) {
-      super(drive, indexer, intake, shooter, controller, "PassToAllianceZone", 1.5);
+      super(drive, indexer, intake, rollers, shooter, "PassToAllianceZone");
+      this.controller = controller.getHID();
+    }
+
+    @Override
+    protected void applyDriverInput() {
+      Translation2d velocity = DriveCommands.getLinearVelocityFromJoysticks(controller);
+      velocity = velocity.times(SwerveDrive.getMaxLinearSpeed() / 1.5);
+
+      request.VelocityX = velocity.getX();
+      request.VelocityY = velocity.getY();
     }
 
     @Override
     void commandShooter(double distanceToTarget) {
-      shooter.pass(distanceToTarget);
+      if (underTrench) {
+        shooter.stowHood();
+      } else {
+        shooter.pass(distanceToTarget);
+      }
     }
 
     @Override
@@ -322,6 +382,18 @@ public final class ShooterCommands {
     }
 
     @Override
+    public void execute() {
+      final Pose2d robotPose = drive.getPose();
+
+      underTrench =
+          robotPose.boundedWithinX(LinesVertical.ALLIANCE_ZONE, LinesVertical.NEUTRAL_ZONE_NEAR)
+              || robotPose.boundedWithinX(
+                  LinesVertical.NEUTRAL_ZONE_FAR, LinesVertical.OPP_ALIANCE_ZONE);
+
+      super.execute();
+    }
+
+    @Override
     boolean shouldIndex(Rotation2d targetFacing, double distanceToTarget) {
       return true;
     }
@@ -333,9 +405,6 @@ public final class ShooterCommands {
 
     private double allianceZoneStart;
     private double allianceZoneEnd;
-
-    private double trenchStart;
-    private double trenchEnd;
 
     public IdleShooterCommand(Shooter shooter, SwerveDrive drive) {
       this.shooter = shooter;
@@ -350,16 +419,10 @@ public final class ShooterCommands {
         case Blue -> {
           allianceZoneStart = 0;
           allianceZoneEnd = LinesVertical.ALLIANCE_ZONE;
-
-          trenchStart = LinesVertical.ALLIANCE_ZONE;
-          trenchEnd = LinesVertical.NEUTRAL_ZONE_NEAR;
         }
         case Red -> {
           allianceZoneStart = LinesVertical.OPP_ALIANCE_ZONE;
           allianceZoneEnd = FieldConstants.FIELD_LENGTH;
-
-          trenchStart = LinesVertical.NEUTRAL_ZONE_FAR;
-          trenchEnd = LinesVertical.OPP_ALIANCE_ZONE;
         }
       }
     }
@@ -372,7 +435,8 @@ public final class ShooterCommands {
         final Pose2d hub = FieldConstants.getAllianceHub();
         final double dist = robotPose.getTranslation().getDistance(hub.getTranslation());
 
-        // Spin up the shooter to a low velocity in the alliance zone to minimize overhead & current
+        // Spin up the shooter to a low velocity in the alliance zone to minimize
+        // overhead & current
         // use
         shooter.spinUpForHubShot(dist);
       } else {
@@ -380,8 +444,12 @@ public final class ShooterCommands {
       }
 
       final Pose2d poseIn1Sec = DrivingUtils.estimateFuturePose(0.5);
-      if (robotPose.boundedWithinX(trenchStart, trenchEnd)
-          || poseIn1Sec.boundedWithinX(trenchStart, trenchEnd)) {
+      if (robotPose.boundedWithinX(LinesVertical.ALLIANCE_ZONE, LinesVertical.NEUTRAL_ZONE_NEAR)
+          || robotPose.boundedWithinX(
+              LinesVertical.NEUTRAL_ZONE_FAR, LinesVertical.OPP_ALIANCE_ZONE)
+          || poseIn1Sec.boundedWithinX(LinesVertical.ALLIANCE_ZONE, LinesVertical.NEUTRAL_ZONE_NEAR)
+          || poseIn1Sec.boundedWithinX(
+              LinesVertical.NEUTRAL_ZONE_FAR, LinesVertical.OPP_ALIANCE_ZONE)) {
         // Stow the hood if we're going under the trench
         shooter.stowHood();
       }

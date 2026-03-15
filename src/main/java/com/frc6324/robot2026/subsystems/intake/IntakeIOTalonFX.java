@@ -5,7 +5,7 @@ import static com.frc6324.robot2026.subsystems.intake.IntakeConstants.*;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.frc6324.lib.util.PhoenixUtil;
@@ -13,25 +13,15 @@ import edu.wpi.first.units.measure.*;
 
 public class IntakeIOTalonFX implements IntakeIO {
   protected final TalonFX talon = new TalonFX(INTAKE_MOTOR_ID, INTAKE_CAN_BUS);
-  private final MotionMagicTorqueCurrentFOC request = new MotionMagicTorqueCurrentFOC(0);
+  private final PositionTorqueCurrentFOC request = new PositionTorqueCurrentFOC(0);
   // Status signals
   private final StatusSignal<Angle> deployPosition = talon.getPosition();
-  private final StatusSignal<Double> pidSetpoint = talon.getClosedLoopReference();
-  private final StatusSignal<Double> positionError = talon.getClosedLoopError();
-  private final StatusSignal<Double> pidOutput = talon.getClosedLoopOutput();
   private final StatusSignal<AngularVelocity> deployVelocity = talon.getVelocity();
   private final StatusSignal<Voltage> deployMotorVoltage = talon.getMotorVoltage();
   private final StatusSignal<Current> deployStatorCurrent = talon.getStatorCurrent();
-  private final StatusSignal<Current> deployTorqueCurrent = talon.getTorqueCurrent();
 
   private final BaseStatusSignal[] signals = {
-    deployPosition,
-    positionError,
-    pidOutput,
-    deployVelocity,
-    deployMotorVoltage,
-    deployStatorCurrent,
-    deployTorqueCurrent
+    deployPosition, deployVelocity, deployMotorVoltage, deployStatorCurrent,
   };
 
   public IntakeIOTalonFX() {
@@ -58,12 +48,8 @@ public class IntakeIOTalonFX implements IntakeIO {
     inputs.motorConnected = BaseStatusSignal.isAllGood(signals);
 
     inputs.motorPosition = deployPosition.getValue();
-    inputs.positionError = positionError.getValueAsDouble();
-    inputs.pidSetpoint = pidSetpoint.getValueAsDouble();
-    inputs.pidOutput = pidOutput.getValueAsDouble();
     inputs.motorVelocity = deployVelocity.getValue();
     inputs.motorVoltage = deployMotorVoltage.getValue();
     inputs.motorStatorCurrent = deployStatorCurrent.getValue();
-    inputs.motorTorqueCurrent = deployTorqueCurrent.getValue();
   }
 }

@@ -8,8 +8,6 @@ import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.Slot1Configs;
-import com.ctre.phoenix6.configs.Slot2Configs;
 import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -36,8 +34,8 @@ public final class IntakeConstants {
   // Deployment setpoints
   public static final Angle INTAKE_MAX_POSITION = Rotations.of(3.8);
   public static final Angle INTAKE_DEPLOYED_POSITION = Rotations.of(3.77);
-  public static final Angle INTAKE_DEPLOY_TOLERANCE = Degrees.of(2);
-  public static final Angle INTAKE_RETRACTED_POSITION = Rotations.of(1);
+  public static final Angle INTAKE_DEPLOY_TOLERANCE = Degrees.of(60);
+  public static final Angle INTAKE_RETRACTED_POSITION = Rotations.of(2);
   public static final Angle INTAKE_STOWED_POSITION = Rotations.of(0);
 
   public static final TalonFXConfiguration INTAKE_MOTOR_CONFIG =
@@ -55,9 +53,7 @@ public final class IntakeConstants {
                   .withMotionMagicAcceleration(RotationsPerSecondPerSecond.of(25))
                   .withMotionMagicJerk(0))
           .withMotorOutput(new MotorOutputConfigs().withInverted(InvertedValue.Clockwise_Positive))
-          .withSlot0(new Slot0Configs().withKP(80).withKD(2).withKV(1).withKA(0.25).withKS(0.1))
-          .withSlot1(new Slot1Configs().withKP(5).withKD(0.001).withKS(0.01))
-          .withSlot2(new Slot2Configs().withKP(60).withKD(2).withKS(0.1))
+          .withSlot0(new Slot0Configs().withKP(80).withKD(6.7).withKV(1).withKA(0.25).withKS(0.1))
           .withSoftwareLimitSwitch(
               new SoftwareLimitSwitchConfigs()
                   .withForwardSoftLimitThreshold(INTAKE_MAX_POSITION)

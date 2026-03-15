@@ -26,7 +26,6 @@ public sealed class DriveIOCTRE extends SwerveDrivetrain<TalonFX, TalonFX, CANco
   private final StatusSignalCollection gyroscopeSignals;
   private final StatusSignal<AngularVelocity> pitchVelocitySignal;
   private final StatusSignal<AngularVelocity> rollVelocitySignal;
-  private final StatusSignal<AngularVelocity> yawVelocity;
   private final StatusSignal<Angle> rollSignal;
   private final StatusSignal<Angle> pitchSignal;
   private final StatusSignal<LinearAcceleration> accelerationX;
@@ -59,7 +58,6 @@ public sealed class DriveIOCTRE extends SwerveDrivetrain<TalonFX, TalonFX, CANco
     // Store signals from the pigeon we care about
     pitchVelocitySignal = pigeon.getAngularVelocityYWorld();
     rollVelocitySignal = pigeon.getAngularVelocityXWorld();
-    yawVelocity = pigeon.getAngularVelocityZWorld();
     rollSignal = pigeon.getRoll();
     pitchSignal = pigeon.getPitch();
     accelerationX = pigeon.getAccelerationX();
@@ -144,9 +142,6 @@ public sealed class DriveIOCTRE extends SwerveDrivetrain<TalonFX, TalonFX, CANco
     // Refresh all of the status signals
     gyroscopeSignals.refreshAll();
 
-    // Record states we don't care about for the safety below
-    inputs.YawVelocity = yawVelocity.getValue();
-
     // Get all of the other gyro values we care about
     final Angle roll = rollSignal.getValue();
     final Angle pitch = pitchSignal.getValue();
@@ -157,13 +152,5 @@ public sealed class DriveIOCTRE extends SwerveDrivetrain<TalonFX, TalonFX, CANco
 
     // Send all of the tilt values to the driving safety util
     DrivingUtils.updateTilt(roll, pitch, rollVelocity, pitchVelocity, accelX, accelY);
-
-    // Finally, write all of the tils values into the inputs.
-    inputs.Roll = roll;
-    inputs.RollVelocity = rollVelocity;
-    inputs.Pitch = pitch;
-    inputs.PitchVelocity = pitchVelocity;
-    inputs.AccelerationX = accelX;
-    inputs.AccelerationY = accelY;
   }
 }

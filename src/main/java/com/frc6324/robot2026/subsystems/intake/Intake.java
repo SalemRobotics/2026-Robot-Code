@@ -49,6 +49,10 @@ public final class Intake extends SubsystemBase {
     return inputs.motorPosition.isNear(INTAKE_RETRACTED_POSITION, INTAKE_DEPLOY_TOLERANCE);
   }
 
+  public boolean isSafeToTrench() {
+    return inputs.motorPosition.gte(INTAKE_RETRACTED_POSITION);
+  }
+
   public boolean isStowed() {
     return inputs.motorPosition.isNear(INTAKE_STOWED_POSITION, INTAKE_DEPLOY_TOLERANCE);
   }
@@ -59,7 +63,7 @@ public final class Intake extends SubsystemBase {
     Logger.processInputs("Intake/Deploy", inputs);
 
     // Unary minus is there bc the motor is inverted IRL
-    extensionDistance = inputs.motorPosition.getDistanceTraveled(INTAKE_EXTENSION);
+    extensionDistance = INTAKE_EXTENSION.times(inputs.motorPosition.div(INTAKE_DEPLOYED_POSITION).magnitude());
 
     LoggedTracer.record("Intake periodic");
   }

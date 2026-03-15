@@ -22,7 +22,8 @@ public final class RollerConstants {
       new TalonFXConfiguration()
           .withSlot0(new Slot0Configs().withKP(5).withKD(0.001).withKS(1).withKV(1));
   public static final MotorAlignmentValue ROLLER_ALIGNMENT = MotorAlignmentValue.Opposed;
-  public static final AngularVelocity ROLLER_SPIN_VELOCITY = RPM.of(6000);
+  public static final AngularVelocity ROLLER_SPIN_VELOCITY = RPM.of(5000);
+  public static final AngularVelocity ROLLER_OUTTAKE_VELOCITY = RPM.of(-6000);
 
   public static final double ROLLER_MOI = 0.1;
   public static final double ROLLER_REDUCTION = 2;
