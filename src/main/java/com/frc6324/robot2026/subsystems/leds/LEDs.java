@@ -2,6 +2,7 @@ package com.frc6324.robot2026.subsystems.leds;
 
 import static com.frc6324.robot2026.subsystems.leds.LEDsConstants.*;
 
+import com.frc6324.lib.UninstantiableClass;
 import com.frc6324.lib.util.LoggedTracer;
 import com.frc6324.lib.util.VirtualSubsystem;
 import edu.wpi.first.math.filter.Debouncer;
@@ -12,8 +13,6 @@ import edu.wpi.first.wpilibj.AddressableLEDBufferView;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.RobotController;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 
 public final class LEDs extends VirtualSubsystem {
   private final AddressableLED leds = new AddressableLED(LED_RIO_PWM_PORT);
@@ -23,7 +22,6 @@ public final class LEDs extends VirtualSubsystem {
       buffer.createView(LED_FMS_BUFFER_START, LED_BUFFER_LENGTH - 1);
   private final AddressableLEDBufferView dataView = buffer.createView(0, LED_FMS_BUFFER_START - 1);
   private final Debouncer browoutDebouncer = new Debouncer(1, DebounceType.kRising);
-  @Setter private static LEDState state = LEDState.INACTIVE;
 
   public LEDs() {
     leds.setLength(LED_BUFFER_LENGTH);
@@ -49,7 +47,17 @@ public final class LEDs extends VirtualSubsystem {
     } else if (browningOut) {
       dataPattern = LED_BROWNOUT_PATTERN;
     } else {
-      dataPattern = state.pattern;
+      if (LEDState.shooting) {
+        dataPattern = LED_SHOOTING_PATTERN;
+      } else if (LEDState.passing) {
+        dataPattern = LED_PASSING_PATTERN;
+      } else if (LEDState.outtaking) {
+        dataPattern = LED_OUTTAKING_PATTERN;
+      } else if (LEDState.intaking) {
+        dataPattern = LED_INTAKING_PATTERN;
+      } else {
+        dataPattern = LED_DEFAULT_PATTERN;
+      }
     }
     dataPattern.applyTo(dataView);
 
@@ -57,17 +65,15 @@ public final class LEDs extends VirtualSubsystem {
     LoggedTracer.record("LEDs periodic");
   }
 
-  /**
-   * An enum representing the current state of the robot's LEDs, used for other subsystems to set
-   * their state.
-   */
-  @RequiredArgsConstructor
-  public enum LEDState {
-    /** LEDs are inactive, being either red (for an e-stop) or blue (default) */
-    INACTIVE(LED_DEFAULT_PATTERN),
-    INTAKING(LED_INTAKING_PATTERN),
-    SHOOTING(LED_SHOOTING_PATTERN);
+  @UninstantiableClass
+  public static final class LEDState {
+    public static boolean passing = false;
+    public static boolean shooting = false;
+    public static boolean outtaking = false;
+    public static boolean intaking = false;
 
-    public final LEDPattern pattern;
+    private LEDState() {
+      throw new IllegalAccessError();
+    }
   }
 }

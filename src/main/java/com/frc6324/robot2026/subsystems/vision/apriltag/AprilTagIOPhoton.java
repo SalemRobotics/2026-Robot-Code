@@ -16,6 +16,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.BooleanSupplier;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
@@ -39,11 +40,17 @@ public class AprilTagIOPhoton implements AprilTagIO {
 
   private Matrix<N3, N3> cameraMatrix = camera.getCameraMatrix().orElse(null);
   private Matrix<N8, N1> distortionCoefficients = camera.getDistCoeffs().orElse(null);
+  private final BooleanSupplier enableSignal;
 
-  public AprilTagIOPhoton(OdometryPoseGetter odometryPoseGetter) {
+  public AprilTagIOPhoton(OdometryPoseGetter odometryPoseGetter, BooleanSupplier enableSignal) {
     odometryPoseAtTime = odometryPoseGetter;
+    this.enableSignal = enableSignal;
 
     VisionUpdateThread.addCallback(this::updateOdometry);
+  }
+
+  public AprilTagIOPhoton(OdometryPoseGetter odometryPoseGetter) {
+    this(odometryPoseGetter, () -> true);
   }
 
   /**
@@ -148,7 +155,7 @@ public class AprilTagIOPhoton implements AprilTagIO {
 
   @Override
   public void updateInputs(VisionInputs inputs) {
-    if (!camera.isConnected()) {
+    if (!camera.isConnected() || !enableSignal.getAsBoolean()) {
       inputs.connected = false;
       inputs.estimations = new VisionEstimation[0];
       inputs.tagsSeen = new int[0];

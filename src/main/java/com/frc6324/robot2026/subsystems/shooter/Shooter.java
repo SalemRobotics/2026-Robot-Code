@@ -99,12 +99,13 @@ public final class Shooter extends SubsystemBase {
   @Override
   public void simulationPeriodic() {
     final Angle shooterAngle = inputs.hoodPosition;
-    final double shooterAngleRads = shooterAngle.in(Radians);
+    final double shooterAngleRads = shooterAngle.div(HOOD_MAX_ANGLE).magnitude() * HOOD_SIM_MAX_ANGLE.in(Radians);
 
     final Rotation3d rot = new Rotation3d(0, shooterAngleRads, 0);
     final Translation3d translation = ROBOT_TO_HOOD_AXLE.plus(HOOD_AXLE_TO_HOOD.rotateBy(rot));
-    final Pose3d hoodPose =
-        new Pose3d(translation, new Rotation3d(0, Math.PI + shooterAngleRads, 0));
+
+    final Rotation3d flippedRot = new Rotation3d(0, -shooterAngleRads, 0);
+    final Pose3d hoodPose = new Pose3d(translation, flippedRot);
 
     Logger.recordOutput("Shooter/HoodMechanismPosition", hoodPose);
 

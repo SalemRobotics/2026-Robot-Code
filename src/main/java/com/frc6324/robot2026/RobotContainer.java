@@ -17,7 +17,9 @@ package com.frc6324.robot2026;
 
 import static com.frc6324.robot2026.Constants.*;
 
+import com.frc6324.lib.util.FieldConstants.LinesVertical;
 import com.frc6324.lib.util.IOLayer;
+import com.frc6324.lib.util.PoseExtensions;
 import com.frc6324.robot2026.commands.AutoCommands;
 import com.frc6324.robot2026.commands.AutoCommands.AllianceSide;
 import com.frc6324.robot2026.commands.DriveCommands;
@@ -37,9 +39,11 @@ import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import lombok.experimental.ExtensionMethod;
 import org.littletonrobotics.junction.LoggedPowerDistribution;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
+@ExtensionMethod(PoseExtensions.class)
 @SuppressWarnings("unused")
 public class RobotContainer {
   private final AprilTagVision apriltag;
@@ -67,9 +71,13 @@ public class RobotContainer {
         final DriveIOCTRE driveIO = new DriveIOCTRE();
         drive = new SwerveDrive(driveIO);
 
-        apriltag = new AprilTagVision(new AprilTagIOPhoton(driveIO)).withConsumer(drive);
-        indexer = new Indexer(new IndexerIOTalonFX());
         intake = new Intake(new IntakeIOTalonFX());
+        apriltag =
+            new AprilTagVision(
+                    new AprilTagIOPhoton(driveIO, intake::visionAvailable),
+                    new AprilTagIOPhoton(driveIO))
+                .withConsumer(drive);
+        indexer = new Indexer(new IndexerIOTalonFX());
         rollers = new Rollers(new RollerIOTalonFX());
         shooter = new Shooter(new ShooterIOTalonFX());
       }
@@ -77,7 +85,9 @@ public class RobotContainer {
         final DriveIOSim driveIO = new DriveIOSim();
         drive = new SwerveDrive(driveIO);
 
-        apriltag = new AprilTagVision(new AprilTagIOSim(driveIO, drive));
+        apriltag =
+            new AprilTagVision(
+                new AprilTagIOSim(driveIO, drive), new AprilTagIOSim(driveIO, drive));
         indexer = new Indexer(new IndexerIOSim());
         intake = new Intake(new IntakeIOSim());
         rollers = new Rollers(new RollerIOSim());
@@ -86,7 +96,7 @@ public class RobotContainer {
       default -> {
         drive = new SwerveDrive(new DriveIOReplay());
 
-        apriltag = new AprilTagVision(IOLayer::replay);
+        apriltag = new AprilTagVision(IOLayer::replay, IOLayer::replay);
         indexer = new Indexer(IOLayer::replay);
         intake = new Intake(IOLayer::replay);
         rollers = new Rollers(IOLayer::replay);
@@ -109,13 +119,38 @@ public class RobotContainer {
     drive.setDefaultCommand(DriveCommands.joystickDrive(drive, controller.getHID()));
     shooter.setDefaultCommand(new IdleShooterCommand(shooter, drive));
 
+    intake.setDefaultCommand(
+        intake.run(
+            () -> {
+              if (drive
+                  .getPose()
+                  .boundedWithinX(
+                      LinesVertical.NEUTRAL_ZONE_NEAR, LinesVertical.NEUTRAL_ZONE_FAR)) {
+                intake.deploy();
+              }
+            }));
+    rollers.setDefaultCommand(
+        rollers.runEnd(
+            () -> {
+              if (drive
+                  .getPose()
+                  .boundedWithinX(
+                      LinesVertical.NEUTRAL_ZONE_NEAR, LinesVertical.NEUTRAL_ZONE_FAR)) {
+                rollers.spinRollers();
+                LEDState.intaking = true;
+              } else {
+                rollers.stopRollers();
+                LEDState.intaking = false;
+              }
+            },
+            () -> LEDState.intaking = false));
+
     indexer.setDefaultCommand(
         indexer.run(
             () -> {
               indexer.stopIndexerWheel();
               indexer.stopKickerWheel();
             }));
-    rollers.setDefaultCommand(rollers.run(rollers::stopRollers));
 
     controller
         .leftTrigger()
@@ -124,9 +159,10 @@ public class RobotContainer {
                 () -> {
                   intake.deploy();
                   rollers.spinRollers();
-                  LEDs.setState(LEDState.INTAKING);
+
+                  LEDState.intaking = true;
                 },
-                () -> LEDs.setState(LEDState.INACTIVE),
+                () -> LEDState.intaking = false,
                 intake,
                 rollers))
         .onFalse(rollers.run(rollers::stopRollers));
@@ -135,11 +171,14 @@ public class RobotContainer {
     controller
         .b()
         .whileTrue(
-            Commands.run(
+            Commands.runEnd(
                 () -> {
                   intake.deploy();
                   rollers.outtake();
+
+                  LEDState.outtaking = true;
                 },
+                () -> LEDState.outtaking = false,
                 rollers,
                 intake));
     controller.b().whileTrue(rollers.run(rollers::outtake));
@@ -152,6 +191,6 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return Commands.print("No autonomous command configured");
+    return autoChooser.get();
   }
 }

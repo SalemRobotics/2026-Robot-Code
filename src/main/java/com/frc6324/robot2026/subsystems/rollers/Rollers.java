@@ -24,7 +24,6 @@ public final class Rollers extends SubsystemBase {
    */
   public Rollers(RollerIO io) {
     setName("Intake Rollers");
-    setDefaultCommand(idle());
 
     this.io = io;
     leaderDisconnectedAlert.set(false);

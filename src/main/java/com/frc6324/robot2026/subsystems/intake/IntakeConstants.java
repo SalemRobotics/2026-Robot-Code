@@ -32,8 +32,9 @@ public final class IntakeConstants {
   public static final Distance INTAKE_EXTENSION = Inches.of(12);
 
   // Deployment setpoints
-  public static final Angle INTAKE_MAX_POSITION = Rotations.of(3.8);
-  public static final Angle INTAKE_DEPLOYED_POSITION = Rotations.of(3.77);
+  public static final Angle INTAKE_MAX_POSITION = Rotations.of(4.1);
+  public static final Angle INTAKE_DEPLOYED_POSITION = Rotations.of(4.1);
+  public static final Angle INTAKE_VISION_THRESHOLD = Rotations.of(2);
   public static final Angle INTAKE_DEPLOY_TOLERANCE = Degrees.of(60);
   public static final Angle INTAKE_RETRACTED_POSITION = Rotations.of(2);
   public static final Angle INTAKE_STOWED_POSITION = Rotations.of(0);

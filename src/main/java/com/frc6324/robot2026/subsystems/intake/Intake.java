@@ -30,10 +30,8 @@ public final class Intake extends SubsystemBase {
     this.io = io;
 
     if (RobotBase.isSimulation()) {
-      isDeployed.onTrue(
-          Commands.runOnce(() -> MapleSimManager.getInstance().setIntakeExtended(true)));
-      isDeployed.onFalse(
-          Commands.runOnce(() -> MapleSimManager.getInstance().setIntakeExtended(false)));
+      isDeployed.onTrue(Commands.runOnce(() -> MapleSimManager.getInstance().setIntakeExtended(true)));
+      isDeployed.onFalse(Commands.runOnce(() -> MapleSimManager.getInstance().setIntakeExtended(false)));
     }
   }
 
@@ -63,7 +61,8 @@ public final class Intake extends SubsystemBase {
     Logger.processInputs("Intake/Deploy", inputs);
 
     // Unary minus is there bc the motor is inverted IRL
-    extensionDistance = INTAKE_EXTENSION.times(inputs.motorPosition.div(INTAKE_DEPLOYED_POSITION).magnitude());
+    extensionDistance =
+        INTAKE_EXTENSION.times(inputs.motorPosition.div(INTAKE_DEPLOYED_POSITION).magnitude());
 
     LoggedTracer.record("Intake periodic");
   }
@@ -88,5 +87,9 @@ public final class Intake extends SubsystemBase {
 
   public void stow() {
     io.setPosition(INTAKE_STOWED_POSITION);
+  }
+
+  public boolean visionAvailable() {
+    return inputs.motorPosition.gte(INTAKE_VISION_THRESHOLD);
   }
 }

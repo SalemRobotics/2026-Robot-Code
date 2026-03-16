@@ -15,7 +15,6 @@ import com.frc6324.robot2026.subsystems.drive.DrivingUtils;
 import com.frc6324.robot2026.subsystems.drive.SwerveDrive;
 import com.frc6324.robot2026.subsystems.indexer.Indexer;
 import com.frc6324.robot2026.subsystems.intake.Intake;
-import com.frc6324.robot2026.subsystems.leds.LEDs;
 import com.frc6324.robot2026.subsystems.leds.LEDs.LEDState;
 import com.frc6324.robot2026.subsystems.rollers.Rollers;
 import com.frc6324.robot2026.subsystems.shooter.Shooter;
@@ -262,7 +261,7 @@ public final class ShooterCommands {
 
     @Override
     public void end(boolean interrupted) {
-      LEDs.setState(LEDState.INACTIVE);
+      LEDState.shooting = false;
       super.end(interrupted);
     }
 
@@ -276,7 +275,7 @@ public final class ShooterCommands {
       hubTranslation = FieldConstants.getAllianceHub().getTranslation();
       super.initialize();
 
-      LEDs.setState(LEDState.SHOOTING);
+      LEDState.shooting = true;
     }
 
     @Override
@@ -406,9 +405,9 @@ public final class ShooterCommands {
     private double allianceZoneStart;
     private double allianceZoneEnd;
 
-    public IdleShooterCommand(Shooter shooter, SwerveDrive drive) {
+    public IdleShooterCommand(Shooter shooter, PoseSupplier poseSupplier) {
       this.shooter = shooter;
-      this.robotPoseSupplier = drive;
+      this.robotPoseSupplier = poseSupplier;
 
       addRequirements(shooter);
     }

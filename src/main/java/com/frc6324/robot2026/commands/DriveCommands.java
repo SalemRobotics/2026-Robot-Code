@@ -12,8 +12,6 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.lib.BLine.FollowPath;
-import frc.robot.lib.BLine.Path;
 import lombok.experimental.ExtensionMethod;
 import org.jetbrains.annotations.Contract;
 import org.littletonrobotics.junction.Logger;
@@ -64,18 +62,6 @@ public final class DriveCommands {
 
   public static Translation2d getLinearVelocityFromJoysticks(XboxController controller) {
     return getLinearVelocityFromJoysticks(-controller.getLeftY(), -controller.getLeftX());
-  }
-
-  public static Command driveToPose(final SwerveDrive drive, final Pose2d pose) {
-    final FollowPath.Builder builder = drive.getBLineBuilder();
-
-    return drive.defer(
-        () -> {
-          Path.Waypoint target = new Path.Waypoint(pose, true);
-          Path path = new Path(target);
-
-          return builder.build(path);
-        });
   }
 
   /**

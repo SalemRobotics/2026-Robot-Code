@@ -20,7 +20,7 @@ public final class AprilTagConstants {
   public static final AprilTagFieldLayout APRILTAG_LAYOUT =
       FieldConstants.DEFAULT_APRILTAG_TYPE.getLayout();
 
-  public static final String[] CAMERA_NAMES = {"Front Tag Camera"};
+  public static final String[] CAMERA_NAMES = {"Front Tag Camera", "Rear Tag Camera"};
   public static final double[] CAMERA_STDDEV_FACTORS = {1, 1};
   public static final Resolution[] CAMERA_RESOLUTIONS = {
     new Resolution(1280, 800), new Resolution(1280, 800)
@@ -28,20 +28,19 @@ public final class AprilTagConstants {
   public static final double[] CAMERA_LATENCIES = {30, 30};
   public static final double[] CAMERA_FPS = {30, 30};
   public static final Rotation2d[] CAMERA_FOVS = {
-    Rotation2d.fromDegrees(80), Rotation2d.fromDegrees(80)
+    Rotation2d.fromDegrees(110), Rotation2d.fromDegrees(110)
   };
   public static final Transform3d[] ROBOT_TO_CAMERAS = {
     new Transform3d(
-        Units.inchesToMeters(-11),
-        Units.inchesToMeters(-6.25),
-        Units.inchesToMeters(16.5),
+        Units.inchesToMeters(-10),
+        Units.inchesToMeters(-6),
+        Units.inchesToMeters(18.775),
         new Rotation3d(0, Units.degreesToRadians(20), 0)),
     new Transform3d(
-        // TODO: actually find these lol
-        Units.inchesToMeters(-12.704),
-        Units.inchesToMeters(-3.36),
-        Units.inchesToMeters(16.5),
-        new Rotation3d(0, Units.degreesToRadians(20), 0)),
+        Units.inchesToMeters(-12.175),
+        Units.inchesToMeters(-4),
+        Units.inchesToMeters(15.6),
+        new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(180))),
   };
 
   public static final Frequency UPDATE_THREAD_FREQUENCY = Hertz.of(60);
@@ -49,8 +48,8 @@ public final class AprilTagConstants {
   public static final boolean HEADING_FREE = false;
   public static final double HEADING_FACTOR = 10;
 
-  public static final double LINEAR_STDDEV_BASELINE = Units.inchesToMeters(0.25);
-  public static final double ANGULAR_STDDEV_BASELINE = Units.degreesToRadians(1.25);
+  public static final double LINEAR_STDDEV_BASELINE = Units.inchesToMeters(0.4);
+  public static final double ANGULAR_STDDEV_BASELINE = Units.degreesToRadians(1.75);
 
   public static final double MAX_LATENCY_SECS = 2;
   public static final double MAX_AMBIGUITY = 0.2;

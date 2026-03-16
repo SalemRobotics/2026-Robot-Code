@@ -99,6 +99,7 @@ public final class ShooterConstants {
     // Setpoint values & tolerance
     public static final Angle HOOD_STOW_ANGLE = Rotations.of(0.05);
     public static final Angle HOOD_MAX_ANGLE = Rotations.of(0.6);
+    public static final Angle HOOD_SIM_MAX_ANGLE = Degrees.of(25);
     public static final Angle HOOD_TOLERANCE = Rotations.of(0.05);
 
     /** The full configuration for the hood's {@link com.ctre.phoenix6.hardware.TalonFX TalonFX}. */

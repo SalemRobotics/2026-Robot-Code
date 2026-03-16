@@ -75,7 +75,7 @@ public final class DrivetrainConstants {
               Math.hypot(TunerConstants.BackLeft.LocationX, TunerConstants.BackLeft.LocationY),
               Math.hypot(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY)));
 
-  public static final PIDController BLINE_TRANSLATION_CONTROLLER = new PIDController(4.5, 0, 0);
-  public static final PIDController BLINE_ROTATION_CONTROLLER = new PIDController(5, 0, 0);
-  public static final PIDController BLINE_CTE_CONTROLLER = new PIDController(7, 0, 0);
+  public static final PIDController BLINE_TRANSLATION_CONTROLLER = new PIDController(1.5, 0, 0);
+  public static final PIDController BLINE_ROTATION_CONTROLLER = new PIDController(3, 0, 0);
+  public static final PIDController BLINE_CTE_CONTROLLER = new PIDController(3.5, 0, 0);
 }
