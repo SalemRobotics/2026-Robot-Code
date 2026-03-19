@@ -155,6 +155,7 @@ public final class ShooterCommands {
       final Translation2d delta = target.minus(shooterPosition.getTranslation());
       final Rotation2d facing = delta.getAngle();
 
+      applyDriverInput();
       drive.setControl(request.withTargetDirection(AllianceFlipUtil.apply(facing)));
 
       // Command the shooter
@@ -286,13 +287,11 @@ public final class ShooterCommands {
       final boolean atRobotAngle =
           MathUtil.isNear(robotYaw.getRadians(), targetFacing.getRadians(), tolerance);
       final boolean atHoodAngle = shooter.atTargetHoodAngle();
-      final boolean atFlyVelocity = shooter.atTargetVelocity();
 
       Logger.recordOutput(logKey + "/AtRobotAngle", atRobotAngle);
       Logger.recordOutput(logKey + "/AtHoodSetpoint", atHoodAngle);
-      Logger.recordOutput(logKey + "/AtTargetVelocity", atFlyVelocity);
 
-      final boolean should = atRobotAngle && atHoodAngle && atFlyVelocity;
+      final boolean should = atRobotAngle && atHoodAngle;
       return debouncer.calculate(should);
     }
   }

@@ -1,5 +1,7 @@
 package com.frc6324.robot2026.commands;
 
+import static edu.wpi.first.units.Units.Seconds;
+
 import com.frc6324.lib.UninstantiableClass;
 import com.frc6324.lib.util.PoseExtensions;
 import com.frc6324.robot2026.commands.ShooterCommands.ShootIntoHubCommand;
@@ -33,11 +35,9 @@ public final class AutoCommands {
       Rollers rollers,
       Shooter shooter,
       AllianceSide side) {
-    PathPlannerPath intakePath1;
-
+    PathPlannerPath intakePath;
     try {
-      intakePath1 = PathPlannerPath.fromPathFile("Trench First Intake");
-
+      intakePath = PathPlannerPath.fromPathFile("Trench First Intake");
     } catch (Exception e) {
       e.printStackTrace();
 
@@ -45,14 +45,19 @@ public final class AutoCommands {
     }
 
     if (side == AllianceSide.Right) {
-      intakePath1 = intakePath1.mirrorPath();
+      intakePath = intakePath.mirrorPath();
     }
 
     return Commands.sequence(
         Commands.parallel(intake.run(intake::deploy), shooter.run(shooter::stowHood))
             .until(intake::isDeployed),
         Commands.waitSeconds(0.2),
-        AutoBuilder.followPath(intakePath1)
+        AutoBuilder.followPath(intakePath)
+            .alongWith(intake.runOnce(intake::deploy), rollers.runOnce(rollers::spinRollers)),
+        new ShootIntoHubCommand(drive, indexer, intake, rollers, shooter, "AutoShootIntoHub")
+            .withTimeout(Seconds.of(5)),
+        // Copy and paste because it don't matter?
+        AutoBuilder.followPath(intakePath)
             .alongWith(intake.runOnce(intake::deploy), rollers.runOnce(rollers::spinRollers)),
         new ShootIntoHubCommand(drive, indexer, intake, rollers, shooter, "AutoShootIntoHub"));
   }

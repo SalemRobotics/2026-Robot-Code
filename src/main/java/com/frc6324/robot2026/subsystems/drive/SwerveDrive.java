@@ -3,15 +3,11 @@ package com.frc6324.robot2026.subsystems.drive;
 import static com.frc6324.robot2026.subsystems.drive.DrivetrainConstants.*;
 import static edu.wpi.first.units.Units.*;
 
+import com.ctre.phoenix6.swerve.*;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
-import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
-import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
-import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.ClosedLoopOutputType;
-import com.ctre.phoenix6.swerve.SwerveRequest;
-import com.ctre.phoenix6.swerve.SwerveRequest.ApplyRobotSpeeds;
-import com.ctre.phoenix6.swerve.SwerveRequest.SwerveDriveBrake;
 import com.frc6324.lib.util.AllianceFlipUtil;
+import com.frc6324.lib.util.LocalADStarAK;
 import com.frc6324.lib.util.LoggedTracer;
 import com.frc6324.lib.util.PoseExtensions.PoseSupplier;
 import com.frc6324.lib.util.Statics;
@@ -22,6 +18,7 @@ import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -59,21 +56,23 @@ public final class SwerveDrive extends SubsystemBase implements VisionConsumer, 
                   MODULE_TRANSLATIONS));
 
   /** The type of request to use for a drive motor. */
-  public static final DriveRequestType DRIVE_REQUEST = DriveRequestType.Velocity;
+  public static final SwerveModule.DriveRequestType DRIVE_REQUEST =
+      SwerveModule.DriveRequestType.Velocity;
 
   /** The type of request to use for a steer motor. */
-  public static final SteerRequestType STEER_REQUEST = SteerRequestType.Position;
+  public static final SwerveModule.SteerRequestType STEER_REQUEST =
+      SwerveModule.SteerRequestType.Position;
 
   private final DriveIO io;
   private final DriveInputsAutoLogged inputs = new DriveInputsAutoLogged();
 
-  private final ApplyRobotSpeeds autoSpeedsRequest =
-      new ApplyRobotSpeeds()
+  private final SwerveRequest.ApplyRobotSpeeds autoSpeedsRequest =
+      new SwerveRequest.ApplyRobotSpeeds()
           .withDriveRequestType(DRIVE_REQUEST)
           .withSteerRequestType(STEER_REQUEST)
           .withDesaturateWheelSpeeds(true);
 
-  private final SwerveDriveBrake brakeRequest = new SwerveDriveBrake();
+  private final SwerveRequest.SwerveDriveBrake brakeRequest = new SwerveRequest.SwerveDriveBrake();
 
   /**
    * Creates a new drivetrain subsystem.
@@ -82,7 +81,6 @@ public final class SwerveDrive extends SubsystemBase implements VisionConsumer, 
    */
   public SwerveDrive(DriveIO io) {
     setName("Drivetrain");
-
     this.io = io;
 
     AutoBuilder.configure(
@@ -105,6 +103,7 @@ public final class SwerveDrive extends SubsystemBase implements VisionConsumer, 
             Logger.recordOutput("PathPlanner/CurrentTrajectory", poses.toArray(Pose2d[]::new)));
     PathPlannerLogging.setLogTargetPoseCallback(
         pose -> Logger.recordOutput("PathPlanner/TargetPose", pose));
+    Pathfinding.setPathfinder(new LocalADStarAK());
 
     // Put the swerve widget on SmartDashboard
     SmartDashboard.putData(new SwerveWidget(this));

@@ -65,15 +65,15 @@
     {
       "anchor": {
         "x": 7.583797709923665,
-        "y": 3.943546856465006
+        "y": 4.277081850533808
       },
       "prevControl": {
         "x": 7.791794184997739,
-        "y": 4.149204149654173
+        "y": 4.482739143722974
       },
       "nextControl": {
         "x": 7.406024197726117,
-        "y": 3.7677726309342185
+        "y": 4.10130762500302
       },
       "isLocked": false,
       "linkedName": null
@@ -162,9 +162,9 @@
     {
       "name": "Slow for Intaking",
       "minWaypointRelativePos": 2.3,
-      "maxWaypointRelativePos": 4.0,
+      "maxWaypointRelativePos": 3.5,
       "constraints": {
-        "maxVelocity": 3.0,
+        "maxVelocity": 1.0,
         "maxAcceleration": 5.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
@@ -185,7 +185,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -29.999999999999996
+    "rotation": -50.0
   },
   "reversed": false,
   "folder": null,

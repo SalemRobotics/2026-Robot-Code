@@ -44,12 +44,7 @@ public final class PhoenixUtil {
   }
 
   public static void tryUntilOk(int maxAttempts, Supplier<StatusCode> command) {
-    for (int i = 0; i < maxAttempts; i++) {
-      final StatusCode status = command.get();
-      if (status.isOK()) {
-        break;
-      }
-    }
+    tryUntilOk(maxAttempts, command, "Error trying to apply phoenix command: ");
   }
 
   /**

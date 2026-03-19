@@ -23,7 +23,7 @@ public final class IndexerConstants {
   public static final int INDEXER_SPINNER_MOTOR_ID = 30;
   public static final int INDEXER_FEEDER_MOTOR_ID = 31;
 
-  public static final AngularVelocity INDEXER_SPINNER_VELOCITY = RPM.of(450);
+  public static final AngularVelocity INDEXER_SPINNER_VELOCITY = RPM.of(600);
   public static final AngularVelocity INDEXER_SPINNER_SHAKE_ADDITION = RPM.of(5);
   public static final AngularVelocity INDEXER_KICKER_VELOCITY = RotationsPerSecond.of(38);
 
@@ -34,7 +34,7 @@ public final class IndexerConstants {
               new CurrentLimitsConfigs()
                   .withStatorCurrentLimit(Amps.of(120))
                   .withStatorCurrentLimitEnable(true)
-                  .withSupplyCurrentLimit(Amps.of(120))
+                  .withSupplyCurrentLimit(Amps.of(40))
                   .withSupplyCurrentLimitEnable(true))
           // FEEDBACK
           .withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(9))

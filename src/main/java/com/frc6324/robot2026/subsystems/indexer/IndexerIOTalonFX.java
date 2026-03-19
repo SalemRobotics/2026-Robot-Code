@@ -48,7 +48,7 @@ public class IndexerIOTalonFX implements IndexerIO {
     tryUntilOk(5, () -> kicker.getConfigurator().apply(INDEXER_KICKER_CONFIG));
     tryUntilOk(5, () -> kicker.setNeutralMode(NeutralModeValue.Brake));
     tryUntilOk(5, () -> spinner.getConfigurator().apply(INDEXER_SPINNER_CONFIG));
-    tryUntilOk(5, () -> spinner.setNeutralMode(NeutralModeValue.Brake));
+    tryUntilOk(5, () -> spinner.setNeutralMode(NeutralModeValue.Coast));
   }
 
   @Override

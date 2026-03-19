@@ -23,7 +23,6 @@ public final class Shooter extends SubsystemBase {
   private Angle hoodSetpoint = Rotations.zero();
   private boolean hoodAtSetpoint = false;
   private AngularVelocity flywheelSetpoint = RadiansPerSecond.zero();
-  private boolean flywheelAtSetpoint = false;
 
   /**
    * Creates a new shooter subsystem.
@@ -36,15 +35,6 @@ public final class Shooter extends SubsystemBase {
 
   public boolean atTargetHoodAngle() {
     return hoodAtSetpoint;
-  }
-
-  /**
-   * Gets whether the flywheel has reached its target velocity.
-   *
-   * @return Whether the flywheel has gotten within 1 rad/sec of its velocity setpoint.
-   */
-  public boolean atTargetVelocity() {
-    return flywheelAtSetpoint;
   }
 
   /**
@@ -64,14 +54,11 @@ public final class Shooter extends SubsystemBase {
     io.updateInputs(inputs);
     Logger.processInputs("Shooter", inputs);
 
-    flywheelAtSetpoint =
-        inputs.flywheelLeaderVelocity.isNear(flywheelSetpoint, FLYWHEEL_VELOCITY_TOLERANCE);
     hoodAtSetpoint = inputs.hoodPosition.isNear(hoodSetpoint, HOOD_TOLERANCE);
 
     Logger.recordOutput("Shooter/Hood Setpoint", hoodSetpoint);
     Logger.recordOutput("Shooter/Hood At Setpoint", hoodAtSetpoint);
     Logger.recordOutput("Shooter/Flywheel Setpoint", flywheelSetpoint);
-    Logger.recordOutput("Shooter/Flywheel At Setpoint", flywheelAtSetpoint);
 
     LoggedTracer.record("Shooter periodic");
   }
@@ -99,7 +86,8 @@ public final class Shooter extends SubsystemBase {
   @Override
   public void simulationPeriodic() {
     final Angle shooterAngle = inputs.hoodPosition;
-    final double shooterAngleRads = shooterAngle.div(HOOD_MAX_ANGLE).magnitude() * HOOD_SIM_MAX_ANGLE.in(Radians);
+    final double shooterAngleRads =
+        shooterAngle.div(HOOD_MAX_ANGLE).magnitude() * HOOD_SIM_MAX_ANGLE.in(Radians);
 
     final Rotation3d rot = new Rotation3d(0, shooterAngleRads, 0);
     final Translation3d translation = ROBOT_TO_HOOD_AXLE.plus(HOOD_AXLE_TO_HOOD.rotateBy(rot));

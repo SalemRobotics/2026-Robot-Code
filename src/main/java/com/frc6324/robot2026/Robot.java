@@ -30,12 +30,14 @@ import lombok.val;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 public class Robot extends LoggedRobot {
-  public static Optional<Alliance> autoWinner = Optional.empty();
+  public static Alliance autoWinner = Alliance.Blue;
+  private static LoggedDashboardChooser<Alliance> autoWinnerOverride;
 
   private Command autonomousCommand = null;
   private final RobotContainer robotContainer;
@@ -89,6 +91,10 @@ public class Robot extends LoggedRobot {
     // Start the akit logger
     Logger.start();
 
+    autoWinnerOverride = new LoggedDashboardChooser<>("Auto Winner");
+    autoWinnerOverride.addDefaultOption("Blue", Alliance.Blue);
+    autoWinnerOverride.addOption("Red", Alliance.Red);
+
     // Initialize the robot container
     robotContainer = new RobotContainer();
     PhoenixUtil.synchronizeSignals(2);
@@ -106,32 +112,52 @@ public class Robot extends LoggedRobot {
     }
 
     final Optional<Alliance> selfAllianceOpt = DriverStation.getAlliance();
-
-    // Ignore and return true in practice where we don't set the game message
-    if (!DriverStation.isFMSAttached() && autoWinner.isEmpty()) {
-      return true;
-    } else if (autoWinner.isEmpty() || selfAllianceOpt.isEmpty()) {
+    if (selfAllianceOpt.isEmpty()) {
       return false;
     }
 
-    final Alliance inactiveFirst = autoWinner.get();
     final Alliance selfAlliance = selfAllianceOpt.get();
     final double teleopTime = DriverStation.getMatchTime();
 
     // In the first 10 secs of teleop and the last 30 secs, both hubs are active
-    if (teleopTime <= 130 || teleopTime >= 30) {
+    if (teleopTime >= 130 || teleopTime <= 30) {
       return true;
-    } else if ((teleopTime >= 105 && teleopTime <= 80) || (teleopTime >= 55 && teleopTime <= 30)) {
-      return inactiveFirst == selfAlliance;
+    } else if ((teleopTime <= 105 && teleopTime >= 80) || (teleopTime <= 55 && teleopTime >= 30)) {
+      return autoWinner == selfAlliance;
     } else {
-      return inactiveFirst != selfAlliance;
+      return autoWinner != selfAlliance;
+    }
+  }
+
+  /**
+   * Gets the time left in the current phase.
+   *
+   * @return The time left for the current active hub.
+   */
+  public static double getTimeLeftInPhase() {
+    if (DriverStation.isDisabled()) {
+      Logger.recordOutput("Match/Phase", "Not tele :/");
+      return 0;
+    }
+
+    final double teleopTime = DriverStation.getMatchTime();
+
+    if (teleopTime >= 130.0) {
+      Logger.recordOutput("Match/Phase", "After Auto");
+      return teleopTime - 130;
+    } else if (teleopTime <= 30.0) {
+      Logger.recordOutput("Match/Phase", "Endgame");
+      return teleopTime;
+    } else {
+      Logger.recordOutput("Match/Phase", "One Hub");
+      return (teleopTime - 30) % 25;
     }
   }
 
   @Override
   public void robotPeriodic() {
     Logger.runEveryN(
-        (int) (1 / defaultPeriodSecs),
+        5,
         () -> {
           val totalMemory = runtime.totalMemory();
           val usedMemory = totalMemory - runtime.freeMemory();
@@ -139,6 +165,8 @@ public class Robot extends LoggedRobot {
 
           Logger.recordOutput("Robot/Used Memory %", utilization * 100);
         });
+    Logger.recordOutput("Match/Hub Active", getIsAllianceActive());
+    Logger.recordOutput("Match/Phase Time", getTimeLeftInPhase());
 
     // Set thread to highest priority to improve performance
     // Threads.setCurrentThreadPriority(true, 99);
@@ -184,9 +212,7 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void autonomousExit() {
-    if (DriverStation.isFMSAttached()) {
-      autoWinner = Optional.empty();
-    }
+    autoWinner = Alliance.Blue;
   }
 
   @Override
@@ -199,14 +225,16 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void teleopPeriodic() {
-    if (DriverStation.isFMSAttached() && autoWinner.isEmpty()) {
+    if (DriverStation.isFMSAttached()) {
       switch (DriverStation.getGameSpecificMessage()) {
-        case "B" -> autoWinner = Optional.of(Alliance.Blue);
-        case "R" -> autoWinner = Optional.of(Alliance.Red);
-        default -> {
-          /* Do nothing since there isn't a message */
-        }
+        case "B" -> autoWinner = Alliance.Blue;
+        case "R" -> autoWinner = Alliance.Red;
+        default -> autoWinner = null;
       }
+    }
+
+    if (autoWinner == null) {
+      autoWinner = autoWinnerOverride.get();
     }
   }
 

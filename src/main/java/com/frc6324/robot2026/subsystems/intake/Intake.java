@@ -30,8 +30,10 @@ public final class Intake extends SubsystemBase {
     this.io = io;
 
     if (RobotBase.isSimulation()) {
-      isDeployed.onTrue(Commands.runOnce(() -> MapleSimManager.getInstance().setIntakeExtended(true)));
-      isDeployed.onFalse(Commands.runOnce(() -> MapleSimManager.getInstance().setIntakeExtended(false)));
+      isDeployed.onTrue(
+          Commands.runOnce(() -> MapleSimManager.getInstance().setIntakeExtended(true)));
+      isDeployed.onFalse(
+          Commands.runOnce(() -> MapleSimManager.getInstance().setIntakeExtended(false)));
     }
   }
 
