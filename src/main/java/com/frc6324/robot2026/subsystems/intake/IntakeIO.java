@@ -7,11 +7,9 @@ import org.littletonrobotics.junction.AutoLog;
 
 @FunctionalInterface
 public interface IntakeIO {
-  default void deploy() {}
+  default void setPosition(Angle position) {}
 
   default void spring() {}
-
-  default void stow() {}
 
   /**
    * Updates a set of loggable inputs for the intake.
@@ -25,12 +23,8 @@ public interface IntakeIO {
     public boolean motorConnected = false;
 
     public Angle motorPosition = Rotations.zero();
-    public double positionError = 0;
-    public double pidSetpoint = 0;
-    public double pidOutput = 0;
     public AngularVelocity motorVelocity = RotationsPerSecond.zero();
     public Voltage motorVoltage = Volts.zero();
     public Current motorStatorCurrent = Amps.zero();
-    public Current motorTorqueCurrent = Amps.zero();
   }
 }

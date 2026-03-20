@@ -27,7 +27,7 @@ public final class DrivetrainConstants {
   public static final Time ODOMETRY_PERIOD = Hertz.of(ODOMETRY_UPDATE_FREQUENCY).asPeriod();
 
   public static final Vector<N3> ODOMETRY_STDDEVS =
-      VecBuilder.fill(0.02, 0.02, Units.degreesToRadians(2.5));
+      VecBuilder.fill(0.002, 0.002, Units.degreesToRadians(0.25));
   public static final Vector<N3> DEFAULT_VISION_STDDEVS =
       VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(5));
   public static final String[] MODULE_NAMES = {"FrontLeft", "FrontRight", "BackLeft", "BackRight"};
@@ -75,7 +75,7 @@ public final class DrivetrainConstants {
               Math.hypot(TunerConstants.BackLeft.LocationX, TunerConstants.BackLeft.LocationY),
               Math.hypot(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY)));
 
-  public static final PIDController BLINE_TRANSLATION_CONTROLLER = new PIDController(4.5, 0, 0);
-  public static final PIDController BLINE_ROTATION_CONTROLLER = new PIDController(5, 0, 0);
-  public static final PIDController BLINE_CTE_CONTROLLER = new PIDController(7, 0, 0);
+  public static final PIDController BLINE_TRANSLATION_CONTROLLER = new PIDController(1.5, 0, 0);
+  public static final PIDController BLINE_ROTATION_CONTROLLER = new PIDController(3, 0, 0);
+  public static final PIDController BLINE_CTE_CONTROLLER = new PIDController(3.5, 0, 0);
 }

@@ -3,7 +3,6 @@ package com.frc6324.robot2026.subsystems.drive;
 import com.frc6324.robot2026.generated.TunerConstants;
 import com.frc6324.robot2026.sim.MapleSimDriveBase;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj.Timer;
 import lombok.Getter;
 
 public final class DriveIOSim extends DriveIOCTRE {
@@ -29,7 +28,7 @@ public final class DriveIOSim extends DriveIOCTRE {
   }
 
   @Override
-  public void updateInputs(DriveInputs inputs) {
+  public void updateInputs(final DriveInputs inputs) {
     driveSimulation.update();
     super.updateInputs(inputs);
   }
@@ -37,7 +36,6 @@ public final class DriveIOSim extends DriveIOCTRE {
   @Override
   public void resetPose(Pose2d pose) {
     driveSimulation.setPose(pose);
-    Timer.delay(0.05);
 
     super.resetPose(pose);
   }

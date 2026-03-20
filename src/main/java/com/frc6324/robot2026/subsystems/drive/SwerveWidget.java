@@ -6,12 +6,12 @@ import edu.wpi.first.util.sendable.SendableBuilder;
 public final class SwerveWidget implements Sendable {
   private final SwerveDrive drive;
 
-  public SwerveWidget(SwerveDrive drive) {
+  public SwerveWidget(final SwerveDrive drive) {
     this.drive = drive;
   }
 
   @Override
-  public void initSendable(SendableBuilder builder) {
+  public void initSendable(final SendableBuilder builder) {
     builder.setSmartDashboardType("SwerveDrive");
 
     // Initialize the front left module

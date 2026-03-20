@@ -2,16 +2,17 @@ package com.frc6324.robot2026.subsystems.vision.objdetect;
 
 import static com.frc6324.robot2026.subsystems.vision.objdetect.ObjectDetectionConstants.*;
 
+import com.frc6324.lib.util.LoggedTracer;
+import com.frc6324.lib.util.VirtualSubsystem;
 import com.frc6324.robot2026.subsystems.vision.objdetect.ObjDetectIO.ObjDetectInputs;
 import com.frc6324.robot2026.subsystems.vision.objdetect.ObjDetectIO.VisibleGamePiece;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.ArrayList;
 import java.util.Comparator;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-public final class ObjectDetection extends SubsystemBase {
+public final class ObjectDetection extends VirtualSubsystem {
   private static final RangeEventComparator RANGE_EVENT_COMPARATOR = new RangeEventComparator();
 
   private final ObjDetectIO[] io;
@@ -158,6 +159,8 @@ public final class ObjectDetection extends SubsystemBase {
       io[i].updateInputs(currentInputs);
       Logger.processInputs("Vision/Object Detection/" + CAMERA_NAMES[i], currentInputs);
     }
+
+    LoggedTracer.record("Object Detection Periodic");
   }
 
   /**

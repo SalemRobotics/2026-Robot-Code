@@ -8,13 +8,13 @@ import static edu.wpi.first.units.Units.Hertz;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.StatusSignalCollection;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.frc6324.lib.util.PhoenixUtil;
 import edu.wpi.first.units.measure.*;
 
 public class ShooterIOTalonFX implements ShooterIO {
@@ -22,80 +22,60 @@ public class ShooterIOTalonFX implements ShooterIO {
   protected final TalonFX flywheelLeader = new TalonFX(FLYWHEEL_LEADER_ID, SHOOTER_CAN_BUS);
   protected final TalonFX flywheelFollower = new TalonFX(FLYWHEEL_FOLLOWER_ID, SHOOTER_CAN_BUS);
 
-  private final MotionMagicTorqueCurrentFOC hoodRequest = new MotionMagicTorqueCurrentFOC(0);
-  private final VelocityTorqueCurrentFOC flywheelRequest = new VelocityTorqueCurrentFOC(0);
+  // Control requests (have higher update frequencies to make PID smoother-ish and stick faster to )
+  private final PositionTorqueCurrentFOC hoodRequest =
+      new PositionTorqueCurrentFOC(0)
+          .withSlot(0)
+          .withUpdateFreqHz(Hertz.of(500))
+          .withUseTimesync(true);
+
+  private final VelocityTorqueCurrentFOC flywheelRequest =
+      new VelocityTorqueCurrentFOC(0)
+          .withSlot(0)
+          .withUpdateFreqHz(Hertz.of(1000))
+          .withUseTimesync(true);
+
   private final Follower followerRequest =
       new Follower(FLYWHEEL_LEADER_ID, FLYWHEEL_MOTOR_ALIGNMENT);
 
   private final StatusSignal<Angle> hoodPosition = hoodTalon.getPosition();
   private final StatusSignal<AngularVelocity> hoodVelocity = hoodTalon.getVelocity();
-  private final StatusSignal<Double> hoodPIDSetpoint = hoodTalon.getClosedLoopReference();
-  private final StatusSignal<Double> hoodPIDOutput = hoodTalon.getClosedLoopOutput();
   private final StatusSignal<Voltage> hoodMotorVoltage = hoodTalon.getMotorVoltage();
   private final StatusSignal<Current> hoodStatorCurrent = hoodTalon.getStatorCurrent();
-  private final StatusSignal<Current> hoodTorqueCurrent = hoodTalon.getTorqueCurrent();
   private final BaseStatusSignal[] hoodSignals = {
-    hoodPosition,
-    hoodVelocity,
-    hoodPIDSetpoint,
-    hoodPIDOutput,
-    hoodMotorVoltage,
-    hoodStatorCurrent,
-    hoodTorqueCurrent
+    hoodPosition, hoodVelocity, hoodMotorVoltage, hoodStatorCurrent
   };
 
   private final StatusSignal<AngularVelocity> flywheelVelocity = flywheelLeader.getVelocity();
-  private final StatusSignal<AngularAcceleration> flywheelAcceleration =
-      flywheelLeader.getAcceleration();
-  private final StatusSignal<Double> flywheelPIDSetpoint = flywheelLeader.getClosedLoopReference();
-  private final StatusSignal<Double> flywheelPIDOutput = flywheelLeader.getClosedLoopOutput();
   private final StatusSignal<Voltage> flywheelMotorVoltage = flywheelLeader.getMotorVoltage();
   private final StatusSignal<Current> flywheelStatorCurrent = flywheelLeader.getStatorCurrent();
-  private final StatusSignal<Current> flywheelTorqueCurrent = flywheelLeader.getTorqueCurrent();
-  private final BaseStatusSignal[] flywheelSignals = {
-    flywheelVelocity,
-    flywheelAcceleration,
-    flywheelPIDSetpoint,
-    flywheelPIDOutput,
-    flywheelMotorVoltage,
-    flywheelStatorCurrent,
-    flywheelTorqueCurrent
+  private final BaseStatusSignal[] flywheelLeaderSignals = {
+    flywheelVelocity, flywheelMotorVoltage, flywheelStatorCurrent,
   };
 
   private final StatusSignal<AngularVelocity> flywheelFollowerVelocity =
       flywheelFollower.getVelocity();
-  private final StatusSignal<AngularAcceleration> flywheelFollowerAcceleration =
-      flywheelFollower.getAcceleration();
   private final StatusSignal<Voltage> flywheelFollowerMotorVoltage =
       flywheelFollower.getMotorVoltage();
   private final StatusSignal<Current> flywheelFollowerStatorCurrent =
       flywheelFollower.getStatorCurrent();
-  private final StatusSignal<Current> flywheelFollowerTorqueCurrent =
-      flywheelFollower.getTorqueCurrent();
   private final BaseStatusSignal[] flywheelFollowerSignals = {
-    flywheelFollowerVelocity,
-    flywheelFollowerAcceleration,
-    flywheelFollowerMotorVoltage,
-    flywheelFollowerStatorCurrent,
-    flywheelFollowerTorqueCurrent
+    flywheelFollowerVelocity, flywheelFollowerMotorVoltage, flywheelFollowerStatorCurrent,
   };
 
-  private final StatusSignalCollection signals = new StatusSignalCollection();
-
   public ShooterIOTalonFX() {
-    signals.addSignals(hoodSignals);
-    signals.addSignals(flywheelSignals);
-    signals.addSignals(flywheelFollowerSignals);
-
     tryUntilOk(5, () -> hoodTalon.getConfigurator().apply(HOOD_MOTOR_CONFIG));
-    tryUntilOk(5, () -> hoodTalon.setNeutralMode(NeutralModeValue.Brake));
 
+    // Apply the config to the leader
     tryUntilOk(5, () -> flywheelLeader.getConfigurator().apply(FLYWHEEL_MOTOR_CONFIG));
-    tryUntilOk(5, () -> flywheelLeader.setNeutralMode(NeutralModeValue.Coast));
-    tryUntilOk(5, () -> flywheelFollower.getConfigurator().apply(FLYWHEEL_MOTOR_CONFIG));
-    tryUntilOk(5, () -> flywheelFollower.setNeutralMode(NeutralModeValue.Coast));
 
-    signals.setUpdateFrequencyForAll(Hertz.of(100));
+    // Invert the config & apply to the follower
+    FLYWHEEL_MOTOR_CONFIG.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    tryUntilOk(5, () -> flywheelFollower.getConfigurator().apply(FLYWHEEL_MOTOR_CONFIG));
+
+    PhoenixUtil.addSignals(hoodTalon, hoodSignals);
+    PhoenixUtil.addSignals(flywheelLeader, flywheelLeaderSignals);
+    PhoenixUtil.addSignals(flywheelFollower, flywheelFollowerSignals);
     ParentDevice.optimizeBusUtilizationForAll(0, hoodTalon, flywheelLeader, flywheelFollower);
   }
 
@@ -106,8 +86,8 @@ public class ShooterIOTalonFX implements ShooterIO {
   }
 
   @Override
-  public void setFlywheelVelocity(AngularVelocity velocity) {
-    flywheelLeader.setControl(flywheelRequest.withVelocity(velocity));
+  public void setFlywheelVelocity(AngularVelocity velocity, int slot) {
+    flywheelLeader.setControl(flywheelRequest.withVelocity(velocity).withSlot(slot));
     flywheelFollower.setControl(followerRequest);
   }
 
@@ -123,32 +103,21 @@ public class ShooterIOTalonFX implements ShooterIO {
 
   @Override
   public void updateInputs(ShooterInputs inputs) {
-    signals.refreshAll();
-
     inputs.hoodConnected = BaseStatusSignal.isAllGood(hoodSignals);
-    inputs.flywheelLeaderConnected = BaseStatusSignal.isAllGood(flywheelSignals);
+    inputs.flywheelLeaderConnected = BaseStatusSignal.isAllGood(flywheelLeaderSignals);
     inputs.flywheelFollowerConnected = BaseStatusSignal.isAllGood(flywheelFollowerSignals);
 
     inputs.hoodPosition = hoodPosition.getValue();
     inputs.hoodVelocity = hoodVelocity.getValue();
-    inputs.hoodPIDSetpoint = hoodPIDSetpoint.getValueAsDouble();
-    inputs.hoodPIDOutput = hoodPIDOutput.getValueAsDouble();
     inputs.hoodMotorVoltage = hoodMotorVoltage.getValue();
     inputs.hoodStatorCurrent = hoodStatorCurrent.getValue();
-    inputs.hoodTorqueCurrent = hoodTorqueCurrent.getValue();
 
     inputs.flywheelLeaderVelocity = flywheelVelocity.getValue();
-    inputs.flywheelLeaderAcceleration = flywheelAcceleration.getValue();
-    inputs.flywheelLeaderPIDSetpoint = flywheelPIDSetpoint.getValueAsDouble();
-    inputs.flywheelLeaderPIDOutput = flywheelPIDOutput.getValueAsDouble();
     inputs.flywheelLeaderMotorVoltage = flywheelMotorVoltage.getValue();
     inputs.flywheelLeaderStatorCurrent = flywheelStatorCurrent.getValue();
-    inputs.flywheelLeaderTorqueCurrent = flywheelTorqueCurrent.getValue();
 
     inputs.flywheelFollowerVelocity = flywheelFollowerVelocity.getValue();
-    inputs.flywheelFollowerAcceleration = flywheelFollowerAcceleration.getValue();
     inputs.flywheelFollowerMotorVoltage = flywheelFollowerMotorVoltage.getValue();
     inputs.flywheelFollowerStatorCurrent = flywheelFollowerStatorCurrent.getValue();
-    inputs.flywheelFollowerTorqueCurrent = flywheelFollowerTorqueCurrent.getValue();
   }
 }

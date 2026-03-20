@@ -16,15 +16,12 @@
 
 package com.frc6324.robot2026.subsystems.drive;
 
-import static edu.wpi.first.units.Units.*;
-
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.math.numbers.*;
-import edu.wpi.first.units.measure.*;
 import java.util.Arrays;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -77,14 +74,6 @@ public interface DriveIO {
   class DriveInputs extends SwerveDriveState {
     /** The angle of the robot as reported by the gyroscope. */
     public Rotation2d GyroAngle = Rotation2d.kZero;
-
-    public Angle Roll = Radians.zero();
-    public Angle Pitch = Radians.zero();
-    public AngularVelocity RollVelocity = RadiansPerSecond.zero();
-    public AngularVelocity PitchVelocity = RadiansPerSecond.zero();
-    public AngularVelocity YawVelocity = RadiansPerSecond.zero();
-    public LinearAcceleration AccelerationX = MetersPerSecondPerSecond.zero();
-    public LinearAcceleration AccelerationY = MetersPerSecondPerSecond.zero();
 
     public DriveInputs() {
       Pose = Pose2d.kZero;

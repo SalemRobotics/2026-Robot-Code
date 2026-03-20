@@ -1,5 +1,6 @@
 package com.frc6324.robot2026.subsystems.rollers;
 
+import com.frc6324.lib.util.LoggedTracer;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -23,19 +24,10 @@ public final class Rollers extends SubsystemBase {
    */
   public Rollers(RollerIO io) {
     setName("Intake Rollers");
-    setDefaultCommand(idle());
 
     this.io = io;
     leaderDisconnectedAlert.set(false);
     followerDisconnectedAlert.set(false);
-  }
-
-  /**
-   * Commands the rollers to coast out to save power when they aren't actively being used (e.g.
-   * under the trench)
-   */
-  public void coastRollers() {
-    io.coast();
   }
 
   @Override
@@ -51,6 +43,8 @@ public final class Rollers extends SubsystemBase {
         followerDisconnectedDebouncer.calculate(!inputs.followerConnected);
     leaderDisconnectedAlert.set(leaderDisconnected);
     followerDisconnectedAlert.set(followerDisconnected);
+
+    LoggedTracer.record("Rollers periodic");
   }
 
   /** Starts the intake's rollers. */
@@ -61,5 +55,9 @@ public final class Rollers extends SubsystemBase {
   /** Immediately stops the intake's rollers. */
   public void stopRollers() {
     io.stop();
+  }
+
+  public void outtake() {
+    io.outtake();
   }
 }
