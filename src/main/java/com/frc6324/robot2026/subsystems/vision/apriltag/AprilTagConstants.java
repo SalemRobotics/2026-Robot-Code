@@ -20,15 +20,17 @@ public final class AprilTagConstants {
   public static final AprilTagFieldLayout APRILTAG_LAYOUT =
       FieldConstants.DEFAULT_APRILTAG_TYPE.getLayout();
 
-  public static final String[] CAMERA_NAMES = {"Front Tag Camera", "Rear Tag Camera"};
-  public static final double[] CAMERA_STDDEV_FACTORS = {1, 1};
-  public static final Resolution[] CAMERA_RESOLUTIONS = {
-    new Resolution(1280, 800), new Resolution(1280, 800)
+  public static final String[] CAMERA_NAMES = {
+    "Front Tag Camera", "Rear Tag Camera", "Right Tag Camera"
   };
-  public static final double[] CAMERA_LATENCIES = {30, 30};
-  public static final double[] CAMERA_FPS = {30, 30};
+  public static final double[] CAMERA_STDDEV_FACTORS = {1, 1.1, 1.1};
+  public static final Resolution[] CAMERA_RESOLUTIONS = {
+    new Resolution(1280, 800), new Resolution(1280, 800), new Resolution(1280, 800)
+  };
+  public static final double[] CAMERA_LATENCIES = {30, 30, 30};
+  public static final double[] CAMERA_FPS = {30, 30, 30};
   public static final Rotation2d[] CAMERA_FOVS = {
-    Rotation2d.fromDegrees(110), Rotation2d.fromDegrees(110)
+    Rotation2d.fromDegrees(80), Rotation2d.fromDegrees(110), Rotation2d.fromDegrees(110)
   };
   public static final Transform3d[] ROBOT_TO_CAMERAS = {
     new Transform3d(
@@ -41,6 +43,11 @@ public final class AprilTagConstants {
         Units.inchesToMeters(-4),
         Units.inchesToMeters(15.6),
         new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(180))),
+    new Transform3d(
+        Units.inchesToMeters(0),
+        Units.inchesToMeters(0),
+        Units.inchesToMeters(0),
+        new Rotation3d(Units.degreesToRadians(6), 0, Units.degreesToRadians(90)))
   };
 
   public static final Frequency UPDATE_THREAD_FREQUENCY = Hertz.of(60);

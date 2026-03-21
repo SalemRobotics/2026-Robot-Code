@@ -37,6 +37,7 @@ public final class IntakeConstants {
   public static final Angle INTAKE_VISION_THRESHOLD = Rotations.of(2);
   public static final Angle INTAKE_DEPLOY_TOLERANCE = Degrees.of(60);
   public static final Angle INTAKE_RETRACTED_POSITION = Rotations.of(2);
+  public static final Angle INTAKE_TRENCH_SAFE_POSITION = Rotations.of(3);
   public static final Angle INTAKE_STOWED_POSITION = Rotations.of(0);
 
   public static final TalonFXConfiguration INTAKE_MOTOR_CONFIG =
@@ -54,7 +55,7 @@ public final class IntakeConstants {
                   .withMotionMagicAcceleration(RotationsPerSecondPerSecond.of(25))
                   .withMotionMagicJerk(0))
           .withMotorOutput(new MotorOutputConfigs().withInverted(InvertedValue.Clockwise_Positive))
-          .withSlot0(new Slot0Configs().withKP(80).withKD(6.7).withKV(1).withKA(0.25).withKS(0.1))
+          .withSlot0(new Slot0Configs().withKP(200).withKI(10).withKD(6.7).withKV(1).withKS(0.1))
           .withSlot1(new Slot1Configs().withKP(60).withKD(6.7).withKV(1).withKA(0.25).withKS(0.1))
           .withSoftwareLimitSwitch(
               new SoftwareLimitSwitchConfigs()

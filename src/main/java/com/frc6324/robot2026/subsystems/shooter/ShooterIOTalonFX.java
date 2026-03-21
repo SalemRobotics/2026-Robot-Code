@@ -36,7 +36,7 @@ public class ShooterIOTalonFX implements ShooterIO {
           .withUseTimesync(true);
 
   private final Follower followerRequest =
-      new Follower(FLYWHEEL_LEADER_ID, FLYWHEEL_MOTOR_ALIGNMENT);
+      new Follower(FLYWHEEL_LEADER_ID, FLYWHEEL_MOTOR_ALIGNMENT).withUpdateFreqHz(Hertz.of(1000));
 
   private final StatusSignal<Angle> hoodPosition = hoodTalon.getPosition();
   private final StatusSignal<AngularVelocity> hoodVelocity = hoodTalon.getVelocity();
