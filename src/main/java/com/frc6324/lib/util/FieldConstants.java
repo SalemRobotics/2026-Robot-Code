@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
  */
 @UninstantiableClass
 public final class FieldConstants {
-  public static final FieldType FIELD_TYPE = FieldType.WELDED;
+  public static final FieldType FIELD_TYPE = FieldType.ANDYMARK;
 
   // AprilTag related constants
   public static final int APRILTAG_COUNT = AprilTagLayoutType.OFFICIAL.getLayout().getTags().size();

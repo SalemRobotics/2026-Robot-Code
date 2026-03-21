@@ -8,6 +8,7 @@ import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.Slot1Configs;
 import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -24,9 +25,8 @@ public final class IntakeConstants {
   public static final int INTAKE_MOTOR_ID = 20;
   public static final double INTAKE_REDUCTION = 9;
 
-  public static final int INTAKE_MOVE_SLOT = 0;
-  public static final int INTAKE_SPRING_SLOT = 1;
-  public static final int INTAKE_SHAKE_SLOT = 2;
+  public static final int INTAKE_FAST_SLOT = 0;
+  public static final int INTAKE_SLOW_SLOT = 1;
 
   public static final Distance INTAKE_WIDTH = Inches.of(27);
   public static final Distance INTAKE_EXTENSION = Inches.of(12);
@@ -55,11 +55,12 @@ public final class IntakeConstants {
                   .withMotionMagicJerk(0))
           .withMotorOutput(new MotorOutputConfigs().withInverted(InvertedValue.Clockwise_Positive))
           .withSlot0(new Slot0Configs().withKP(80).withKD(6.7).withKV(1).withKA(0.25).withKS(0.1))
+          .withSlot1(new Slot1Configs().withKP(60).withKD(6.7).withKV(1).withKA(0.25).withKS(0.1))
           .withSoftwareLimitSwitch(
               new SoftwareLimitSwitchConfigs()
                   .withForwardSoftLimitThreshold(INTAKE_MAX_POSITION)
                   .withForwardSoftLimitEnable(true)
-                  .withReverseSoftLimitThreshold(Rotations.zero())
+                  .withReverseSoftLimitThreshold(INTAKE_STOWED_POSITION)
                   .withReverseSoftLimitEnable(true));
 
   // Simulation constants for the extension/retraction motor
