@@ -18,5 +18,12 @@ public interface AprilTagIO {
       double timestamp,
       double ambiguity,
       double averageTagDistance,
-      int numTagsUsed) {}
+      int numTagsUsed,
+      EstimationStrategy strategy) {}
+
+  public enum EstimationStrategy {
+    ConstrainedSolvePNP,
+    Multitag,
+    Singletag,
+  }
 }

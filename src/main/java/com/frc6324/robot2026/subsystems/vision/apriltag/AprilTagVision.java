@@ -2,19 +2,21 @@ package com.frc6324.robot2026.subsystems.vision.apriltag;
 
 import static com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagConstants.*;
 
+import com.frc6324.lib.util.LoggedTracer;
+import com.frc6324.lib.util.VirtualSubsystem;
 import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagIO.VisionEstimation;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.ArrayList;
 import org.littletonrobotics.junction.Logger;
 
-public class AprilTagVision extends SubsystemBase {
+public class AprilTagVision extends VirtualSubsystem {
   private final AprilTagIO[] io;
   private final VisionInputsAutoLogged[] inputs;
   private final Alert[] disconnectedAlerts;
@@ -40,6 +42,11 @@ public class AprilTagVision extends SubsystemBase {
               "AprilTag camera '" + CAMERA_NAMES[i] + "' is disconnected.", AlertType.kWarning);
       inputs[i] = new VisionInputsAutoLogged();
     }
+
+    final Pose3d[] allTagPoses =
+        APRILTAG_LAYOUT.getTags().stream().map(tag -> tag.pose).toArray(Pose3d[]::new);
+
+    Logger.recordOutput("Vision/AllKnownAprilTags", allTagPoses);
 
     VisionUpdateThread.start();
   }
@@ -122,12 +129,7 @@ public class AprilTagVision extends SubsystemBase {
       allRobotPosesRejected.addAll(robotPosesRejected);
     }
 
-    // Log vision summary data
-    Logger.recordOutput("Vision/AprilTag/Summary/RobotPoses", allRobotPoses.toArray(Pose2d[]::new));
-    Logger.recordOutput(
-        "Vision/AprilTag/Summary/RobotPosesAccepted", allRobotPosesAccepted.toArray(Pose2d[]::new));
-    Logger.recordOutput(
-        "Vision/AprilTag/Summary/RobotPosesRejected", allRobotPosesRejected.toArray(Pose2d[]::new));
+    LoggedTracer.record("Vision periodic");
   }
 
   /**

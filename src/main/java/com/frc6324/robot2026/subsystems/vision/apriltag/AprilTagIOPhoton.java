@@ -16,6 +16,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.BooleanSupplier;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
@@ -39,11 +40,17 @@ public class AprilTagIOPhoton implements AprilTagIO {
 
   private Matrix<N3, N3> cameraMatrix = camera.getCameraMatrix().orElse(null);
   private Matrix<N8, N1> distortionCoefficients = camera.getDistCoeffs().orElse(null);
+  private final BooleanSupplier enableSignal;
 
-  public AprilTagIOPhoton(OdometryPoseGetter odometryPoseGetter) {
+  public AprilTagIOPhoton(OdometryPoseGetter odometryPoseGetter, BooleanSupplier enableSignal) {
     odometryPoseAtTime = odometryPoseGetter;
+    this.enableSignal = enableSignal;
 
     VisionUpdateThread.addCallback(this::updateOdometry);
+  }
+
+  public AprilTagIOPhoton(OdometryPoseGetter odometryPoseGetter) {
+    this(odometryPoseGetter, () -> true);
   }
 
   /**
@@ -73,6 +80,7 @@ public class AprilTagIOPhoton implements AprilTagIO {
     for (final PhotonPipelineResult result : allResults) {
       final double timestamp = result.getTimestampSeconds();
       final EstimatedRobotPose estimatedPose;
+      final EstimationStrategy strategy;
 
       // If the result doesn't have targets or is stale, skip it
       if (!result.hasTargets() || Timer.getFPGATimestamp() - timestamp > MAX_LATENCY_SECS) {
@@ -85,8 +93,10 @@ public class AprilTagIOPhoton implements AprilTagIO {
       // 3. Average of targets using ambiguity as weight
       final Optional<EstimatedRobotPose> multitagOpt =
           poseEstimator.estimateCoprocMultiTagPose(result);
+
       if (multitagOpt.isPresent()) {
         estimatedPose = multitagOpt.get();
+        strategy = EstimationStrategy.Multitag;
       } else {
         final Optional<Pose2d> odomPoseOpt = odometryPoseAtTime.samplePoseAt(timestamp);
         Optional<EstimatedRobotPose> constrainedSolvePNPOpt = Optional.empty();
@@ -106,9 +116,11 @@ public class AprilTagIOPhoton implements AprilTagIO {
 
         if (constrainedSolvePNPOpt.isPresent()) {
           estimatedPose = constrainedSolvePNPOpt.get();
+          strategy = EstimationStrategy.ConstrainedSolvePNP;
         } else {
           // It is safe to call `.get` here since we already know that the result has targets
           estimatedPose = poseEstimator.estimateAverageBestTargetsPose(result).get();
+          strategy = EstimationStrategy.Singletag;
         }
       }
 
@@ -133,7 +145,8 @@ public class AprilTagIOPhoton implements AprilTagIO {
               timestamp,
               totalAmbiguity / numTags,
               totalDistance / numTags,
-              numTags));
+              numTags,
+              strategy));
     }
 
     this.tagsSeen.set(tagsSeen);
@@ -142,7 +155,7 @@ public class AprilTagIOPhoton implements AprilTagIO {
 
   @Override
   public void updateInputs(VisionInputs inputs) {
-    if (!camera.isConnected()) {
+    if (!camera.isConnected() || !enableSignal.getAsBoolean()) {
       inputs.connected = false;
       inputs.estimations = new VisionEstimation[0];
       inputs.tagsSeen = new int[0];

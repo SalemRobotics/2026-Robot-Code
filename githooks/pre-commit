@@ -1,0 +1,7 @@
+#!/bin/sh
+
+echo "Running Spotless..."
+./gradlew :spotlessApply
+
+echo "Staging Spotless changes..."
+git add -A .

@@ -3,51 +3,76 @@ package com.frc6324.robot2026.subsystems.drive;
 import static com.frc6324.robot2026.subsystems.drive.DrivetrainConstants.*;
 import static edu.wpi.first.units.Units.*;
 
+import com.ctre.phoenix6.swerve.*;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
-import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
-import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
-import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.ClosedLoopOutputType;
-import com.ctre.phoenix6.swerve.SwerveRequest;
-import com.ctre.phoenix6.swerve.SwerveRequest.ApplyRobotSpeeds;
-import com.ctre.phoenix6.swerve.SwerveRequest.SwerveDriveBrake;
+import com.frc6324.lib.util.AllianceFlipUtil;
+import com.frc6324.lib.util.LocalADStarAK;
+import com.frc6324.lib.util.LoggedTracer;
 import com.frc6324.lib.util.PoseExtensions.PoseSupplier;
+import com.frc6324.lib.util.Statics;
 import com.frc6324.robot2026.generated.TunerConstants;
 import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagVision.VisionConsumer;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.ModuleConfig;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.pathfinding.Pathfinding;
+import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.lib.BLine.FollowPath;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public final class SwerveDrive extends SubsystemBase implements VisionConsumer, PoseSupplier {
+  public static final RobotConfig PP_CONFIG =
+      Statics.initOrDefault(
+          RobotConfig::fromGUISettings,
+          () ->
+              new RobotConfig(
+                  ROBOT_MASS,
+                  ROBOT_MOI,
+                  new ModuleConfig(
+                      Inches.of(2),
+                      getMaxLinearSpeedMeasure(),
+                      ODOMETRY_UPDATE_FREQUENCY,
+                      DCMotor.getKrakenX60Foc(1),
+                      Amps.of(
+                          TunerConstants.FrontLeft.DriveMotorInitialConfigs.CurrentLimits
+                              .StatorCurrentLimit),
+                      1),
+                  MODULE_TRANSLATIONS));
+
   /** The type of request to use for a drive motor. */
-  public static final DriveRequestType DRIVE_REQUEST = DriveRequestType.Velocity;
+  public static final SwerveModule.DriveRequestType DRIVE_REQUEST =
+      SwerveModule.DriveRequestType.Velocity;
 
   /** The type of request to use for a steer motor. */
-  public static final SteerRequestType STEER_REQUEST = SteerRequestType.Position;
+  public static final SwerveModule.SteerRequestType STEER_REQUEST =
+      SwerveModule.SteerRequestType.Position;
 
   private final DriveIO io;
   private final DriveInputsAutoLogged inputs = new DriveInputsAutoLogged();
-  private final FollowPath.Builder pathBuilder;
 
-  private final ApplyRobotSpeeds autoSpeedsRequest =
-      new ApplyRobotSpeeds()
+  private final SwerveRequest.ApplyRobotSpeeds autoSpeedsRequest =
+      new SwerveRequest.ApplyRobotSpeeds()
           .withDriveRequestType(DRIVE_REQUEST)
           .withSteerRequestType(STEER_REQUEST)
           .withDesaturateWheelSpeeds(true);
-  private final SwerveDriveBrake brakeRequest = new SwerveDriveBrake();
+
+  private final SwerveRequest.SwerveDriveBrake brakeRequest = new SwerveRequest.SwerveDriveBrake();
 
   /**
    * Creates a new drivetrain subsystem.
@@ -56,39 +81,29 @@ public final class SwerveDrive extends SubsystemBase implements VisionConsumer, 
    */
   public SwerveDrive(DriveIO io) {
     setName("Drivetrain");
-
     this.io = io;
 
-    // Create the builder we will use for BLine
-    pathBuilder =
-        new FollowPath.Builder(
-                this,
-                this::getPose,
-                this::getChassisSpeeds,
-                speeds -> io.setControl(autoSpeedsRequest.withSpeeds(speeds)),
-                BLINE_TRANSLATION_CONTROLLER,
-                BLINE_ROTATION_CONTROLLER,
-                BLINE_CTE_CONTROLLER)
-            .withDefaultShouldFlip()
-            .withPoseReset(this::setPoseIfSim);
+    AutoBuilder.configure(
+        this::getPose,
+        this::setPoseIfSim,
+        this::getChassisSpeeds,
+        (speeds, ff) ->
+            setControl(
+                autoSpeedsRequest
+                    .withSpeeds(speeds)
+                    .withWheelForceFeedforwardsX(ff.robotRelativeForcesX())
+                    .withWheelForceFeedforwardsY(ff.robotRelativeForcesY())),
+        new PPHolonomicDriveController(new PIDConstants(5), new PIDConstants(5)),
+        PP_CONFIG,
+        AllianceFlipUtil::shouldFlip,
+        this);
 
-    // Configure logging callbacks for BLine
-    FollowPath.setPoseLoggingConsumer(
-        (data) -> {
-          Logger.recordOutput("BLine/" + data.getFirst(), data.getSecond());
-        });
-    FollowPath.setBooleanLoggingConsumer(
-        (data) -> {
-          Logger.recordOutput("BLine/" + data.getFirst(), data.getSecond());
-        });
-    FollowPath.setDoubleLoggingConsumer(
-        (data) -> {
-          Logger.recordOutput("BLine/" + data.getFirst(), data.getSecond());
-        });
-    FollowPath.setTranslationListLoggingConsumer(
-        (data) -> {
-          Logger.recordOutput("BLine/" + data.getFirst(), data.getSecond());
-        });
+    PathPlannerLogging.setLogActivePathCallback(
+        (poses) ->
+            Logger.recordOutput("PathPlanner/CurrentTrajectory", poses.toArray(Pose2d[]::new)));
+    PathPlannerLogging.setLogTargetPoseCallback(
+        pose -> Logger.recordOutput("PathPlanner/TargetPose", pose));
+    Pathfinding.setPathfinder(new LocalADStarAK());
 
     // Put the swerve widget on SmartDashboard
     SmartDashboard.putData(new SwerveWidget(this));
@@ -123,15 +138,6 @@ public final class SwerveDrive extends SubsystemBase implements VisionConsumer, 
   }
 
   /**
-   * Gets the BLine builder configured for the drivetrain.
-   *
-   * @return The builder used to build BLine paths.
-   */
-  public FollowPath.Builder getBLineBuilder() {
-    return pathBuilder;
-  }
-
-  /**
    * Gets the speed of the robot.
    *
    * @return The speeds being experienced by the drivetrain chassis.
@@ -162,13 +168,10 @@ public final class SwerveDrive extends SubsystemBase implements VisionConsumer, 
 
   @Override
   public void periodic() {
-    double timestamp = Timer.getFPGATimestamp();
-
     io.updateInputs(inputs);
     Logger.processInputs("Drive", inputs);
-    io.logModuleStates(inputs);
 
-    Logger.recordOutput("Drive/UpdateLatency", Timer.getFPGATimestamp() - timestamp);
+    LoggedTracer.record("Drive periodic");
   }
 
   /**
@@ -195,7 +198,7 @@ public final class SwerveDrive extends SubsystemBase implements VisionConsumer, 
    * @param pose The pose to reset to.
    */
   public void setPoseIfSim(Pose2d pose) {
-    if (RobotBase.isSimulation()) {
+    if (io instanceof DriveIOSim) {
       setPose(pose);
     }
   }
@@ -293,25 +296,25 @@ public final class SwerveDrive extends SubsystemBase implements VisionConsumer, 
     moduleConstants.DriveMotorInverted = false;
     moduleConstants.SteerMotorInverted = false;
 
-    // Use Voltage output during sim since Torque Current doesn't play nice
-    moduleConstants.SteerMotorClosedLoopOutput = ClosedLoopOutputType.Voltage;
-    moduleConstants.SteerMotorClosedLoopOutput = ClosedLoopOutputType.Voltage;
-
-    // Alter motor PID gains for both sim and voltage
+    // Adjust drive PID for simulation (still in torque current)
     moduleConstants.DriveMotorGains.kP = 10;
     moduleConstants.DriveMotorGains.kD = 0;
-    moduleConstants.DriveMotorGains.kS = 0;
+    moduleConstants.DriveMotorGains.kS = 0.5;
 
-    moduleConstants.SteerMotorGains.kP = 80;
-    moduleConstants.SteerMotorGains.kD = 8;
+    // Use Voltage output during sim since Torque Current doesn't play nice
+    moduleConstants.SteerMotorClosedLoopOutput = ClosedLoopOutputType.Voltage;
+    // Alter steer motor PID gains for both sim and voltage
+    moduleConstants.SteerMotorGains.kP = 12.5;
+    moduleConstants.SteerMotorGains.kD = 1;
     moduleConstants.SteerMotorGains.kS = 0.6;
     moduleConstants.SteerMotorGains.kV = 0;
+    moduleConstants.SteerMotorGains.kA = 0;
 
     // Adjust friction voltages for sim
-    moduleConstants.DriveFrictionVoltage = 0.1;
-    moduleConstants.SteerFrictionVoltage = 0.15;
+    moduleConstants.DriveFrictionVoltage = DRIVE_FRICTION_VOLTAGE.in(Volts);
+    moduleConstants.SteerFrictionVoltage = STEER_FRICTION_VOLTAGE.in(Volts);
 
     // Adjust steer inertia
-    moduleConstants.SteerInertia = 0.05;
+    moduleConstants.SteerInertia = 0.1;
   }
 }

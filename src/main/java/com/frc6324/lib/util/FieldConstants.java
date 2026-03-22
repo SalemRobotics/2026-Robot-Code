@@ -9,10 +9,10 @@ package com.frc6324.lib.util;
 
 import com.frc6324.lib.UninstantiableClass;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
  */
 @UninstantiableClass
 public final class FieldConstants {
-  public static final FieldType FIELD_TYPE = FieldType.WELDED;
+  public static final FieldType FIELD_TYPE = FieldType.ANDYMARK;
 
   // AprilTag related constants
   public static final int APRILTAG_COUNT = AprilTagLayoutType.OFFICIAL.getLayout().getTags().size();
@@ -142,6 +142,11 @@ public final class FieldConstants {
         AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(18).get().toPose2d();
     public static final Pose2d LEFT_FACE =
         AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(21).get().toPose2d();
+
+    public static final Pose2d BLUE_HUB =
+        new Pose2d(TOP_CENTER_POINT.toTranslation2d(), Rotation2d.kZero);
+    public static final Pose2d RED_HUB =
+        new Pose2d(OPP_TOP_CENTER_POINT.toTranslation2d(), Rotation2d.kZero);
   }
 
   /** Left Bump related constants */
@@ -313,6 +318,20 @@ public final class FieldConstants {
     // Relevant reference points on alliance side
     public static final Translation2d CENTER_POINT =
         new Translation2d(0, AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(29).get().getY());
+  }
+
+  public static Pose2d getAllianceHub() {
+    return switch (DriverStation.getAlliance().orElse(Alliance.Blue)) {
+      case Blue -> Hub.BLUE_HUB;
+      case Red -> Hub.RED_HUB;
+    };
+  }
+
+  public static boolean isInAllianceZone(Pose2d pose) {
+    return switch (DriverStation.getAlliance().orElse(Alliance.Blue)) {
+      case Blue -> pose.getX() < LinesVertical.ALLIANCE_ZONE;
+      case Red -> pose.getX() > LinesVertical.OPP_ALIANCE_ZONE;
+    };
   }
 
   @RequiredArgsConstructor

@@ -41,7 +41,7 @@ deploy {
                     jvmArgs.add("-XX:Tier4InvocationThreshold=2500")
 
                     jvmArgs.add("-XX:+UnlockExperimentalVMOptions")
-                    jvmArgs.add("-XX:GCTimeRatio=9")
+                    jvmArgs.add("-XX:GCTimeRatio=5")
                     jvmArgs.add("-XX:+UseSerialGC")
                     jvmArgs.add("-XX:MaxGCPauseMillis=50")
                     jvmArgs.add("-XX:+TieredCompilation")
@@ -90,6 +90,9 @@ dependencies {
     compileOnly 'org.jetbrains:annotations:26.0.2-1'
 
     annotationProcessor project(":processor")
+    annotationProcessor project(":annotations")
+
+    compileOnly project(":processor")
     implementation project(":annotations")
 
     annotationProcessor wpi.java.deps.wpilibAnnotations()

@@ -16,21 +16,30 @@
 package com.frc6324.robot2026;
 
 import com.ctre.phoenix6.SignalLogger;
+import com.frc6324.lib.util.LoggedTracer;
+import com.frc6324.lib.util.PhoenixUtil;
+import com.frc6324.lib.util.VirtualSubsystem;
+import com.frc6324.robot2026.sim.MapleSimManager;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import java.util.Optional;
 import lombok.val;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 public class Robot extends LoggedRobot {
-  private Command autonomousCommand;
+  public static Alliance autoWinner = Alliance.Blue;
+  private static LoggedDashboardChooser<Alliance> autoWinnerOverride;
 
+  private Command autonomousCommand = null;
   private final RobotContainer robotContainer;
   private final Runtime runtime = Runtime.getRuntime();
 
@@ -82,14 +91,73 @@ public class Robot extends LoggedRobot {
     // Start the akit logger
     Logger.start();
 
+    autoWinnerOverride = new LoggedDashboardChooser<>("Auto Winner");
+    autoWinnerOverride.addDefaultOption("Blue", Alliance.Blue);
+    autoWinnerOverride.addOption("Red", Alliance.Red);
+
     // Initialize the robot container
     robotContainer = new RobotContainer();
+    PhoenixUtil.synchronizeSignals(2);
+  }
+
+  /**
+   * Gets if the current alliance has an active hub.
+   *
+   * @return Whether the current alliance's hub is active.
+   */
+  public static boolean getIsAllianceActive() {
+    // If we're in autonomous, both hubs are active
+    if (DriverStation.isAutonomous()) {
+      return true;
+    }
+
+    final Optional<Alliance> selfAllianceOpt = DriverStation.getAlliance();
+    if (selfAllianceOpt.isEmpty()) {
+      return false;
+    }
+
+    final Alliance selfAlliance = selfAllianceOpt.get();
+    final double teleopTime = DriverStation.getMatchTime();
+
+    // In the first 10 secs of teleop and the last 30 secs, both hubs are active
+    if (teleopTime >= 130 || teleopTime <= 30) {
+      return true;
+    } else if ((teleopTime <= 105 && teleopTime >= 80) || (teleopTime <= 55 && teleopTime >= 30)) {
+      return autoWinner == selfAlliance;
+    } else {
+      return autoWinner != selfAlliance;
+    }
+  }
+
+  /**
+   * Gets the time left in the current phase.
+   *
+   * @return The time left for the current active hub.
+   */
+  public static double getTimeLeftInPhase() {
+    if (DriverStation.isDisabled()) {
+      Logger.recordOutput("Match/Phase", "Not tele :/");
+      return 0;
+    }
+
+    final double teleopTime = DriverStation.getMatchTime();
+
+    if (teleopTime >= 130.0) {
+      Logger.recordOutput("Match/Phase", "After Auto");
+      return teleopTime - 130;
+    } else if (teleopTime <= 30.0) {
+      Logger.recordOutput("Match/Phase", "Endgame");
+      return teleopTime;
+    } else {
+      Logger.recordOutput("Match/Phase", "One Hub");
+      return (teleopTime - 30) % 25;
+    }
   }
 
   @Override
   public void robotPeriodic() {
     Logger.runEveryN(
-        25,
+        5,
         () -> {
           val totalMemory = runtime.totalMemory();
           val usedMemory = totalMemory - runtime.freeMemory();
@@ -97,12 +165,23 @@ public class Robot extends LoggedRobot {
 
           Logger.recordOutput("Robot/Used Memory %", utilization * 100);
         });
+    Logger.recordOutput("Match/Hub Active", getIsAllianceActive());
+    Logger.recordOutput("Match/Phase Time", getTimeLeftInPhase());
 
     // Set thread to highest priority to improve performance
     // Threads.setCurrentThreadPriority(true, 99);
 
     // Runs the command scheduler
+
+    LoggedTracer.reset();
+    PhoenixUtil.refreshAllSignals();
+    LoggedTracer.record("Phoenix Refresh");
+
+    VirtualSubsystem.allPeriodics();
+    LoggedTracer.record("Virtual Subsystems");
+
     CommandScheduler.getInstance().run();
+    LoggedTracer.record("Command Scheduler");
 
     // Set the thread to low priority to let other things run (such as NT)
     // Threads.setCurrentThreadPriority(false, 10);
@@ -132,7 +211,9 @@ public class Robot extends LoggedRobot {
   public void autonomousPeriodic() {}
 
   @Override
-  public void autonomousExit() {}
+  public void autonomousExit() {
+    autoWinner = Alliance.Blue;
+  }
 
   @Override
   public void teleopInit() {
@@ -143,7 +224,19 @@ public class Robot extends LoggedRobot {
   }
 
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    if (DriverStation.isFMSAttached()) {
+      switch (DriverStation.getGameSpecificMessage()) {
+        case "B" -> autoWinner = Alliance.Blue;
+        case "R" -> autoWinner = Alliance.Red;
+        default -> autoWinner = null;
+      }
+    }
+
+    if (autoWinner == null) {
+      autoWinner = autoWinnerOverride.get();
+    }
+  }
 
   @Override
   public void teleopExit() {}
@@ -159,4 +252,9 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void testExit() {}
+
+  @Override
+  public void simulationPeriodic() {
+    MapleSimManager.getInstance().simulationPeriodic();
+  }
 }

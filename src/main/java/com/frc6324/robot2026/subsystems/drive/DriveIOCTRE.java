@@ -4,16 +4,20 @@ import static com.frc6324.robot2026.subsystems.drive.DrivetrainConstants.*;
 
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.StatusSignalCollection;
-import com.ctre.phoenix6.hardware.CANcoder;
-import com.ctre.phoenix6.hardware.Pigeon2;
-import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.Utils;
+import com.ctre.phoenix6.hardware.*;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import com.ctre.phoenix6.swerve.SwerveModule;
 import com.frc6324.robot2026.generated.TunerConstants;
 import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagIOPhoton.OdometryPoseGetter;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.LinearAcceleration;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.units.measure.*;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
 import org.littletonrobotics.junction.Logger;
 
@@ -22,12 +26,12 @@ public sealed class DriveIOCTRE extends SwerveDrivetrain<TalonFX, TalonFX, CANco
   private final StatusSignalCollection gyroscopeSignals;
   private final StatusSignal<AngularVelocity> pitchVelocitySignal;
   private final StatusSignal<AngularVelocity> rollVelocitySignal;
-  private final StatusSignal<AngularVelocity> yawVelocity;
   private final StatusSignal<Angle> rollSignal;
   private final StatusSignal<Angle> pitchSignal;
   private final StatusSignal<LinearAcceleration> accelerationX;
   private final StatusSignal<LinearAcceleration> accelerationY;
-  private final SwerveDriveState state;
+
+  private boolean hasAppliedOperatorPerspective = false;
 
   public DriveIOCTRE() {
     super(
@@ -49,14 +53,11 @@ public sealed class DriveIOCTRE extends SwerveDrivetrain<TalonFX, TalonFX, CANco
       super.resetPose(STARTING_POSE);
     }
 
-    // Get the state and pigeon of the drivetrain
-    state = getState();
     Pigeon2 pigeon = getPigeon2();
 
     // Store signals from the pigeon we care about
     pitchVelocitySignal = pigeon.getAngularVelocityYWorld();
     rollVelocitySignal = pigeon.getAngularVelocityXWorld();
-    yawVelocity = pigeon.getAngularVelocityZWorld();
     rollSignal = pigeon.getRoll();
     pitchSignal = pigeon.getPitch();
     accelerationX = pigeon.getAccelerationX();
@@ -74,6 +75,15 @@ public sealed class DriveIOCTRE extends SwerveDrivetrain<TalonFX, TalonFX, CANco
   }
 
   @Override
+  public void addVisionMeasurement(
+      Pose2d visionRobotPoseMeters,
+      double timestampSeconds,
+      Matrix<N3, N1> visionMeasurementStdDevs) {
+    super.addVisionMeasurement(
+        visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
+  }
+
+  @Override
   public void logModuleStates(SwerveDriveState state) {
     // Stop if the module states or targets are null so we don't cause an NPE
     if (state.ModuleStates == null || state.ModuleTargets == null) {
@@ -82,8 +92,8 @@ public sealed class DriveIOCTRE extends SwerveDrivetrain<TalonFX, TalonFX, CANco
 
     for (int i = 0; i < 4; i++) {
       // Get the current module and its name
-      SwerveModule<?, ?, CANcoder> module = getModule(i);
-      String name = MODULE_NAMES[i];
+      final SwerveModule<?, ?, CANcoder> module = getModule(i);
+      final String name = MODULE_NAMES[i];
 
       // Log steering information
       Logger.recordOutput(
@@ -100,7 +110,26 @@ public sealed class DriveIOCTRE extends SwerveDrivetrain<TalonFX, TalonFX, CANco
   }
 
   @Override
-  public void updateInputs(DriveInputs inputs) {
+  public void updateInputs(final DriveInputs inputs) {
+    /*
+     * Periodically try to apply the operator perspective.
+     * If we haven't applied the operator perspective before, then we should apply it regardless of DS state.
+     * This allows us to correct the perspective in case the robot code restarts mid-match.
+     * Otherwise, only check and apply the operator perspective if the DS is disabled.
+     * This ensures driving behavior doesn't change until an explicit disable event occurs during testing.
+     */
+    if (!hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
+      DriverStation.getAlliance()
+          .ifPresent(
+              allianceColor -> {
+                setOperatorPerspectiveForward(
+                    allianceColor == Alliance.Red ? Rotation2d.k180deg : Rotation2d.kZero);
+                hasAppliedOperatorPerspective = true;
+              });
+    }
+
+    final SwerveDriveState state = getState();
+
     // Update the last known odometry
     DrivingUtils.updateOdometry(state.Pose, state.Speeds);
 
@@ -113,26 +142,15 @@ public sealed class DriveIOCTRE extends SwerveDrivetrain<TalonFX, TalonFX, CANco
     // Refresh all of the status signals
     gyroscopeSignals.refreshAll();
 
-    // Record states we don't care about for the safety below
-    inputs.YawVelocity = yawVelocity.getValue();
-
     // Get all of the other gyro values we care about
-    Angle roll = rollSignal.getValue();
-    Angle pitch = pitchSignal.getValue();
-    AngularVelocity rollVelocity = rollVelocitySignal.getValue();
-    AngularVelocity pitchVelocity = pitchVelocitySignal.getValue();
-    LinearAcceleration accelX = accelerationX.getValue();
-    LinearAcceleration accelY = accelerationY.getValue();
+    final Angle roll = rollSignal.getValue();
+    final Angle pitch = pitchSignal.getValue();
+    final AngularVelocity rollVelocity = rollVelocitySignal.getValue();
+    final AngularVelocity pitchVelocity = pitchVelocitySignal.getValue();
+    final LinearAcceleration accelX = accelerationX.getValue();
+    final LinearAcceleration accelY = accelerationY.getValue();
 
     // Send all of the tilt values to the driving safety util
     DrivingUtils.updateTilt(roll, pitch, rollVelocity, pitchVelocity, accelX, accelY);
-
-    // Finally, write all of the tils values into the inputs.
-    inputs.Roll = roll;
-    inputs.RollVelocity = rollVelocity;
-    inputs.Pitch = pitch;
-    inputs.PitchVelocity = pitchVelocity;
-    inputs.AccelerationX = accelX;
-    inputs.AccelerationY = accelY;
   }
 }

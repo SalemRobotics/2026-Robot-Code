@@ -13,12 +13,9 @@ import javax.tools.Diagnostic;
 @SupportedSourceVersion(SourceVersion.RELEASE_17) // adjust as needed
 @AutoService(Processor.class)
 public class UninstantiableClassProcessor extends AbstractProcessor {
-
   @Override
   public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-
     for (Element element : roundEnv.getElementsAnnotatedWith(UninstantiableClass.class)) {
-
       if (element.getKind() != ElementKind.CLASS) {
         error(element, "@UninstantiableClass can only be applied to classes.");
         continue;
@@ -39,7 +36,6 @@ public class UninstantiableClassProcessor extends AbstractProcessor {
 
       // Rule 2: No instance fields
       for (VariableElement field : ElementFilter.fieldsIn(clazz.getEnclosedElements())) {
-
         if (!field.getModifiers().contains(Modifier.STATIC)) {
           error(field, "Instance fields are not allowed in classes marked @UninstantiableClass.");
         }
@@ -47,7 +43,6 @@ public class UninstantiableClassProcessor extends AbstractProcessor {
 
       // Rule 3: No instance methods
       for (ExecutableElement method : ElementFilter.methodsIn(clazz.getEnclosedElements())) {
-
         if (!method.getModifiers().contains(Modifier.STATIC)) {
           error(method, "Instance methods are not allowed in classes marked @UninstantiableClass.");
         }

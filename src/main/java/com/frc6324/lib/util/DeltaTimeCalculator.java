@@ -16,7 +16,7 @@
 
 package com.frc6324.lib.util;
 
-import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.RobotController;
