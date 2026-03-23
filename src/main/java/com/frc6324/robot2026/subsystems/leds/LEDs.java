@@ -21,7 +21,7 @@ public final class LEDs extends VirtualSubsystem {
   private final AddressableLEDBufferView fmsView =
       buffer.createView(LED_FMS_BUFFER_START, LED_BUFFER_LENGTH - 1);
   private final AddressableLEDBufferView dataView = buffer.createView(0, LED_FMS_BUFFER_START - 1);
-  private final Debouncer browoutDebouncer = new Debouncer(1, DebounceType.kRising);
+  private final Debouncer brownoutDebouncer = new Debouncer(1, DebounceType.kRising);
 
   public LEDs() {
     leds.setLength(LED_BUFFER_LENGTH);
@@ -39,7 +39,7 @@ public final class LEDs extends VirtualSubsystem {
             : LED_DS_DISCONNECTED_PATTERN;
     fmsPattern.applyTo(fmsView);
 
-    final boolean browningOut = browoutDebouncer.calculate(RobotController.isBrownedOut());
+    final boolean browningOut = brownoutDebouncer.calculate(RobotController.isBrownedOut());
 
     final LEDPattern dataPattern;
     if (DriverStation.isEStopped()) {

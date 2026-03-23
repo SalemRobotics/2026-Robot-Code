@@ -181,7 +181,7 @@ public final class ShooterCommands {
           }
         } else {
           if (intakeTimedOut || intake.isRetracted()) {
-            intake.deploy();
+            intake.deploy(true);
             sendingIntakeOut = true;
             intakeCommandTimeout.restart();
           }

@@ -37,8 +37,9 @@ public final class Intake extends SubsystemBase {
     }
   }
 
-  public void deploy() {
-    io.setPosition(INTAKE_DEPLOYED_POSITION, INTAKE_FAST_SLOT);
+  public void deploy(boolean useEfficiencyMode) {
+    final int slot = useEfficiencyMode ? INTAKE_EFFICIENCY_SLOT : INTAKE_FAST_SLOT;
+    io.setPosition(INTAKE_DEPLOYED_POSITION, slot);
   }
 
   public boolean isDeployed() {
@@ -70,7 +71,7 @@ public final class Intake extends SubsystemBase {
   }
 
   public void retract() {
-    io.setPosition(INTAKE_RETRACTED_POSITION, INTAKE_SLOW_SLOT);
+    io.setPosition(INTAKE_RETRACTED_POSITION, INTAKE_RETRACT_SLOT);
   }
 
   @Override
@@ -87,8 +88,9 @@ public final class Intake extends SubsystemBase {
     io.spring();
   }
 
-  public void stow() {
-    io.setPosition(INTAKE_STOWED_POSITION, INTAKE_FAST_SLOT);
+  public void stow(boolean useEfficiencyMode) {
+    final int slot = useEfficiencyMode ? INTAKE_EFFICIENCY_SLOT : INTAKE_FAST_SLOT;
+    io.setPosition(INTAKE_STOWED_POSITION, slot);
   }
 
   public boolean visionAvailable() {

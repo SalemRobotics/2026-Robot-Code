@@ -49,15 +49,17 @@ public final class AutoCommands {
     }
 
     return Commands.sequence(
-        Commands.parallel(intake.run(intake::deploy), shooter.run(shooter::stowHood))
+        Commands.parallel(intake.run(() -> intake.deploy(false)), shooter.run(shooter::stowHood))
             .until(intake::isSafeToTrench),
         AutoBuilder.followPath(intakePath)
-            .alongWith(intake.runOnce(intake::deploy), rollers.runOnce(rollers::spinRollers)),
+            .alongWith(
+                intake.runOnce(() -> intake.deploy(false)), rollers.runOnce(rollers::spinRollers)),
         new ShootIntoHubCommand(drive, indexer, intake, rollers, shooter, "AutoShootIntoHub")
             .withTimeout(Seconds.of(10)),
         // Copy and paste because it don't matter?
         AutoBuilder.followPath(intakePath)
-            .alongWith(intake.runOnce(intake::deploy), rollers.runOnce(rollers::spinRollers)),
+            .alongWith(
+                intake.runOnce(() -> intake.deploy(true)), rollers.runOnce(rollers::spinRollers)),
         new ShootIntoHubCommand(drive, indexer, intake, rollers, shooter, "AutoShootIntoHub"));
   }
 }

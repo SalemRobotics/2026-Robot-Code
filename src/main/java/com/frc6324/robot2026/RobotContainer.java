@@ -126,7 +126,7 @@ public class RobotContainer {
                   .getPose()
                   .boundedWithinX(
                       LinesVertical.NEUTRAL_ZONE_NEAR, LinesVertical.NEUTRAL_ZONE_FAR)) {
-                intake.deploy();
+                intake.deploy(true);
               }
             }));
     rollers.setDefaultCommand(
@@ -157,7 +157,7 @@ public class RobotContainer {
         .whileTrue(
             Commands.runEnd(
                 () -> {
-                  intake.deploy();
+                  intake.deploy(true);
                   rollers.spinRollers();
 
                   LEDState.intaking = true;
@@ -173,7 +173,7 @@ public class RobotContainer {
         .whileTrue(
             Commands.runEnd(
                 () -> {
-                  intake.deploy();
+                  intake.deploy(true);
                   rollers.outtake();
 
                   LEDState.outtaking = true;
