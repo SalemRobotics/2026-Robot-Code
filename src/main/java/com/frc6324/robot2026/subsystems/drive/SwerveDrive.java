@@ -106,7 +106,7 @@ public final class SwerveDrive extends SubsystemBase implements VisionConsumer, 
     Pathfinding.setPathfinder(new LocalADStarAK());
 
     // Put the swerve widget on SmartDashboard
-    SmartDashboard.putData(new SwerveWidget(this));
+    SmartDashboard.putData("Swerve", new SwerveWidget(this));
   }
 
   /**
@@ -198,7 +198,7 @@ public final class SwerveDrive extends SubsystemBase implements VisionConsumer, 
    * @param pose The pose to reset to.
    */
   public void setPoseIfSim(Pose2d pose) {
-    if (io instanceof DriveIOSim) {
+    if (RobotBase.isSimulation()) {
       setPose(pose);
     }
   }

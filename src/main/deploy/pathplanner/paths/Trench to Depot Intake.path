@@ -1,0 +1,141 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 3.8,
+        "y": 7.75
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.883647290442893,
+        "y": 7.702750520723946
+      },
+      "isLocked": false,
+      "linkedName": "Trench Score"
+    },
+    {
+      "anchor": {
+        "x": 1.667395038167939,
+        "y": 7.55
+      },
+      "prevControl": {
+        "x": 2.5500448219082927,
+        "y": 7.629875875671173
+      },
+      "nextControl": {
+        "x": 1.29005717879371,
+        "y": 7.515852603720493
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 0.55,
+        "y": 7.064332061068702
+      },
+      "prevControl": {
+        "x": 0.55,
+        "y": 7.345332061068702
+      },
+      "nextControl": {
+        "x": 0.55,
+        "y": 6.814332061068702
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 0.55,
+        "y": 6.0
+      },
+      "prevControl": {
+        "x": 0.55,
+        "y": 6.25
+      },
+      "nextControl": {
+        "x": 0.55,
+        "y": 5.741873535637348
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 0.55,
+        "y": 5.25
+      },
+      "prevControl": {
+        "x": 0.55,
+        "y": 5.75
+      },
+      "nextControl": {
+        "x": 0.55,
+        "y": 4.6
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 2.010496183206107,
+        "y": 5.081040076335878
+      },
+      "prevControl": {
+        "x": 1.0150880520899639,
+        "y": 5.081040076335878
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Center Score"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 2.0,
+      "rotationDegrees": -90.0
+    },
+    {
+      "waypointRelativePos": 3.5,
+      "rotationDegrees": -90.0
+    }
+  ],
+  "constraintZones": [
+    {
+      "name": "Slow for Intake",
+      "minWaypointRelativePos": 2.2,
+      "maxWaypointRelativePos": 3.9,
+      "constraints": {
+        "maxVelocity": 1.0,
+        "maxAcceleration": 7.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 1080.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 5.2,
+    "maxAcceleration": 7.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 1080.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -29.024095167182605
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": -85.0
+  },
+  "useDefaultConstraints": true
+}

@@ -36,18 +36,18 @@ public final class AprilTagConstants {
     new Transform3d(
         Units.inchesToMeters(-10),
         Units.inchesToMeters(-6),
-        Units.inchesToMeters(18.775),
+        Units.inchesToMeters(19.5),
         new Rotation3d(0, Units.degreesToRadians(20), 0)),
     new Transform3d(
         Units.inchesToMeters(-12.175),
         Units.inchesToMeters(-4),
-        Units.inchesToMeters(15.6),
+        Units.inchesToMeters(16.5),
         new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(180))),
     new Transform3d(
-        Units.inchesToMeters(0),
-        Units.inchesToMeters(0),
-        Units.inchesToMeters(0),
-        new Rotation3d(Units.degreesToRadians(6), 0, Units.degreesToRadians(90)))
+        Units.inchesToMeters(-12.5),
+        Units.inchesToMeters(-1),
+        Units.inchesToMeters(9),
+        new Rotation3d(Units.degreesToRadians(-6), 0, Units.degreesToRadians(-90)))
   };
 
   public static final Frequency UPDATE_THREAD_FREQUENCY = Hertz.of(60);

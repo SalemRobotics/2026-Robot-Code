@@ -22,14 +22,10 @@ import com.frc6324.lib.util.VirtualSubsystem;
 import com.frc6324.robot2026.sim.MapleSimManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.RobotController.RadioLEDState;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-
-import static edu.wpi.first.units.Units.Volts;
-
 import java.util.Optional;
 import lombok.val;
 import org.littletonrobotics.junction.LogFileUtil;
@@ -89,8 +85,6 @@ public class Robot extends LoggedRobot {
       }
     }
 
-    // Set the brownout voltage to 5.5, which 
-    RobotController.setBrownoutVoltage(Volts.of(5.5));
     // Disable the power rails that we don't use
     RobotController.setEnabled3V3(false);
     RobotController.setEnabled5V(false);

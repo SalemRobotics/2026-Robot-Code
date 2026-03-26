@@ -35,6 +35,8 @@ import com.frc6324.robot2026.subsystems.rollers.*;
 import com.frc6324.robot2026.subsystems.shooter.*;
 import com.frc6324.robot2026.subsystems.vision.apriltag.*;
 import com.frc6324.robot2026.subsystems.vision.objdetect.*;
+import com.pathplanner.lib.auto.NamedCommands;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -75,6 +77,7 @@ public class RobotContainer {
         apriltag =
             new AprilTagVision(
                     new AprilTagIOPhoton(driveIO, intake::visionAvailable),
+                    new AprilTagIOPhoton(driveIO),
                     new AprilTagIOPhoton(driveIO))
                 .withConsumer(drive);
         indexer = new Indexer(new IndexerIOTalonFX());
@@ -87,7 +90,9 @@ public class RobotContainer {
 
         apriltag =
             new AprilTagVision(
-                new AprilTagIOSim(driveIO, drive), new AprilTagIOSim(driveIO, drive));
+                new AprilTagIOSim(driveIO, drive),
+                new AprilTagIOSim(driveIO, drive),
+                new AprilTagIOSim(driveIO, drive));
         indexer = new Indexer(new IndexerIOSim());
         intake = new Intake(new IntakeIOSim());
         rollers = new Rollers(new RollerIOSim());
@@ -96,7 +101,7 @@ public class RobotContainer {
       default -> {
         drive = new SwerveDrive(new DriveIOReplay());
 
-        apriltag = new AprilTagVision(IOLayer::replay, IOLayer::replay);
+        apriltag = new AprilTagVision(IOLayer::replay, IOLayer::replay, IOLayer::replay);
         indexer = new Indexer(IOLayer::replay);
         intake = new Intake(IOLayer::replay);
         rollers = new Rollers(IOLayer::replay);
@@ -104,15 +109,44 @@ public class RobotContainer {
       }
     }
 
+    configureNamedCommands();
+    configureBindings();
+
     autoChooser.addDefaultOption("No Auto", Commands.none());
     autoChooser.addOption(
-        "Left Trench Auto",
-        AutoCommands.trenchAuto(drive, indexer, intake, rollers, shooter, AllianceSide.Left));
+        "Left Triple Trench", AutoCommands.tripleTrenchAuto(AllianceSide.Left, intake));
     autoChooser.addOption(
-        "Right Trench Auto",
-        AutoCommands.trenchAuto(drive, indexer, intake, rollers, shooter, AllianceSide.Right));
+        "Right Triple Trench", AutoCommands.tripleTrenchAuto(AllianceSide.Right, intake));
+    autoChooser.addOption(
+        "Left Sweep Pass Score", AutoCommands.sweepPassScoreAuto(AllianceSide.Left, intake));
+    autoChooser.addOption(
+        "Right Sweep Pass Score", AutoCommands.sweepPassScoreAuto(AllianceSide.Right, intake));
+  }
 
-    configureBindings();
+  private void configureNamedCommands() {
+    NamedCommands.registerCommand(
+        "Intake",
+        Commands.run(
+            () -> {
+              intake.deploy(false);
+              rollers.spinRollers();
+            },
+            intake,
+            rollers));
+    NamedCommands.registerCommand(
+        "Outtake",
+        Commands.run(
+            () -> {
+              intake.deploy(false);
+              rollers.outtake();
+            },
+            intake,
+            rollers));
+    NamedCommands.registerCommand("RetractIntake", intake.run(intake::retract));
+    NamedCommands.registerCommand("IdleShooter", new IdleShooterCommand(shooter, drive));
+    NamedCommands.registerCommand(
+        "ShootIntoHub",
+        new ShootIntoHubCommand(drive, indexer, intake, rollers, shooter, "AutoShootIntoHub"));
   }
 
   private void configureBindings() {
@@ -132,10 +166,9 @@ public class RobotContainer {
     rollers.setDefaultCommand(
         rollers.runEnd(
             () -> {
-              if (drive
-                  .getPose()
-                  .boundedWithinX(
-                      LinesVertical.NEUTRAL_ZONE_NEAR, LinesVertical.NEUTRAL_ZONE_FAR)) {
+              final Pose2d drivePose = drive.getPose();
+              if (drivePose.boundedWithinX(
+                  LinesVertical.NEUTRAL_ZONE_NEAR, LinesVertical.NEUTRAL_ZONE_FAR)) {
                 rollers.spinRollers();
                 LEDState.intaking = true;
               } else {

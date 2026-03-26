@@ -51,7 +51,7 @@ public final class Intake extends SubsystemBase {
   }
 
   public boolean isSafeToTrench() {
-    return inputs.motorPosition.gte(INTAKE_TRENCH_SAFE_POSITION);
+    return inputs.motorPosition.gte(INTAKE_STOWED_POSITION);
   }
 
   public boolean isStowed() {
