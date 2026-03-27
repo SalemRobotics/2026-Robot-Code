@@ -25,14 +25,14 @@ public final class LEDsConstants {
   public static final LEDPattern LED_ESTOP_PATTERN = LEDPattern.solid(Color.kRed);
   public static final LEDPattern LED_BROWNOUT_PATTERN =
       LEDPattern.solid(Color.kDarkOrange).blink(Seconds.of(2));
-  public static final LEDPattern LED_OUTTAKING_PATTERN =
+  public static final LEDPattern LED_PASSING_PATTERN =
       LEDPattern.gradient(GradientType.kDiscontinuous, Color.kMaroon, Color.kYellow);
   public static final LEDPattern LED_INTAKING_PATTERN =
       LEDPattern.solid(Color.kYellow).blink(Seconds.of(0.5), Seconds.of(0.2));
   public static final LEDPattern LED_SHOOTING_PATTERN =
       LEDPattern.gradient(GradientType.kContinuous, Color.kDeepPink, Color.kCyan)
           .scrollAtRelativeSpeed(Percent.per(Second).of(50));
-  public static final LEDPattern LED_PASSING_PATTERN =
+  public static final LEDPattern LED_OUTTAKING_PATTERN =
       LEDPattern.gradient(
               GradientType.kContinuous, Color.kBlueViolet, Color.kChartreuse, Color.kSilver)
           .scrollAtRelativeSpeed(Percent.per(Second).of(-50));

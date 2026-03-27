@@ -114,13 +114,18 @@ public class RobotContainer {
 
     autoChooser.addDefaultOption("No Auto", Commands.none());
     autoChooser.addOption(
+        "Left Double Trench", AutoCommands.doubleTrenchAuto(AllianceSide.Left, intake));
+    autoChooser.addOption(
+        "Right Double Trench", AutoCommands.doubleTrenchAuto(AllianceSide.Right, intake));
+    autoChooser.addOption(
         "Left Triple Trench", AutoCommands.tripleTrenchAuto(AllianceSide.Left, intake));
     autoChooser.addOption(
         "Right Triple Trench", AutoCommands.tripleTrenchAuto(AllianceSide.Right, intake));
     autoChooser.addOption(
-        "Left Sweep Pass Score", AutoCommands.sweepPassScoreAuto(AllianceSide.Left, intake));
+        "Left Sweep-Pass Score", AutoCommands.sweepPassScoreAuto(AllianceSide.Left, intake));
     autoChooser.addOption(
-        "Right Sweep Pass Score", AutoCommands.sweepPassScoreAuto(AllianceSide.Right, intake));
+        "Right Sweep-Pass Score", AutoCommands.sweepPassScoreAuto(AllianceSide.Right, intake));
+    autoChooser.addOption("Depot-Outpost Score", AutoCommands.allianceZoneAuto());
   }
 
   private void configureNamedCommands() {
@@ -201,8 +206,10 @@ public class RobotContainer {
         .onFalse(rollers.run(rollers::stopRollers));
 
     controller.a().whileTrue(intake.run(intake::retract));
+    controller.b().whileTrue(new ShootUpAgainstHubCommand(indexer, intake, rollers, shooter));
+
     controller
-        .b()
+        .rightBumper()
         .whileTrue(
             Commands.runEnd(
                 () -> {
@@ -214,7 +221,6 @@ public class RobotContainer {
                 () -> LEDState.outtaking = false,
                 rollers,
                 intake));
-    controller.b().whileTrue(rollers.run(rollers::outtake));
 
     controller
         .rightTrigger()

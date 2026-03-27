@@ -3,109 +3,125 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.6,
-        "y": 4.0
+        "x": 3.8,
+        "y": 7.75
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.721803435114504,
-        "y": 4.922041984732825
+        "x": 4.049048674522936,
+        "y": 7.7282110643130855
       },
       "isLocked": false,
-      "linkedName": "Hub Start"
+      "linkedName": "Trench Score"
     },
     {
       "anchor": {
-        "x": 0.9979293893129773,
-        "y": 4.888568702290076
+        "x": 6.225753262158957,
+        "y": 7.590913404507711
       },
       "prevControl": {
-        "x": 1.9853912213740468,
-        "y": 4.82162213740458
+        "x": 5.975753262158957,
+        "y": 7.590913404507711
       },
       "nextControl": {
-        "x": 0.6998784955754678,
-        "y": 4.9087755425434665
+        "x": 7.025753262158957,
+        "y": 7.590913404507711
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 0.45,
-        "y": 5.2986164122137405
-      },
-      "prevControl": {
-        "x": 0.45,
-        "y": 5.021959925671314
-      },
-      "nextControl": {
-        "x": 0.45,
-        "y": 5.575272898756167
-      },
-      "isLocked": false,
-      "linkedName": null
-    },
-    {
-      "anchor": {
-        "x": 0.45,
+        "x": 7.2,
         "y": 6.75
       },
       "prevControl": {
-        "x": 0.4499999999999999,
-        "y": 5.892634000277483
+        "x": 7.2,
+        "y": 7.55
       },
       "nextControl": {
-        "x": 0.45,
-        "y": 7.0
+        "x": 7.2,
+        "y": 6.25
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 1.2824522900763362,
-        "y": 7.055963740458015
+        "x": 7.2,
+        "y": 4.5
       },
       "prevControl": {
-        "x": 1.0324522900763362,
-        "y": 7.055963740458015
+        "x": 7.253947212336891,
+        "y": 5.185898576512455
       },
       "nextControl": {
-        "x": 1.5324522900763362,
-        "y": 7.055963740458015
+        "x": 7.180397568071952,
+        "y": 4.250769695537429
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.0,
-        "y": 6.5
+        "x": 6.634602609727166,
+        "y": 6.428920521945433
       },
       "prevControl": {
-        "x": 2.0484804892709216,
-        "y": 6.745254239841133
+        "x": 7.076555030349225,
+        "y": 5.214666225813012
+      },
+      "nextControl": {
+        "x": 6.378087502232915,
+        "y": 7.133689987534865
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 5.2897034400948995,
+        "y": 7.590913404507711
+      },
+      "prevControl": {
+        "x": 6.534946812709581,
+        "y": 7.481968726073139
+      },
+      "nextControl": {
+        "x": 5.040654765571963,
+        "y": 7.612702340194626
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 3.8,
+        "y": 7.75
+      },
+      "prevControl": {
+        "x": 4.049048674522936,
+        "y": 7.7282110643130855
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Depot Score"
+      "linkedName": "Trench Score"
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 1.4588896697118678,
-      "rotationDegrees": 90.0
+      "waypointRelativePos": 2.0,
+      "rotationDegrees": -90.0
     },
     {
-      "waypointRelativePos": 2.8812368236121095,
-      "rotationDegrees": 90.0
+      "waypointRelativePos": 3.0,
+      "rotationDegrees": -90.0
     }
   ],
   "constraintZones": [
     {
       "name": "Slow for Intake",
-      "minWaypointRelativePos": 1.5,
+      "minWaypointRelativePos": 2.0,
       "maxWaypointRelativePos": 3.0,
       "constraints": {
         "maxVelocity": 1.0,
@@ -118,19 +134,7 @@
     }
   ],
   "pointTowardsZones": [],
-  "eventMarkers": [
-    {
-      "name": "Intake",
-      "waypointRelativePos": 0,
-      "endWaypointRelativePos": null,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "Intake"
-        }
-      }
-    }
-  ],
+  "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 5.2,
     "maxAcceleration": 7.0,
@@ -141,13 +145,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -47.33825936382248
+    "rotation": -85.0
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": -85.0
   },
   "useDefaultConstraints": true
 }

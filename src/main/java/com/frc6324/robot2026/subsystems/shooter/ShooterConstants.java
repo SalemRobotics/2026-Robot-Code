@@ -150,6 +150,7 @@ public final class ShooterConstants {
     public static final Distance FLYWHEEL_RADIUS = Inches.of(1.5);
 
     public static final AngularVelocity FLYWHEEL_IDLE_SPEED = RPM.of(1500);
+    public static final AngularVelocity FLYWHEEL_CLOSE_HUB_SHOT_SPEED = RPM.of(2100);
     public static final MotorAlignmentValue FLYWHEEL_MOTOR_ALIGNMENT = MotorAlignmentValue.Opposed;
 
     public static final TalonFXConfiguration FLYWHEEL_MOTOR_CONFIG =

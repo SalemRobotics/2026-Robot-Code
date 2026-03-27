@@ -3,113 +3,93 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.6,
-        "y": 4.0
-      },
-      "prevControl": null,
-      "nextControl": {
-        "x": 2.721803435114504,
-        "y": 4.922041984732825
-      },
-      "isLocked": false,
-      "linkedName": "Hub Start"
-    },
-    {
-      "anchor": {
-        "x": 0.9979293893129773,
-        "y": 4.888568702290076
-      },
-      "prevControl": {
-        "x": 1.9853912213740468,
-        "y": 4.82162213740458
-      },
-      "nextControl": {
-        "x": 0.6998784955754678,
-        "y": 4.9087755425434665
-      },
-      "isLocked": false,
-      "linkedName": null
-    },
-    {
-      "anchor": {
-        "x": 0.45,
-        "y": 5.2986164122137405
-      },
-      "prevControl": {
-        "x": 0.45,
-        "y": 5.021959925671314
-      },
-      "nextControl": {
-        "x": 0.45,
-        "y": 5.575272898756167
-      },
-      "isLocked": false,
-      "linkedName": null
-    },
-    {
-      "anchor": {
-        "x": 0.45,
-        "y": 6.75
-      },
-      "prevControl": {
-        "x": 0.4499999999999999,
-        "y": 5.892634000277483
-      },
-      "nextControl": {
-        "x": 0.45,
-        "y": 7.0
-      },
-      "isLocked": false,
-      "linkedName": null
-    },
-    {
-      "anchor": {
-        "x": 1.2824522900763362,
-        "y": 7.055963740458015
-      },
-      "prevControl": {
-        "x": 1.0324522900763362,
-        "y": 7.055963740458015
-      },
-      "nextControl": {
-        "x": 1.5324522900763362,
-        "y": 7.055963740458015
-      },
-      "isLocked": false,
-      "linkedName": null
-    },
-    {
-      "anchor": {
         "x": 2.0,
         "y": 6.5
       },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.174582698833443,
+        "y": 6.321056206399799
+      },
+      "isLocked": false,
+      "linkedName": "Depot Score"
+    },
+    {
+      "anchor": {
+        "x": 2.094820989127302,
+        "y": 4.818967654555902
+      },
       "prevControl": {
-        "x": 2.0484804892709216,
-        "y": 6.745254239841133
+        "x": 2.1905763775886857,
+        "y": 5.3262699506325655
+      },
+      "nextControl": {
+        "x": 1.910280254225651,
+        "y": 3.8412896351822203
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 1.7427099236641221,
+        "y": 2.8969083969465648
+      },
+      "prevControl": {
+        "x": 1.9157197055943382,
+        "y": 3.077373394540168
+      },
+      "nextControl": {
+        "x": 0.39177010963221215,
+        "y": 1.4877548359837085
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 0.6380916030534352,
+        "y": 1.8257633587786266
+      },
+      "prevControl": {
+        "x": 0.754220617887094,
+        "y": 2.0471545327530283
+      },
+      "nextControl": {
+        "x": 0.45157164816417966,
+        "y": 1.470177187297422
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 0.4,
+        "y": 0.8
+      },
+      "prevControl": {
+        "x": 0.47890801345067746,
+        "y": 1.1589459694698891
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Depot Score"
+      "linkedName": "Outpost Intake"
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 1.4588896697118678,
-      "rotationDegrees": 90.0
-    },
-    {
-      "waypointRelativePos": 2.8812368236121095,
-      "rotationDegrees": 90.0
+      "waypointRelativePos": 2.5,
+      "rotationDegrees": -90.0
     }
   ],
   "constraintZones": [
     {
-      "name": "Slow for Intake",
-      "minWaypointRelativePos": 1.5,
-      "maxWaypointRelativePos": 3.0,
+      "name": "Slow for Outpost",
+      "minWaypointRelativePos": 1.7706576728498944,
+      "maxWaypointRelativePos": 4.0,
       "constraints": {
-        "maxVelocity": 1.0,
-        "maxAcceleration": 7.0,
+        "maxVelocity": 2.0,
+        "maxAcceleration": 3.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 1080.0,
         "nominalVoltage": 12.0,
@@ -141,13 +121,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -47.33825936382248
+    "rotation": -90.0
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": -47.33825936382248
   },
   "useDefaultConstraints": true
 }

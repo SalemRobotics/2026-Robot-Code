@@ -95,6 +95,74 @@ public final class ShooterCommands {
         .until(switchCondition);
   }
 
+  public static class ShootUpAgainstHubCommand extends Command {
+    private final Indexer indexer;
+    private final Intake intake;
+    private final Rollers rollers;
+    private final Shooter shooter;
+
+    private boolean indexerRunning = false;
+    private boolean sendingIntakeOut = false;
+    private final Timer intakeCommandTimeout = new Timer();
+
+    public ShootUpAgainstHubCommand(
+        Indexer indexer, Intake intake, Rollers rollers, Shooter shooter) {
+      this.indexer = indexer;
+      this.intake = intake;
+      this.rollers = rollers;
+      this.shooter = shooter;
+
+      addRequirements(indexer, intake, rollers, shooter);
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+      shooter.stopFlywheel();
+      rollers.stopRollers();
+
+      indexer.stopKickerWheel();
+      indexer.stopIndexerWheel();
+    }
+
+    @Override
+    public void execute() {
+      shooter.shootUpAgainstHub();
+      if (!indexerRunning) {
+        indexer.runKickerWheel();
+        indexer.runIndexerWheel();
+
+        indexerRunning = true;
+      }
+
+      final boolean intakeTimedOut = intakeCommandTimeout.hasElapsed(0.420);
+      if (sendingIntakeOut) {
+        if (intakeTimedOut || intake.isDeployed()) {
+          intake.retract();
+          sendingIntakeOut = false;
+          intakeCommandTimeout.restart();
+        }
+      } else {
+        if (intakeTimedOut || intake.isRetracted()) {
+          intake.deploy(true);
+          sendingIntakeOut = true;
+          intakeCommandTimeout.restart();
+        }
+      }
+    }
+
+    @Override
+    public void initialize() {
+      indexer.stopIndexerWheel();
+      indexer.stopKickerWheel();
+
+      indexerRunning = false;
+      sendingIntakeOut = !intake.isDeployed();
+      intakeCommandTimeout.start();
+
+      rollers.spinRollers();
+    }
+  }
+
   abstract static class AbstractShootAtCommand extends Command {
     protected final SwerveDrive drive;
     protected final Indexer indexer;
@@ -128,6 +196,7 @@ public final class ShooterCommands {
       this.shooter = shooter;
       this.logKey = "Commands/" + name;
 
+      setName(name);
       addRequirements(drive, indexer, intake, rollers, shooter);
     }
 

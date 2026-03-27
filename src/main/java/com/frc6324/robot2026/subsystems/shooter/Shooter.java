@@ -117,6 +117,11 @@ public final class Shooter extends SubsystemBase {
     setFlywheelVelocity(targetVelocity, FLYWHEEL_SHOOTING_SLOT);
   }
 
+  public void shootUpAgainstHub() {
+    setHoodAngle(HOOD_STOW_ANGLE);
+    setFlywheelVelocity(FLYWHEEL_CLOSE_HUB_SHOT_SPEED, FLYWHEEL_SHOOTING_SLOT);
+  }
+
   public void spinUpForHubShot(double distanceToHub) {
     final Angle angle = HOOD_ANGLE_MAP.get(distanceToHub);
     setHoodAngle(angle);
