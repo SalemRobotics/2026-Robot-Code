@@ -49,6 +49,8 @@ public final class LEDs extends VirtualSubsystem {
     } else {
       if (LEDState.shooting) {
         dataPattern = LED_SHOOTING_PATTERN;
+      } else if (LEDState.closeShooting) {
+        dataPattern = LED_CLOSE_SHOT_PATTERN;
       } else if (LEDState.passing) {
         dataPattern = LED_PASSING_PATTERN;
       } else if (LEDState.outtaking) {
@@ -69,6 +71,7 @@ public final class LEDs extends VirtualSubsystem {
   public static final class LEDState {
     public static boolean passing = false;
     public static boolean shooting = false;
+    public static boolean closeShooting = false;
     public static boolean outtaking = false;
     public static boolean intaking = false;
 

@@ -122,6 +122,7 @@ public final class ShooterCommands {
 
       indexer.stopKickerWheel();
       indexer.stopIndexerWheel();
+      LEDState.closeShooting = false;
     }
 
     @Override
@@ -160,6 +161,7 @@ public final class ShooterCommands {
       intakeCommandTimeout.start();
 
       rollers.spinRollers();
+      LEDState.closeShooting = true;
     }
   }
 

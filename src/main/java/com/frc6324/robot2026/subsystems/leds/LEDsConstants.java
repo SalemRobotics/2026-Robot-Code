@@ -32,6 +32,8 @@ public final class LEDsConstants {
   public static final LEDPattern LED_SHOOTING_PATTERN =
       LEDPattern.gradient(GradientType.kContinuous, Color.kDeepPink, Color.kCyan)
           .scrollAtRelativeSpeed(Percent.per(Second).of(50));
+  public static final LEDPattern LED_CLOSE_SHOT_PATTERN =
+      LEDPattern.solid(Color.kDarkMagenta).blink(Seconds.of(2), Seconds.one());
   public static final LEDPattern LED_OUTTAKING_PATTERN =
       LEDPattern.gradient(
               GradientType.kContinuous, Color.kBlueViolet, Color.kChartreuse, Color.kSilver)
