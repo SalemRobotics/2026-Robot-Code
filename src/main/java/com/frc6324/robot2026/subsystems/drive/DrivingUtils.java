@@ -9,6 +9,7 @@ import com.frc6324.lib.util.Elastic.NotificationLevel;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.*;
+import org.littletonrobotics.junction.Logger;
 
 @UninstantiableClass
 public final class DrivingUtils {
@@ -83,6 +84,8 @@ public final class DrivingUtils {
     pitchVelocityDPS = pitchVelocity.in(DegreesPerSecond);
     accelXMPSsq = accelX.in(MetersPerSecondPerSecond);
     accelYMPSsq = accelY.in(MetersPerSecondPerSecond);
+
+    Logger.recordOutput("Odometry/RobotTilt", Math.hypot(rollDegrees, pitchDegrees), Degrees);
   }
 
   /**
