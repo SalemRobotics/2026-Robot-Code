@@ -2,12 +2,14 @@ package com.frc6324.robot2026.subsystems.vision.apriltag;
 
 import static com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagConstants.*;
 
+import com.frc6324.lib.util.PoseExtensions.PoseSupplier;
+import com.frc6324.robot2026.subsystems.drive.DrivingUtils;
 import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.numbers.N8;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -27,12 +29,11 @@ public class AprilTagIOPhoton implements AprilTagIO {
   private static int cameraIndex = 0;
 
   protected final int index = cameraIndex++;
-  private final OdometryPoseGetter odometryPoseAtTime;
+  private final PoseSupplier robotPoseGetter;
 
   private final Lock updateLock = new ReentrantLock();
-  private final AtomicReference<HashSet<Integer>> tagsSeen = new AtomicReference<>(new HashSet<>());
-  private final AtomicReference<ArrayList<VisionEstimation>> estimations =
-      new AtomicReference<>(new ArrayList<>());
+  private final AtomicReference<CameraState> state =
+      new AtomicReference<>(new CameraState(Rotation2d.kZero, 0));
 
   protected final PhotonCamera camera = new PhotonCamera(CAMERA_NAMES[index]);
   private final PhotonPoseEstimator poseEstimator =
@@ -42,15 +43,15 @@ public class AprilTagIOPhoton implements AprilTagIO {
   private Matrix<N8, N1> distortionCoefficients = camera.getDistCoeffs().orElse(null);
   private final BooleanSupplier enableSignal;
 
-  public AprilTagIOPhoton(OdometryPoseGetter odometryPoseGetter, BooleanSupplier enableSignal) {
-    odometryPoseAtTime = odometryPoseGetter;
+  public AprilTagIOPhoton(PoseSupplier robotPoseSupplier, BooleanSupplier enableSignal) {
+    this.robotPoseGetter = robotPoseSupplier;
     this.enableSignal = enableSignal;
 
     VisionUpdateThread.addCallback(this::updateOdometry);
   }
 
-  public AprilTagIOPhoton(OdometryPoseGetter odometryPoseGetter) {
-    this(odometryPoseGetter, () -> true);
+  public AprilTagIOPhoton(PoseSupplier robotPoseSupplier) {
+    this(robotPoseSupplier, () -> true);
   }
 
   /**
@@ -63,9 +64,6 @@ public class AprilTagIOPhoton implements AprilTagIO {
     final Matrix<N3, N3> cameraMatrix;
     final Matrix<N8, N1> distCoeffs;
 
-    final ArrayList<VisionEstimation> estimations = new ArrayList<>();
-    final HashSet<Integer> tagsSeen = new HashSet<>();
-
     updateLock.lock();
     try {
       allResults = camera.getAllUnreadResults();
@@ -77,50 +75,67 @@ public class AprilTagIOPhoton implements AprilTagIO {
       updateLock.unlock();
     }
 
+    final CameraState state = this.state.get();
+    if (!state.addedHeadingData) {
+      poseEstimator.addHeadingData(state.headingTimestamp, state.lastHeading);
+      state.addedHeadingData = true;
+    }
+
     for (final PhotonPipelineResult result : allResults) {
       final double timestamp = result.getTimestampSeconds();
-      final EstimatedRobotPose estimatedPose;
-      final EstimationStrategy strategy;
 
       // If the result doesn't have targets or is stale, skip it
       if (!result.hasTargets() || Timer.getFPGATimestamp() - timestamp > MAX_LATENCY_SECS) {
         continue;
       }
 
-      // Estimation attempt order:
-      // 1. Multitag on the coprocessor
-      // 2. Constrained SolvePNP using robot pose estimation
-      // 3. Average of targets using ambiguity as weight
+      final EstimatedRobotPose estimatedPose;
+      final EstimationStrategy strategy;
+
       final Optional<EstimatedRobotPose> multitagOpt =
           poseEstimator.estimateCoprocMultiTagPose(result);
-
       if (multitagOpt.isPresent()) {
         estimatedPose = multitagOpt.get();
         strategy = EstimationStrategy.Multitag;
+      } else if (DrivingUtils.isTilted()) {
+        final Optional<EstimatedRobotPose> lowestAmbiguity =
+            poseEstimator.estimateLowestAmbiguityPose(result);
+        if (lowestAmbiguity.isPresent()) {
+          estimatedPose = lowestAmbiguity.get();
+          strategy = EstimationStrategy.LowestAmbiguity;
+        } else continue;
       } else {
-        final Optional<Pose2d> odomPoseOpt = odometryPoseAtTime.samplePoseAt(timestamp);
-        Optional<EstimatedRobotPose> constrainedSolvePNPOpt = Optional.empty();
+        final Optional<EstimatedRobotPose> seedOpt =
+            poseEstimator.estimatePnpDistanceTrigSolvePose(result);
+        if (seedOpt.isEmpty()) {
+          continue;
+        }
 
-        if (cameraMatrix != null && distCoeffs != null && odomPoseOpt.isPresent()) {
-          final Pose2d odomPose = odomPoseOpt.get();
+        final EstimatedRobotPose seed = seedOpt.get();
+
+        // Try to use the seed to
+        Optional<EstimatedRobotPose> constrainedSolvePNPOpt = Optional.empty();
+        if (cameraMatrix != null && distCoeffs != null) {
+          final boolean disabled = DriverStation.isDisabled();
 
           constrainedSolvePNPOpt =
               poseEstimator.estimateConstrainedSolvepnpPose(
                   result,
                   cameraMatrix,
                   distCoeffs,
-                  new Pose3d(odomPose),
-                  HEADING_FREE,
-                  HEADING_FACTOR);
+                  seed.estimatedPose,
+                  disabled ? true : HEADING_FREE,
+                  disabled ? 0 : HEADING_FACTOR);
         }
 
         if (constrainedSolvePNPOpt.isPresent()) {
+          // If the refined pose exists, use it.
           estimatedPose = constrainedSolvePNPOpt.get();
           strategy = EstimationStrategy.ConstrainedSolvePNP;
         } else {
-          // It is safe to call `.get` here since we already know that the result has targets
-          estimatedPose = poseEstimator.estimateAverageBestTargetsPose(result).get();
-          strategy = EstimationStrategy.Singletag;
+          // Otherwise, default to the seed.
+          estimatedPose = seed;
+          strategy = EstimationStrategy.PnpDistanceTrigSolve;
         }
       }
 
@@ -133,13 +148,13 @@ public class AprilTagIOPhoton implements AprilTagIO {
       for (int i = 0; i < numTags; i++) {
         final PhotonTrackedTarget target = targetsUsed.get(i);
 
-        tagsSeen.add(target.fiducialId);
+        state.tagsSeen.add(target.fiducialId);
 
         totalAmbiguity += target.poseAmbiguity;
         totalDistance += target.bestCameraToTarget.getTranslation().getNorm();
       }
 
-      estimations.add(
+      state.estimations.add(
           new VisionEstimation(
               estimatedPose.estimatedPose,
               timestamp,
@@ -148,19 +163,22 @@ public class AprilTagIOPhoton implements AprilTagIO {
               numTags,
               strategy));
     }
-
-    this.tagsSeen.set(tagsSeen);
-    this.estimations.set(estimations);
   }
 
   @Override
   public void updateInputs(VisionInputs inputs) {
-    if (!camera.isConnected() || !enableSignal.getAsBoolean()) {
+    if (!camera.isConnected()) {
       inputs.connected = false;
+      inputs.enabled = false;
       inputs.estimations = new VisionEstimation[0];
       inputs.tagsSeen = new int[0];
+    }
 
-      return;
+    if (!enableSignal.getAsBoolean()) {
+      inputs.connected = true;
+      inputs.enabled = false;
+      inputs.estimations = new VisionEstimation[0];
+      inputs.tagsSeen = new int[0];
     }
 
     updateLock.lock();
@@ -173,16 +191,30 @@ public class AprilTagIOPhoton implements AprilTagIO {
         distortionCoefficients = camera.getDistCoeffs().orElse(null);
       }
 
+      final CameraState lastState = state.get();
       inputs.connected = true;
-      inputs.estimations = estimations.get().toArray(VisionEstimation[]::new);
-      inputs.tagsSeen = tagsSeen.get().stream().mapToInt(i -> i).toArray();
+      inputs.estimations = lastState.estimations.toArray(VisionEstimation[]::new);
+      inputs.tagsSeen = lastState.tagsSeen.stream().mapToInt(i -> i).toArray();
+
+      final double timestamp = Timer.getTimestamp();
+      final Rotation2d currentRot = robotPoseGetter.getPose().getRotation();
+      state.set(new CameraState(currentRot, timestamp));
     } finally {
       updateLock.unlock();
     }
   }
 
-  @FunctionalInterface
-  public interface OdometryPoseGetter {
-    Optional<Pose2d> samplePoseAt(double timestamp);
+  private class CameraState {
+    final ArrayList<VisionEstimation> estimations = new ArrayList<>();
+    final HashSet<Integer> tagsSeen = new HashSet<>();
+
+    boolean addedHeadingData = false;
+    final Rotation2d lastHeading;
+    final double headingTimestamp;
+
+    public CameraState(Rotation2d heading, double timestamp) {
+      lastHeading = heading;
+      headingTimestamp = timestamp;
+    }
   }
 }

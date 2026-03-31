@@ -35,7 +35,7 @@ public final class MapleSimManager {
   private final RebuiltArena arena;
   private final SwerveDriveSimulation driveSimulation =
       new SwerveDriveSimulation(
-          DrivetrainConstants.MAPLE_SIM_CONFIG, DrivetrainConstants.STARTING_POSE);
+          DrivetrainConstants.MAPLE_SIM_CONFIG, DrivetrainConstants.SIM_STARTING_POSE);
   private final IntakeSimulation intakeSim =
       IntakeSimulation.OverTheBumperIntake(
           "Fuel",

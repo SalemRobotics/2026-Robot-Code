@@ -9,7 +9,6 @@ import com.ctre.phoenix6.hardware.*;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import com.ctre.phoenix6.swerve.SwerveModule;
 import com.frc6324.robot2026.generated.TunerConstants;
-import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagIOPhoton.OdometryPoseGetter;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -22,7 +21,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 import org.littletonrobotics.junction.Logger;
 
 public sealed class DriveIOCTRE extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
-    implements DriveIO, OdometryPoseGetter permits DriveIOSim {
+    implements DriveIO permits DriveIOSim {
   private final StatusSignalCollection gyroscopeSignals;
   private final StatusSignal<AngularVelocity> pitchVelocitySignal;
   private final StatusSignal<AngularVelocity> rollVelocitySignal;
@@ -50,7 +49,7 @@ public sealed class DriveIOCTRE extends SwerveDrivetrain<TalonFX, TalonFX, CANco
 
     // Reset the pose in simulation to somewhere known
     if (RobotBase.isSimulation()) {
-      super.resetPose(STARTING_POSE);
+      super.resetPose(SIM_STARTING_POSE);
     }
 
     Pigeon2 pigeon = getPigeon2();

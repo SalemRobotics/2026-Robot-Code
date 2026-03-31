@@ -76,9 +76,9 @@ public class RobotContainer {
         intake = new Intake(new IntakeIOTalonFX());
         apriltag =
             new AprilTagVision(
-                    new AprilTagIOPhoton(driveIO, intake::visionAvailable),
-                    new AprilTagIOPhoton(driveIO),
-                    new AprilTagIOPhoton(driveIO))
+                    new AprilTagIOPhoton(drive, intake::visionAvailable),
+                    new AprilTagIOPhoton(drive),
+                    new AprilTagIOPhoton(drive))
                 .withConsumer(drive);
         indexer = new Indexer(new IndexerIOTalonFX());
         rollers = new Rollers(new RollerIOTalonFX());
@@ -90,9 +90,7 @@ public class RobotContainer {
 
         apriltag =
             new AprilTagVision(
-                new AprilTagIOSim(driveIO, drive),
-                new AprilTagIOSim(driveIO, drive),
-                new AprilTagIOSim(driveIO, drive));
+                new AprilTagIOSim(drive), new AprilTagIOSim(drive), new AprilTagIOSim(drive));
         indexer = new Indexer(new IndexerIOSim());
         intake = new Intake(new IntakeIOSim());
         rollers = new Rollers(new RollerIOSim());

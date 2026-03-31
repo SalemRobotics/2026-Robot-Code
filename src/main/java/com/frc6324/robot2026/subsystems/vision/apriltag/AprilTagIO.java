@@ -9,6 +9,7 @@ public interface AprilTagIO {
   @AutoLog
   class VisionInputs {
     public boolean connected = false;
+    public boolean enabled = false;
     public VisionEstimation[] estimations = new VisionEstimation[0];
     public int[] tagsSeen = new int[0];
   }
@@ -23,7 +24,8 @@ public interface AprilTagIO {
 
   public enum EstimationStrategy {
     ConstrainedSolvePNP,
+    LowestAmbiguity,
     Multitag,
-    Singletag,
+    PnpDistanceTrigSolve,
   }
 }

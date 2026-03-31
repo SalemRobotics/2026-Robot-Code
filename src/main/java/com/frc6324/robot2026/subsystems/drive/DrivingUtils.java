@@ -9,6 +9,8 @@ import com.frc6324.lib.util.Elastic.NotificationLevel;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.*;
+import java.util.concurrent.atomic.AtomicReference;
+import lombok.Getter;
 import org.littletonrobotics.junction.Logger;
 
 @UninstantiableClass
@@ -58,8 +60,13 @@ public final class DrivingUtils {
   private static double pitchVelocityDPS = 0;
   private static double accelXMPSsq = 0;
   private static double accelYMPSsq = 0;
-  private static Pose2d currentPose = Pose2d.kZero;
-  private static ChassisSpeeds currentSpeeds = new ChassisSpeeds();
+  @Getter private static AtomicReference<Pose2d> currentPose = new AtomicReference<>(Pose2d.kZero);
+  private static AtomicReference<ChassisSpeeds> currentSpeeds =
+      new AtomicReference<>(new ChassisSpeeds());
+
+  public static boolean isTilted() {
+    return Math.hypot(rollDegrees, pitchDegrees) > 5;
+  }
 
   /**
    * Updates the data held by the driving safety from the robot's IMU.
@@ -150,10 +157,10 @@ public final class DrivingUtils {
    * @param currentSpeedsRobotRelative The robot's last known speeds.
    */
   public static void updateOdometry(Pose2d currentPose, ChassisSpeeds currentSpeedsRobotRelative) {
-    DrivingUtils.currentPose = currentPose;
-    DrivingUtils.currentSpeeds =
+    DrivingUtils.currentPose.set(currentPose);
+    DrivingUtils.currentSpeeds.set(
         ChassisSpeeds.fromRobotRelativeSpeeds(
-            currentSpeedsRobotRelative, currentPose.getRotation());
+            currentSpeedsRobotRelative, currentPose.getRotation()));
   }
 
   /**
@@ -163,6 +170,9 @@ public final class DrivingUtils {
    * @return The pose of the robot in {@code lookaheadPeriod} seconds.
    */
   public static Pose2d estimateFuturePose(final double lookaheadPeriod) {
+    final Pose2d currentPose = DrivingUtils.currentPose.get();
+    final ChassisSpeeds currentSpeeds = DrivingUtils.currentSpeeds.get();
+
     final Translation2d translationRate =
         new Translation2d(
             currentSpeeds.vxMetersPerSecond + accelXMPSsq * lookaheadPeriod,
