@@ -3,7 +3,10 @@ package com.frc6324.robot2026.subsystems.drive;
 import static edu.wpi.first.units.Units.*;
 
 import com.frc6324.lib.UninstantiableClass;
+import com.frc6324.lib.util.Statics;
 import com.frc6324.robot2026.generated.TunerConstants;
+import com.pathplanner.lib.config.ModuleConfig;
+import com.pathplanner.lib.config.RobotConfig;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.*;
@@ -11,6 +14,7 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.*;
+import edu.wpi.first.wpilibj.DriverStation;
 import org.ironmaple.simulation.drivesims.COTS;
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
@@ -21,7 +25,7 @@ public final class DrivetrainConstants {
     throw new IllegalAccessError();
   }
 
-  public static final double ODOMETRY_UPDATE_FREQUENCY = 500;
+  public static final double ODOMETRY_UPDATE_FREQUENCY = 250;
   // Lower the odometry frequency for sim so that a laptop doesn't explode
   public static final int SIMULATION_TICKS_PER_LOOP = 5;
 
@@ -64,6 +68,27 @@ public final class DrivetrainConstants {
                   Inches.of(2),
                   KilogramSquareMeters.of(0.1),
                   WHEEL_COF));
+
+  public static final RobotConfig PATHPLANNER_CONFIG =
+      Statics.initOrDefault(
+          RobotConfig::fromGUISettings,
+          () ->
+              new RobotConfig(
+                  ROBOT_MASS,
+                  ROBOT_MOI,
+                  new ModuleConfig(
+                      Inches.of(2),
+                      TunerConstants.kSpeedAt12Volts,
+                      WHEEL_COF,
+                      DCMotor.getKrakenX60Foc(1),
+                      TunerConstants.FrontLeft.DriveMotorInitialConfigs.CurrentLimits
+                          .getStatorCurrentLimitMeasure(),
+                      1),
+                  MODULE_TRANSLATIONS),
+          (e) ->
+              DriverStation.reportError(
+                  "Failed to load settings from PathPlanner GUI: " + e.getMessage(),
+                  e.getStackTrace()));
 
   // Set sim to start in the field to prevent wall collisions
   public static final Pose2d SIM_STARTING_POSE = new Pose2d(3, 3, Rotation2d.kZero);

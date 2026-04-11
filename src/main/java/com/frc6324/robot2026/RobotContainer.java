@@ -25,8 +25,8 @@ import com.frc6324.robot2026.commands.AutoCommands.AllianceSide;
 import com.frc6324.robot2026.commands.DriveCommands;
 import com.frc6324.robot2026.commands.ShooterCommands;
 import com.frc6324.robot2026.commands.ShooterCommands.*;
+import com.frc6324.robot2026.generated.TunerConstants;
 import com.frc6324.robot2026.subsystems.drive.*;
-import com.frc6324.robot2026.subsystems.drive.DriveIO.DriveIOReplay;
 import com.frc6324.robot2026.subsystems.indexer.*;
 import com.frc6324.robot2026.subsystems.intake.*;
 import com.frc6324.robot2026.subsystems.leds.LEDs;
@@ -70,8 +70,14 @@ public class RobotContainer {
 
     switch (Constants.CURRENT_MODE) {
       case REAL -> {
-        final DriveIOCTRE driveIO = new DriveIOCTRE();
-        drive = new SwerveDrive(driveIO);
+        drive =
+            new SwerveDrive(
+                new CANBusIOCTRE(TunerConstants.kCANBus),
+                new GyroIOPigeon2(),
+                new ModuleIOTalonFX(TunerConstants.FrontLeft),
+                new ModuleIOTalonFX(TunerConstants.FrontRight),
+                new ModuleIOTalonFX(TunerConstants.BackLeft),
+                new ModuleIOTalonFX(TunerConstants.BackRight));
 
         intake = new Intake(new IntakeIOTalonFX());
         apriltag =
@@ -85,8 +91,14 @@ public class RobotContainer {
         shooter = new Shooter(new ShooterIOTalonFX());
       }
       case SIM -> {
-        final DriveIOSim driveIO = new DriveIOSim();
-        drive = new SwerveDrive(driveIO);
+        drive =
+            new SwerveDrive(
+                IOLayer::replay,
+                new GyroIOSim(),
+                new ModuleIOSim(TunerConstants.FrontLeft),
+                new ModuleIOSim(TunerConstants.FrontRight),
+                new ModuleIOSim(TunerConstants.BackLeft),
+                new ModuleIOSim(TunerConstants.BackRight));
 
         apriltag =
             new AprilTagVision(
@@ -97,7 +109,14 @@ public class RobotContainer {
         shooter = new Shooter(new ShooterIOSim());
       }
       default -> {
-        drive = new SwerveDrive(new DriveIOReplay());
+        drive =
+            new SwerveDrive(
+                IOLayer::replay,
+                IOLayer::replay,
+                IOLayer::replay,
+                IOLayer::replay,
+                IOLayer::replay,
+                IOLayer::replay);
 
         apriltag = new AprilTagVision(IOLayer::replay, IOLayer::replay, IOLayer::replay);
         indexer = new Indexer(IOLayer::replay);

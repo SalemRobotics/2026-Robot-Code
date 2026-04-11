@@ -15,20 +15,21 @@
  */
 package com.frc6324.lib.util;
 
-import com.frc6324.lib.UninstantiableClass;
 import org.jetbrains.annotations.Contract;
 
 /**
- * A utility class for interacting with I/O interfaces that are annotated with {@link
- * java.lang.FunctionalInterface FunctionalInterface}.
+ * A generic interface representing the raw input methods of an I/O layer.
+ *
+ * <p>Also provides static methods for working with interfaces that extend this.
  */
-@UninstantiableClass
-public final class IOLayer {
-  @Contract(" -> fail")
-  private IOLayer() {
-    // Throw an Error since this means a reflection attack took place.
-    throw new IllegalAccessError();
-  }
+@FunctionalInterface
+public interface IOLayer<T> {
+  /**
+   * Updates this I/O layer's set of loggable inputs.
+   *
+   * @param inputs The inputs to modify.
+   */
+  void updateInputs(T inputs);
 
   /**
    * A replay implementation for an I/O layer. This only works if the I/O interface is a {@link

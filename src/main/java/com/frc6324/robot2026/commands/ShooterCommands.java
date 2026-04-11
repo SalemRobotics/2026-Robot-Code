@@ -2,9 +2,7 @@ package com.frc6324.robot2026.commands;
 
 import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.SHOOTER_POSITION;
 
-import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.frc6324.lib.UninstantiableClass;
-import com.frc6324.lib.util.AllianceFlipUtil;
 import com.frc6324.lib.util.Allocated;
 import com.frc6324.lib.util.FieldConstants;
 import com.frc6324.lib.util.FieldConstants.LinesVertical;
@@ -19,10 +17,12 @@ import com.frc6324.robot2026.subsystems.leds.LEDs.LEDState;
 import com.frc6324.robot2026.subsystems.rollers.Rollers;
 import com.frc6324.robot2026.subsystems.shooter.Shooter;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -173,12 +173,13 @@ public final class ShooterCommands {
     protected final Shooter shooter;
     protected final String logKey;
 
-    protected SwerveRequest.FieldCentricFacingAngle request =
-        new SwerveRequest.FieldCentricFacingAngle()
-            .withDriveRequestType(SwerveDrive.DRIVE_REQUEST)
-            .withSteerRequestType(SwerveDrive.STEER_REQUEST)
-            .withHeadingPID(DriveCommands.POINTING_KP, 0, DriveCommands.POINTING_KD)
-            .withDesaturateWheelSpeeds(true);
+    protected final ChassisSpeeds driveSpeeds = new ChassisSpeeds();
+    private final ProfiledPIDController steerController =
+        new ProfiledPIDController(
+            DriveCommands.POINTING_KP,
+            0,
+            DriveCommands.POINTING_KD,
+            DriveCommands.POINTING_CONSTRAINTS);
 
     private boolean kickerRunning = false;
     private boolean sendingIntakeOut = false;
@@ -227,7 +228,13 @@ public final class ShooterCommands {
       final Rotation2d facing = delta.getAngle();
 
       applyDriverInput();
-      drive.setControl(request.withTargetDirection(AllianceFlipUtil.apply(facing)));
+
+      final Rotation2d error = facing.minus(robotPose.getRotation());
+      final double omega = steerController.calculate(error.getRadians());
+      driveSpeeds.omegaRadiansPerSecond = omega;
+
+      // Send the velocity to the drivetrain
+      drive.runVelocity(driveSpeeds);
 
       // Command the shooter
       final double distance = delta.getNorm();
@@ -384,10 +391,10 @@ public final class ShooterCommands {
     @Override
     protected void applyDriverInput() {
       Translation2d velocity = DriveCommands.getLinearVelocityFromJoysticks(controller);
-      velocity = velocity.times(SwerveDrive.getMaxLinearSpeed() / 3);
+      velocity = velocity.times(SwerveDrive.getMaxLinearSpeedMetersPerSec() / 3);
 
-      request.VelocityX = velocity.getX();
-      request.VelocityY = velocity.getY();
+      driveSpeeds.vxMetersPerSecond = velocity.getX();
+      driveSpeeds.vyMetersPerSecond = velocity.getY();
     }
   }
 
@@ -410,10 +417,10 @@ public final class ShooterCommands {
     @Override
     protected void applyDriverInput() {
       Translation2d velocity = DriveCommands.getLinearVelocityFromJoysticks(controller);
-      velocity = velocity.times(SwerveDrive.getMaxLinearSpeed() / 1.5);
+      velocity = velocity.times(SwerveDrive.getMaxLinearSpeedMetersPerSec() / 1.5);
 
-      request.VelocityX = velocity.getX();
-      request.VelocityY = velocity.getY();
+      driveSpeeds.vxMetersPerSecond = velocity.getX();
+      driveSpeeds.vyMetersPerSecond = velocity.getY();
     }
 
     @Override

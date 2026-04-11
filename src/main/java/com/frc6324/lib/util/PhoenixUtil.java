@@ -12,6 +12,7 @@ import static edu.wpi.first.units.Units.Hertz;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignalCollection;
+import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.frc6324.lib.UninstantiableClass;
 import com.frc6324.robot2026.Constants;
@@ -27,6 +28,19 @@ public final class PhoenixUtil {
 
   private static final Frequency SIGNAL_FREQUENCY = Hertz.of(100);
   private static final StatusSignalCollection canivoreSignals = new StatusSignalCollection();
+
+  public static double averageTimestamp(BaseStatusSignal... signals) {
+    if (signals.length == 0) {
+      return 0;
+    }
+
+    double total = 0;
+    for (final BaseStatusSignal signal : signals) {
+      total += signal.getTimestamp().getTime();
+    }
+
+    return Utils.currentTimeToFPGATime(total / signals.length);
+  }
 
   /** Attempts to run the command until no error is produced. */
   public static void tryUntilOk(int maxAttempts, Supplier<StatusCode> command, String message) {
