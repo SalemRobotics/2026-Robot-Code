@@ -1,123 +1,154 @@
 package com.frc6324.robot2026.subsystems.shooter;
 
-import static com.frc6324.lib.util.PhoenixUtil.tryUntilOk;
-import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.*;
-import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.FlywheelConstants.*;
+import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.AcceleratorConstants.*;
+import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.DrumConstants.*;
 import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.HoodConstants.*;
+import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.SHOOTER_CAN_BUS;
 import static edu.wpi.first.units.Units.Hertz;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
+import com.ctre.phoenix6.StatusSignalCollection;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.StrictFollower;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
-import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.InvertedValue;
 import com.frc6324.lib.util.PhoenixUtil;
-import edu.wpi.first.units.measure.*;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Voltage;
 
 public class ShooterIOTalonFX implements ShooterIO {
+  protected final TalonFX acceleratorTalon = new TalonFX(ACCELERATOR_MOTOR_ID, SHOOTER_CAN_BUS);
+  protected final TalonFX drumLeader = new TalonFX(DRUM_LEADER_ID, SHOOTER_CAN_BUS);
+  private final TalonFX[] drumFollowers = new TalonFX[DRUM_FOLLOWER_DIRECTIONS.length];
   protected final TalonFX hoodTalon = new TalonFX(HOOD_MOTOR_ID, SHOOTER_CAN_BUS);
-  protected final TalonFX flywheelLeader = new TalonFX(FLYWHEEL_LEADER_ID, SHOOTER_CAN_BUS);
-  protected final TalonFX flywheelFollower = new TalonFX(FLYWHEEL_FOLLOWER_ID, SHOOTER_CAN_BUS);
 
-  // Control requests (have higher update frequencies to make PID smoother-ish and stick faster to )
-  private final PositionTorqueCurrentFOC hoodRequest =
-      new PositionTorqueCurrentFOC(0)
-          .withSlot(0)
-          .withUpdateFreqHz(Hertz.of(500))
-          .withUseTimesync(true);
+  private final StatusSignal<AngularVelocity> acceleratorVelocity = acceleratorTalon.getVelocity();
+  private final StatusSignal<Voltage> acceleratorMotorVoltage = acceleratorTalon.getMotorVoltage();
+  private final StatusSignal<Current> acceleratorStatorCurrent =
+      acceleratorTalon.getStatorCurrent();
 
-  private final VelocityTorqueCurrentFOC flywheelRequest =
-      new VelocityTorqueCurrentFOC(0)
-          .withSlot(0)
-          .withUpdateFreqHz(Hertz.of(1000))
-          .withUseTimesync(true);
+  private final StatusSignal<AngularVelocity> drumVelocity = drumLeader.getVelocity();
+  private final StatusSignal<Voltage> drumMotorVoltage = drumLeader.getMotorVoltage();
+  private final StatusSignal<Current> drumStatorCurrent = drumLeader.getStatorCurrent();
 
-  private final Follower followerRequest =
-      new Follower(FLYWHEEL_LEADER_ID, FLYWHEEL_MOTOR_ALIGNMENT).withUpdateFreqHz(Hertz.of(1000));
+  private final StatusSignalCollection[] followerSignalCollections =
+      new StatusSignalCollection[drumFollowers.length];
 
   private final StatusSignal<Angle> hoodPosition = hoodTalon.getPosition();
-  private final StatusSignal<AngularVelocity> hoodVelocity = hoodTalon.getVelocity();
   private final StatusSignal<Voltage> hoodMotorVoltage = hoodTalon.getMotorVoltage();
   private final StatusSignal<Current> hoodStatorCurrent = hoodTalon.getStatorCurrent();
-  private final BaseStatusSignal[] hoodSignals = {
-    hoodPosition, hoodVelocity, hoodMotorVoltage, hoodStatorCurrent
-  };
 
-  private final StatusSignal<AngularVelocity> flywheelVelocity = flywheelLeader.getVelocity();
-  private final StatusSignal<Voltage> flywheelMotorVoltage = flywheelLeader.getMotorVoltage();
-  private final StatusSignal<Current> flywheelStatorCurrent = flywheelLeader.getStatorCurrent();
-  private final BaseStatusSignal[] flywheelLeaderSignals = {
-    flywheelVelocity, flywheelMotorVoltage, flywheelStatorCurrent,
-  };
+  private final PositionVoltage hoodRequest =
+      new PositionVoltage(0)
+          .withEnableFOC(true)
+          .withOverrideBrakeDurNeutral(true)
+          .withUseTimesync(true)
+          .withSlot(0);
+  private final VelocityTorqueCurrentFOC drumLeaderRequest =
+      new VelocityTorqueCurrentFOC(0)
+          .withOverrideCoastDurNeutral(true)
+          .withUpdateFreqHz(Hertz.of(1000))
+          .withUseTimesync(true)
+          .withSlot(0);
+  private final VelocityTorqueCurrentFOC acceleratorRequest =
+      new VelocityTorqueCurrentFOC(0)
+          .withOverrideCoastDurNeutral(true)
+          .withUseTimesync(true)
+          .withSlot(0);
+  private final StrictFollower followerRequest =
+      new StrictFollower(DRUM_LEADER_ID).withUpdateFreqHz(drumLeaderRequest.UpdateFreqHz);
 
-  private final StatusSignal<AngularVelocity> flywheelFollowerVelocity =
-      flywheelFollower.getVelocity();
-  private final StatusSignal<Voltage> flywheelFollowerMotorVoltage =
-      flywheelFollower.getMotorVoltage();
-  private final StatusSignal<Current> flywheelFollowerStatorCurrent =
-      flywheelFollower.getStatorCurrent();
-  private final BaseStatusSignal[] flywheelFollowerSignals = {
-    flywheelFollowerVelocity, flywheelFollowerMotorVoltage, flywheelFollowerStatorCurrent,
-  };
-
+  @SuppressWarnings("resource")
   public ShooterIOTalonFX() {
-    tryUntilOk(5, () -> hoodTalon.getConfigurator().apply(HOOD_MOTOR_CONFIG));
+    PhoenixUtil.tryUntilOk(
+        5, () -> acceleratorTalon.getConfigurator().apply(ACCELERATOR_MOTOR_CONFIG));
+    PhoenixUtil.tryUntilOk(5, () -> hoodTalon.getConfigurator().apply(HOOD_MOTOR_CONFIG));
 
-    // Apply the config to the leader
-    tryUntilOk(5, () -> flywheelLeader.getConfigurator().apply(FLYWHEEL_MOTOR_CONFIG));
+    // Set output signals to 1KHz for followers
+    drumLeader.getMotorVoltage().setUpdateFrequency(Hertz.of(1000));
+    drumLeader.getTorqueCurrent().setUpdateFrequency(Hertz.of(1000));
 
-    // Invert the config & apply to the follower
-    FLYWHEEL_MOTOR_CONFIG.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-    tryUntilOk(5, () -> flywheelFollower.getConfigurator().apply(FLYWHEEL_MOTOR_CONFIG));
+    PhoenixUtil.tryUntilOk(5, () -> drumLeader.getConfigurator().apply(DRUM_MOTOR_CONFIG));
 
-    PhoenixUtil.addSignals(hoodTalon, hoodSignals);
-    PhoenixUtil.addSignals(flywheelLeader, flywheelLeaderSignals);
-    PhoenixUtil.addSignals(flywheelFollower, flywheelFollowerSignals);
-    ParentDevice.optimizeBusUtilizationForAll(0, hoodTalon, flywheelLeader, flywheelFollower);
+    for (int i = 0; i < drumFollowers.length; i++) {
+      // talon isn't actually leaked here but java likes to complain :/
+      final TalonFX talon = new TalonFX(DRUM_MOTOR_IDS[i], SHOOTER_CAN_BUS);
+
+      final TalonFXConfiguration config = DRUM_MOTOR_CONFIG;
+      config.MotorOutput.Inverted = DRUM_FOLLOWER_DIRECTIONS[i];
+
+      PhoenixUtil.tryUntilOk(5, () -> talon.getConfigurator().apply(config));
+      PhoenixUtil.tryUntilOk(5, () -> talon.setControl(followerRequest));
+
+      drumFollowers[i] = talon;
+      final StatusSignalCollection signals =
+          new StatusSignalCollection(talon.getMotorVoltage(), talon.getStatorCurrent());
+      followerSignalCollections[i] = signals;
+
+      signals.setUpdateFrequencyForAll(Hertz.of(100));
+      talon.optimizeBusUtilization();
+    }
   }
 
   @Override
-  public void coastFlywheel() {
-    flywheelLeader.stopMotor();
-    flywheelFollower.stopMotor();
+  public void coastDrum() {
+    drumLeader.stopMotor();
   }
 
   @Override
-  public void setFlywheelVelocity(AngularVelocity velocity, int slot) {
-    flywheelLeader.setControl(flywheelRequest.withVelocity(velocity).withSlot(slot));
-    flywheelFollower.setControl(followerRequest);
+  public void setAcceleratorVelocity(AngularVelocity velocity) {
+    acceleratorTalon.setControl(acceleratorRequest.withVelocity(velocity));
   }
 
   @Override
-  public void setHoodAngle(Angle angle) {
-    hoodTalon.setControl(hoodRequest.withPosition(angle));
+  public void setDrumVelocity(AngularVelocity velocity, int slot) {
+    drumLeader.setControl(drumLeaderRequest.withVelocity(velocity).withSlot(slot));
   }
 
   @Override
-  public void stopHoodMotor() {
-    hoodTalon.stopMotor();
+  public void setHoodPosition(Angle position) {
+    hoodTalon.setControl(hoodRequest.withPosition(position).withSlot(HOOD_MOTOR_ID));
+  }
+
+  @Override
+  public void stopAcceleratorMotor() {
+    acceleratorTalon.stopMotor();
   }
 
   @Override
   public void updateInputs(ShooterInputs inputs) {
-    inputs.hoodConnected = BaseStatusSignal.isAllGood(hoodSignals);
-    inputs.flywheelLeaderConnected = BaseStatusSignal.isAllGood(flywheelLeaderSignals);
-    inputs.flywheelFollowerConnected = BaseStatusSignal.isAllGood(flywheelFollowerSignals);
+    inputs.acceleratorConnected =
+        BaseStatusSignal.refreshAll(
+                acceleratorVelocity, acceleratorMotorVoltage, acceleratorStatorCurrent)
+            .isOK();
+    inputs.acceleratorVelocity = acceleratorVelocity.getValue();
+    inputs.acceleratorMotorVoltage = acceleratorMotorVoltage.getValue();
+    inputs.acceleratorStatorCurrent = acceleratorStatorCurrent.getValue();
 
+    inputs.hoodConnected =
+        BaseStatusSignal.refreshAll(hoodPosition, hoodMotorVoltage, hoodStatorCurrent).isOK();
     inputs.hoodPosition = hoodPosition.getValue();
-    inputs.hoodVelocity = hoodVelocity.getValue();
     inputs.hoodMotorVoltage = hoodMotorVoltage.getValue();
     inputs.hoodStatorCurrent = hoodStatorCurrent.getValue();
 
-    inputs.flywheelLeaderVelocity = flywheelVelocity.getValue();
-    inputs.flywheelLeaderMotorVoltage = flywheelMotorVoltage.getValue();
-    inputs.flywheelLeaderStatorCurrent = flywheelStatorCurrent.getValue();
+    inputs.drumMotorsConnected = new boolean[4];
 
-    inputs.flywheelFollowerVelocity = flywheelFollowerVelocity.getValue();
-    inputs.flywheelFollowerMotorVoltage = flywheelFollowerMotorVoltage.getValue();
-    inputs.flywheelFollowerStatorCurrent = flywheelFollowerStatorCurrent.getValue();
+    inputs.drumMotorsConnected[0] =
+        BaseStatusSignal.refreshAll(drumVelocity, drumMotorVoltage, drumStatorCurrent).isOK();
+    inputs.drumVelocity = drumVelocity.getValue();
+    inputs.drumMotorVoltages[0] = drumMotorVoltage.getValueAsDouble();
+    inputs.drumStatorCurrents[0] = drumStatorCurrent.getValueAsDouble();
+    for (int i = 0; i < drumFollowers.length; i++) {
+      final int motor = i + 1;
+      final TalonFX talon = drumFollowers[i];
+
+      inputs.drumMotorsConnected[motor] = followerSignalCollections[i].refreshAll().isOK();
+      inputs.drumMotorVoltages[motor] = talon.getMotorVoltage().getValueAsDouble();
+      inputs.drumStatorCurrents[motor] = talon.getStatorCurrent().getValueAsDouble();
+    }
   }
 }

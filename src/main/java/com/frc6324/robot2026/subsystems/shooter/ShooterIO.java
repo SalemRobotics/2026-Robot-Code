@@ -7,33 +7,34 @@ import org.littletonrobotics.junction.AutoLog;
 
 @FunctionalInterface
 public interface ShooterIO {
-  default void coastFlywheel() {}
+  default void coastDrum() {}
 
-  default void setFlywheelVelocity(AngularVelocity velocity, int slot) {}
+  default void setAcceleratorVelocity(AngularVelocity velocity) {}
 
-  default void setHoodAngle(Angle angle) {}
+  default void setDrumVelocity(AngularVelocity velocity, int slot) {}
 
-  default void stopHoodMotor() {}
+  default void setHoodPosition(Angle position) {}
+
+  default void stopAcceleratorMotor() {}
 
   void updateInputs(ShooterInputs inputs);
 
   @AutoLog
   public class ShooterInputs {
     public boolean hoodConnected = false;
-    public boolean flywheelLeaderConnected = false;
-    public boolean flywheelFollowerConnected = false;
+    public boolean acceleratorConnected = false;
+    public boolean[] drumMotorsConnected = new boolean[] {false, false, false, false};
 
     public Angle hoodPosition = Rotations.zero();
-    public AngularVelocity hoodVelocity = RotationsPerSecond.zero();
     public Voltage hoodMotorVoltage = Volts.zero();
     public Current hoodStatorCurrent = Amps.zero();
 
-    public AngularVelocity flywheelLeaderVelocity = RotationsPerSecond.zero();
-    public Voltage flywheelLeaderMotorVoltage = Volts.zero();
-    public Current flywheelLeaderStatorCurrent = Amps.zero();
+    public AngularVelocity acceleratorVelocity = RPM.zero();
+    public Voltage acceleratorMotorVoltage = Volts.zero();
+    public Current acceleratorStatorCurrent = Amps.zero();
 
-    public AngularVelocity flywheelFollowerVelocity = RotationsPerSecond.zero();
-    public Voltage flywheelFollowerMotorVoltage = Volts.zero();
-    public Current flywheelFollowerStatorCurrent = Amps.zero();
+    public AngularVelocity drumVelocity = RPM.zero();
+    public double[] drumMotorVoltages = new double[] {0, 0, 0, 0};
+    public double[] drumStatorCurrents = new double[] {0, 0, 0, 0};
   }
 }

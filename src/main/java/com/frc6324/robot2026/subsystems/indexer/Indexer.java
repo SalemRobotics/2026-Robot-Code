@@ -28,11 +28,11 @@ public final class Indexer extends SubsystemBase {
   }
 
   public void runIndexerWheel() {
-    final AngularVelocity addition = INDEXER_SPINNER_SHAKE_ADDITION.times(Math.random());
-    final AngularVelocity velocity = INDEXER_SPINNER_VELOCITY.plus(addition);
+    final AngularVelocity addition = INDEXER_BELT_SHAKE_ADDITION.times(Math.random());
+    final AngularVelocity velocity = INDEXER_BELT_VELOCITY.plus(addition);
 
     Logger.recordOutput("Indexer/SpinnerVelocitySetpoint", velocity);
-    motorsIO.setSpinnerVelocity(velocity);
+    motorsIO.setBeltVelocity(velocity);
   }
 
   public void runKickerWheel() {
@@ -41,7 +41,7 @@ public final class Indexer extends SubsystemBase {
 
   public void stopIndexerWheel() {
     Logger.recordOutput("Indexer/SpinnerVelocitySetpoint", RPM.zero());
-    motorsIO.stopSpinner();
+    motorsIO.stopBelt();
   }
 
   public void stopKickerWheel() {

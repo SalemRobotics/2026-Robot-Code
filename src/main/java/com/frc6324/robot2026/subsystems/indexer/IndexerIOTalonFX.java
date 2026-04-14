@@ -14,7 +14,7 @@ import com.frc6324.lib.util.PhoenixUtil;
 import edu.wpi.first.units.measure.*;
 
 public class IndexerIOTalonFX implements IndexerIO {
-  protected final TalonFX spinner = new TalonFX(INDEXER_SPINNER_MOTOR_ID, INDEXER_CAN_BUS);
+  protected final TalonFX belt = new TalonFX(INDEXER_BELT_MOTOR_ID, INDEXER_CAN_BUS);
   protected final TalonFX kicker = new TalonFX(INDEXER_FEEDER_MOTOR_ID, INDEXER_CAN_BUS);
 
   private final VelocityTorqueCurrentFOC kickerRequest =
@@ -31,24 +31,22 @@ public class IndexerIOTalonFX implements IndexerIO {
     kickerVelocity, kickerVoltage, kickerStatorCurrent,
   };
 
-  private final StatusSignal<AngularVelocity> spinnerVelocity = spinner.getVelocity();
-  private final StatusSignal<Voltage> spinnerVoltage = spinner.getMotorVoltage();
-  private final StatusSignal<Current> spinnerStatorCurrent = spinner.getStatorCurrent();
-  private final BaseStatusSignal[] spinnerSignals = {
-    spinnerVelocity, spinnerVoltage, spinnerStatorCurrent,
+  private final StatusSignal<AngularVelocity> beltVelocity = belt.getVelocity();
+  private final StatusSignal<Voltage> beltVoltage = belt.getMotorVoltage();
+  private final StatusSignal<Current> beltStatorCurrent = belt.getStatorCurrent();
+  private final BaseStatusSignal[] beltSignals = {
+    beltVelocity, beltVoltage, beltStatorCurrent,
   };
 
   public IndexerIOTalonFX() {
     PhoenixUtil.addSignals(kicker, kickerSignals);
-    PhoenixUtil.addSignals(spinner, spinnerSignals);
-    ParentDevice.optimizeBusUtilizationForAll(0, kicker, spinner);
-
-    spinner.setSafetyEnabled(false);
+    PhoenixUtil.addSignals(belt, beltSignals);
+    ParentDevice.optimizeBusUtilizationForAll(0, kicker, belt);
 
     tryUntilOk(5, () -> kicker.getConfigurator().apply(INDEXER_KICKER_CONFIG));
     tryUntilOk(5, () -> kicker.setNeutralMode(NeutralModeValue.Brake));
-    tryUntilOk(5, () -> spinner.getConfigurator().apply(INDEXER_SPINNER_CONFIG));
-    tryUntilOk(5, () -> spinner.setNeutralMode(NeutralModeValue.Coast));
+    tryUntilOk(5, () -> belt.getConfigurator().apply(INDEXER_BELT_CONFIG));
+    tryUntilOk(5, () -> belt.setNeutralMode(NeutralModeValue.Coast));
   }
 
   @Override
@@ -57,8 +55,8 @@ public class IndexerIOTalonFX implements IndexerIO {
   }
 
   @Override
-  public void setSpinnerVelocity(AngularVelocity velocity) {
-    spinner.setControl(spinnerRequest.withVelocity(velocity));
+  public void setBeltVelocity(AngularVelocity velocity) {
+    belt.set(0.5);
   }
 
   @Override
@@ -67,8 +65,8 @@ public class IndexerIOTalonFX implements IndexerIO {
   }
 
   @Override
-  public void stopSpinner() {
-    spinner.stopMotor();
+  public void stopBelt() {
+    belt.stopMotor();
   }
 
   @Override
@@ -78,9 +76,9 @@ public class IndexerIOTalonFX implements IndexerIO {
     inputs.kickerMotorVoltage = kickerVoltage.getValue();
     inputs.kickerStatorCurrent = kickerStatorCurrent.getValue();
 
-    inputs.spinnerMotorConnected = BaseStatusSignal.isAllGood(spinnerSignals);
-    inputs.spinnerVelocity = spinnerVelocity.getValue();
-    inputs.spinnerMotorVoltage = spinnerVoltage.getValue();
-    inputs.spinnerStatorCurrent = spinnerStatorCurrent.getValue();
+    inputs.spinnerMotorConnected = BaseStatusSignal.isAllGood(beltSignals);
+    inputs.spinnerVelocity = beltVelocity.getValue();
+    inputs.spinnerMotorVoltage = beltVoltage.getValue();
+    inputs.spinnerStatorCurrent = beltStatorCurrent.getValue();
   }
 }

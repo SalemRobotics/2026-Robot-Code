@@ -16,18 +16,18 @@ public class IndexerIOSim extends IndexerIOTalonFX {
               INDEXER_KICKER_GEARBOX, INDEXER_KICKER_MOI, INDEXER_KICKER_REDUCTION),
           INDEXER_KICKER_GEARBOX);
 
-  private final TalonFXSimState spinnerSimState = spinner.getSimState();
+  private final TalonFXSimState spinnerSimState = belt.getSimState();
   private final FlywheelSim spinnerSimulation =
       new FlywheelSim(
           LinearSystemId.createFlywheelSystem(
-              INDEXER_SPINNER_GEARBOX, INDEXER_SPINNER_MOI, INDEXER_SPINNER_REDUCTION),
-          INDEXER_SPINNER_GEARBOX);
+              INDEXER_BELT_GEARBOX, INDEXER_BELT_MOI, INDEXER_BELT_REDUCTION),
+          INDEXER_BELT_GEARBOX);
 
   private final DeltaTimeCalculator deltaTime = new DeltaTimeCalculator();
 
   public IndexerIOSim() {
     kickerSimState.setMotorType(INDEXER_KICKER_MOTOR_TYPE);
-    spinnerSimState.setMotorType(INDEXER_SPINNER_MOTOR_TYPE);
+    spinnerSimState.setMotorType(INDEXER_BELT_MOTOR_TYPE);
   }
 
   @Override

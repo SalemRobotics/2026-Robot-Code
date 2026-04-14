@@ -1,7 +1,5 @@
 package com.frc6324.robot2026.commands;
 
-import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.SHOOTER_POSITION;
-
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.frc6324.lib.UninstantiableClass;
 import com.frc6324.lib.util.AllianceFlipUtil;
@@ -219,12 +217,12 @@ public final class ShooterCommands {
     public void execute() {
       // Get the robot and shooter's positions
       final Pose2d robotPose = drive.getPose();
-      final Pose2d shooterPosition = robotPose.transformBy(SHOOTER_POSITION);
 
       // Calculate the linear distance to the target
       final Translation2d target = getTarget();
-      final Translation2d delta = target.minus(shooterPosition.getTranslation());
-      final Rotation2d facing = delta.getAngle();
+      final Translation2d delta = target.minus(robotPose.getTranslation());
+
+      final Rotation2d facing = delta.getAngle().plus(Rotation2d.k180deg);
 
       applyDriverInput();
       drive.setControl(request.withTargetDirection(AllianceFlipUtil.apply(facing)));

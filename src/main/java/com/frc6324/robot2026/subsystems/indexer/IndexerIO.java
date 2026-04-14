@@ -9,11 +9,11 @@ import org.littletonrobotics.junction.AutoLog;
 public interface IndexerIO {
   default void setKickerVelocity(AngularVelocity velocity) {}
 
-  default void setSpinnerVelocity(AngularVelocity velocity) {}
+  default void setBeltVelocity(AngularVelocity velocity) {}
 
   default void stopKicker() {}
 
-  default void stopSpinner() {}
+  default void stopBelt() {}
 
   void updateInputs(IndexerInputs inputs);
 

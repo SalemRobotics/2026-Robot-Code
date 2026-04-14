@@ -7,7 +7,7 @@ import com.frc6324.lib.util.CommonUtils;
 import com.frc6324.robot2026.subsystems.drive.DrivetrainConstants;
 import com.frc6324.robot2026.subsystems.intake.IntakeConstants;
 import com.frc6324.robot2026.subsystems.shooter.ShooterConstants;
-import com.frc6324.robot2026.subsystems.shooter.ShooterConstants.FlywheelConstants;
+import com.frc6324.robot2026.subsystems.shooter.ShooterConstants.DrumConstants;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -163,8 +163,8 @@ public final class MapleSimManager {
 
         final LinearVelocity fuelVelocity =
             shooterSpeed
-                .getVelocity(FlywheelConstants.FLYWHEEL_RADIUS)
-                .times(FlywheelConstants.FLYWHEEL_EFFICIENCY);
+                .getVelocity(DrumConstants.DRUM_RADIUS)
+                .times(DrumConstants.DRUM_EFFICIENCY);
 
         final FlyingFuelSimulation fuel =
             new FlyingFuelSimulation(
@@ -174,7 +174,7 @@ public final class MapleSimManager {
                 driveSimulation.getDriveTrainSimulatedChassisSpeedsFieldRelative(),
                 shooterAngle,
                 fuelVelocity,
-                FlywheelConstants.FLYWHEEL_BACKSPIN_EFFICIENCY);
+                DrumConstants.DRUM_BACKSPIN_EFFICIENCY);
 
         arena.addFuelProjectile(fuel);
 

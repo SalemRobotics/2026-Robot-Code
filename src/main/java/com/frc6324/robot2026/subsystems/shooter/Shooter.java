@@ -2,7 +2,7 @@ package com.frc6324.robot2026.subsystems.shooter;
 
 import static com.frc6324.lib.util.CommonUtils.NINETY_DEGREES;
 import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.*;
-import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.FlywheelConstants.*;
+import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.DrumConstants.*;
 import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.HoodConstants.*;
 import static edu.wpi.first.units.Units.*;
 
@@ -45,8 +45,8 @@ public final class Shooter extends SubsystemBase {
   public void pass(double distanceToZone) {
     setHoodAngle(HOOD_MAX_ANGLE);
 
-    AngularVelocity targetVelocity = PASSING_FLYWHEEL_VELOCITY_MAP.get(distanceToZone);
-    setFlywheelVelocity(targetVelocity, FLYWHEEL_SHOOTING_SLOT);
+    AngularVelocity targetVelocity = PASSING_VELOCITY_MAP.get(distanceToZone);
+    setFlywheelVelocity(targetVelocity, DRUM_SHOOTING_SLOT);
   }
 
   @Override
@@ -54,7 +54,7 @@ public final class Shooter extends SubsystemBase {
     io.updateInputs(inputs);
     Logger.processInputs("Shooter", inputs);
 
-    hoodAtSetpoint = inputs.hoodPosition.isNear(hoodSetpoint, HOOD_TOLERANCE);
+    hoodAtSetpoint = inputs.hoodPosition.isNear(hoodSetpoint, HOOD_POSITION_TOLERANCE);
 
     Logger.recordOutput("Shooter/Hood Setpoint", hoodSetpoint);
     Logger.recordOutput("Shooter/Hood At Setpoint", hoodAtSetpoint);
@@ -69,7 +69,8 @@ public final class Shooter extends SubsystemBase {
    * @param velocity The velocity setpoint.
    */
   private void setFlywheelVelocity(AngularVelocity velocity, int slot) {
-    io.setFlywheelVelocity(velocity, slot);
+    io.setDrumVelocity(velocity, slot);
+    io.setAcceleratorVelocity(velocity);
     flywheelSetpoint = velocity;
   }
 
@@ -79,7 +80,7 @@ public final class Shooter extends SubsystemBase {
    * @param angle The hood setpoint.
    */
   private void setHoodAngle(Angle angle) {
-    io.setHoodAngle(angle);
+    io.setHoodPosition(angle);
     hoodSetpoint = angle;
   }
 
@@ -100,7 +101,7 @@ public final class Shooter extends SubsystemBase {
     MapleSimManager.getInstance()
         .setShooterState(
             translation.plus(HOOD_SIM_SHOOTING_OFFSET),
-            inputs.flywheelLeaderVelocity,
+            inputs.drumVelocity,
             NINETY_DEGREES.minus(inputs.hoodPosition));
   }
 
@@ -110,28 +111,34 @@ public final class Shooter extends SubsystemBase {
    * @param distanceToHub The distance from the robot to the hub.
    */
   public void shootIntoHub(double distanceToHub) {
-    Angle hoodAngle = HOOD_ANGLE_MAP.get(distanceToHub);
-    AngularVelocity targetVelocity = HUB_FLYWHEEL_VELOCITY_MAP.get(distanceToHub);
+    final HubShotParams params = HUB_SHOT_MAP.get(distanceToHub);
 
-    setHoodAngle(hoodAngle);
-    setFlywheelVelocity(targetVelocity, FLYWHEEL_SHOOTING_SLOT);
+    if (params == null) {
+      return;
+    }
+
+    setHoodAngle(params.hoodAngle());
+    setFlywheelVelocity(params.drumVelocity(), DRUM_SHOOTING_SLOT);
   }
 
   public void shootUpAgainstHub() {
     setHoodAngle(HOOD_STOW_ANGLE);
-    setFlywheelVelocity(FLYWHEEL_CLOSE_HUB_SHOT_SPEED, FLYWHEEL_SHOOTING_SLOT);
+    setFlywheelVelocity(DRUM_CLOSE_HUB_SHOT_SPEED, DRUM_SHOOTING_SLOT);
   }
 
   public void spinUpForHubShot(double distanceToHub) {
-    final Angle angle = HOOD_ANGLE_MAP.get(distanceToHub);
-    setHoodAngle(angle);
+    final HubShotParams params = HUB_SHOT_MAP.get(distanceToHub);
+    if (params == null) {
+      return;
+    }
 
-    setFlywheelVelocity(FLYWHEEL_IDLE_SPEED, FLYWHEEL_SPINUP_SLOT);
+    setHoodAngle(params.hoodAngle());
+    setFlywheelVelocity(DRUM_IDLE_SPEED, DRUM_SPINUP_SLOT);
   }
 
   /** Commands the flywheel to coast out to conserve battery voltage. */
   public void stopFlywheel() {
-    io.coastFlywheel();
+    io.coastDrum();
   }
 
   /** Commands the hood to stow when it isn't being used. */
