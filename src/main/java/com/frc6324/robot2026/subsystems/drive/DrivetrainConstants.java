@@ -6,6 +6,7 @@ import com.frc6324.lib.UninstantiableClass;
 import com.frc6324.robot2026.generated.TunerConstants;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -21,18 +22,16 @@ public final class DrivetrainConstants {
     throw new IllegalAccessError();
   }
 
-  public static final double ODOMETRY_UPDATE_FREQUENCY = 500;
-  // Lower the odometry frequency for sim so that a laptop doesn't explode
-  public static final int SIMULATION_TICKS_PER_LOOP = 5;
+  public static final double ODOMETRY_UPDATE_FREQUENCY = 250;
+  public static final int SIMULATION_TICKS_PER_LOOP = (int) (ODOMETRY_UPDATE_FREQUENCY / 50);
+  public static final Time ODOMETRY_PERIOD = Hertz.of(ODOMETRY_UPDATE_FREQUENCY).asPeriod();
 
   public static final Vector<N3> ODOMETRY_STDDEVS =
-      VecBuilder.fill(
-          Units.inchesToMeters(0.07), Units.inchesToMeters(0.07), Units.degreesToRadians(0.25));
+      VecBuilder.fill(0.002, 0.002, Units.degreesToRadians(0.25));
   public static final Vector<N3> DEFAULT_VISION_STDDEVS =
-      VecBuilder.fill(
-          Units.inchesToMeters(2), Units.inchesToMeters(2), Units.degreesToRadians(7.5));
-
+      VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(5));
   public static final String[] MODULE_NAMES = {"FrontLeft", "FrontRight", "BackLeft", "BackRight"};
+
   public static final Translation2d[] MODULE_TRANSLATIONS = {
     new Translation2d(TunerConstants.FrontLeft.LocationX, TunerConstants.FrontLeft.LocationY),
     new Translation2d(TunerConstants.FrontRight.LocationX, TunerConstants.FrontRight.LocationY),
@@ -65,8 +64,7 @@ public final class DrivetrainConstants {
                   KilogramSquareMeters.of(0.1),
                   WHEEL_COF));
 
-  // Set sim to start in the field to prevent wall collisions
-  public static final Pose2d SIM_STARTING_POSE = new Pose2d(3, 3, Rotation2d.kZero);
+  public static final Pose2d STARTING_POSE = new Pose2d(3, 3, Rotation2d.kZero);
 
   public static final double DRIVE_BASE_RADIUS =
       Math.max(
@@ -76,4 +74,9 @@ public final class DrivetrainConstants {
           Math.max(
               Math.hypot(TunerConstants.BackLeft.LocationX, TunerConstants.BackLeft.LocationY),
               Math.hypot(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY)));
+
+  public static final PIDController BLINE_TRANSLATION_CONTROLLER = new PIDController(1.5, 0, 0);
+  public static final PIDController BLINE_ROTATION_CONTROLLER = new PIDController(3, 0, 0);
+  public static final PIDController BLINE_CTE_CONTROLLER = new PIDController(3.5, 0, 0);
+  public static final Pose2d SIM_STARTING_POSE = new Pose2d(3, 3, Rotation2d.kZero);
 }
