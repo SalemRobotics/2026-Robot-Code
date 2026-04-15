@@ -22,7 +22,8 @@ public final class Shooter extends SubsystemBase {
 
   private Angle hoodSetpoint = Rotations.zero();
   private boolean hoodAtSetpoint = false;
-  private AngularVelocity flywheelSetpoint = RadiansPerSecond.zero();
+  private AngularVelocity drumSetpoint = RadiansPerSecond.zero();
+  private boolean drumAtSetpoint = false;
 
   /**
    * Creates a new shooter subsystem.
@@ -37,6 +38,10 @@ public final class Shooter extends SubsystemBase {
     return hoodAtSetpoint;
   }
 
+  public boolean drumAtSpeed() {
+    return drumAtSetpoint;
+  }
+
   /**
    * Commands the shooter to pass into this robot's alliance zone.
    *
@@ -46,7 +51,7 @@ public final class Shooter extends SubsystemBase {
     setHoodAngle(HOOD_MAX_ANGLE);
 
     AngularVelocity targetVelocity = PASSING_VELOCITY_MAP.get(distanceToZone);
-    setFlywheelVelocity(targetVelocity, DRUM_SHOOTING_SLOT);
+    setDrumVelocity(targetVelocity, DRUM_SHOOTING_SLOT);
   }
 
   @Override
@@ -55,10 +60,11 @@ public final class Shooter extends SubsystemBase {
     Logger.processInputs("Shooter", inputs);
 
     hoodAtSetpoint = inputs.hoodPosition.isNear(hoodSetpoint, HOOD_POSITION_TOLERANCE);
+    drumAtSetpoint = inputs.drumVelocity.isNear(drumSetpoint, DRUM_VELOCITY_TOLERANCE);
 
     Logger.recordOutput("Shooter/Hood Setpoint", hoodSetpoint);
     Logger.recordOutput("Shooter/Hood At Setpoint", hoodAtSetpoint);
-    Logger.recordOutput("Shooter/Flywheel Setpoint", flywheelSetpoint);
+    Logger.recordOutput("Shooter/Flywheel Setpoint", drumSetpoint);
 
     LoggedTracer.record("Shooter periodic");
   }
@@ -68,10 +74,10 @@ public final class Shooter extends SubsystemBase {
    *
    * @param velocity The velocity setpoint.
    */
-  private void setFlywheelVelocity(AngularVelocity velocity, int slot) {
+  private void setDrumVelocity(AngularVelocity velocity, int slot) {
     io.setDrumVelocity(velocity, slot);
     io.setAcceleratorVelocity(velocity);
-    flywheelSetpoint = velocity;
+    drumSetpoint = velocity;
   }
 
   /**
@@ -118,12 +124,12 @@ public final class Shooter extends SubsystemBase {
     }
 
     setHoodAngle(params.hoodAngle());
-    setFlywheelVelocity(params.drumVelocity(), DRUM_SHOOTING_SLOT);
+    setDrumVelocity(params.drumVelocity(), DRUM_SHOOTING_SLOT);
   }
 
   public void shootUpAgainstHub() {
     setHoodAngle(HOOD_STOW_ANGLE);
-    setFlywheelVelocity(DRUM_CLOSE_HUB_SHOT_SPEED, DRUM_SHOOTING_SLOT);
+    setDrumVelocity(DRUM_CLOSE_HUB_SHOT_SPEED, DRUM_SHOOTING_SLOT);
   }
 
   public void spinUpForHubShot(double distanceToHub) {
@@ -133,11 +139,15 @@ public final class Shooter extends SubsystemBase {
     }
 
     setHoodAngle(params.hoodAngle());
-    setFlywheelVelocity(DRUM_IDLE_SPEED, DRUM_SPINUP_SLOT);
+    setDrumVelocity(DRUM_IDLE_SPEED, DRUM_SPINUP_SLOT);
   }
 
-  /** Commands the flywheel to coast out to conserve battery voltage. */
-  public void stopFlywheel() {
+  public void stopAccelerators() {
+    io.stopAcceleratorMotor();
+  }
+
+  /** Commands the drum to coast out to conserve battery voltage. */
+  public void stopDrum() {
     io.coastDrum();
   }
 

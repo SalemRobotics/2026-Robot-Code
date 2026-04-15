@@ -1,0 +1,187 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 3.25,
+        "y": 5.6
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.911921708185054,
+        "y": 7.052953736654803
+      },
+      "isLocked": false,
+      "linkedName": "Trench Hub Score"
+    },
+    {
+      "anchor": {
+        "x": 3.6,
+        "y": 7.4
+      },
+      "prevControl": {
+        "x": 2.6,
+        "y": 7.4
+      },
+      "nextControl": {
+        "x": 4.6,
+        "y": 7.4
+      },
+      "isLocked": false,
+      "linkedName": "Trench Start"
+    },
+    {
+      "anchor": {
+        "x": 5.7,
+        "y": 7.3757295373665475
+      },
+      "prevControl": {
+        "x": 5.208267287319066,
+        "y": 7.3757295373665475
+      },
+      "nextControl": {
+        "x": 7.014780471875408,
+        "y": 7.3757295373665475
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 6.354863582443654,
+        "y": 5.751091340450771
+      },
+      "prevControl": {
+        "x": 6.935249193163233,
+        "y": 7.043768382508018
+      },
+      "nextControl": {
+        "x": 6.118161328588376,
+        "y": 5.223890865954923
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 5.849181494661923,
+        "y": 4.707449584816134
+      },
+      "prevControl": {
+        "x": 5.940818352305046,
+        "y": 5.275598102203481
+      },
+      "nextControl": {
+        "x": 5.795385527876631,
+        "y": 4.373914590747333
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 7.8073546856465015,
+        "y": 4.5568208778173185
+      },
+      "prevControl": {
+        "x": 7.333950177935943,
+        "y": 4.115693950177936
+      },
+      "nextControl": {
+        "x": 8.250202913114746,
+        "y": 4.969474907958182
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 7.6,
+        "y": 5.6
+      },
+      "prevControl": {
+        "x": 7.85,
+        "y": 5.6
+      },
+      "nextControl": {
+        "x": 5.619036783788914,
+        "y": 5.6
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 3.25,
+        "y": 5.6
+      },
+      "prevControl": {
+        "x": 4.4382579252449,
+        "y": 5.6
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Trench Hub Score"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.71,
+      "rotationDegrees": 180.0
+    },
+    {
+      "waypointRelativePos": 2.118260869565214,
+      "rotationDegrees": 180.0
+    },
+    {
+      "waypointRelativePos": 2.911304347826094,
+      "rotationDegrees": -90.0
+    },
+    {
+      "waypointRelativePos": 4.299130434782656,
+      "rotationDegrees": -90.0
+    },
+    {
+      "waypointRelativePos": 5.125217391304362,
+      "rotationDegrees": 59.99999999999999
+    },
+    {
+      "waypointRelativePos": 6.2,
+      "rotationDegrees": 125.00000000000001
+    }
+  ],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "Intake",
+      "waypointRelativePos": 2.7,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "Intake"
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 5.2,
+    "maxAcceleration": 7.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 1080.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 125.00000000000001
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 125.00000000000001
+  },
+  "useDefaultConstraints": true
+}

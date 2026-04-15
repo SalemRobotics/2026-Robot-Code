@@ -54,6 +54,7 @@ public final class IndexerConstants {
                   .withSupplyCurrentLimitEnable(true))
           // FEEDBACK
           .withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(3))
+          .withMotorOutput(new MotorOutputConfigs().withInverted(InvertedValue.Clockwise_Positive))
           // GAINS
           .withSlot0(new Slot0Configs().withKP(10).withKV(0.175).withKS(5));
 

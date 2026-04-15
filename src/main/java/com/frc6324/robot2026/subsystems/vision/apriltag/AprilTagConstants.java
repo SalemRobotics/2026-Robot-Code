@@ -20,34 +20,27 @@ public final class AprilTagConstants {
   public static final AprilTagFieldLayout APRILTAG_LAYOUT =
       FieldConstants.DEFAULT_APRILTAG_TYPE.getLayout();
 
-  public static final String[] CAMERA_NAMES = {
-    "Front Tag Camera", "Rear Tag Camera", "Right Tag Camera"
-  };
-  public static final double[] CAMERA_STDDEV_FACTORS = {1, 1.1, 1.1};
+  public static final String[] CAMERA_NAMES = {"Right Drum Camera", "Left Aux Camera"};
+  public static final double[] CAMERA_STDDEV_FACTORS = {1, 1.1};
   public static final Resolution[] CAMERA_RESOLUTIONS = {
-    new Resolution(1280, 800), new Resolution(1280, 800), new Resolution(1280, 800)
+    new Resolution(1280, 800), new Resolution(1280, 800)
   };
   public static final double[] CAMERA_LATENCIES = {30, 30, 30};
   public static final double[] CAMERA_FPS = {30, 30, 30};
   public static final Rotation2d[] CAMERA_FOVS = {
-    Rotation2d.fromDegrees(80), Rotation2d.fromDegrees(110), Rotation2d.fromDegrees(110)
+    Rotation2d.fromDegrees(110), Rotation2d.fromDegrees(110)
   };
   public static final Transform3d[] ROBOT_TO_CAMERAS = {
     new Transform3d(
-        Units.inchesToMeters(-10),
-        Units.inchesToMeters(-6),
-        Units.inchesToMeters(19.5),
-        new Rotation3d(0, Units.degreesToRadians(20), 0)),
+        Units.inchesToMeters(-13.5),
+        Units.inchesToMeters(5),
+        Units.inchesToMeters(15.5),
+        new Rotation3d(0, Units.degreesToRadians(-15), Units.degreesToRadians(157.5))),
     new Transform3d(
-        Units.inchesToMeters(-12.175),
-        Units.inchesToMeters(-4),
-        Units.inchesToMeters(16.5),
-        new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(180))),
-    new Transform3d(
-        Units.inchesToMeters(-12.5),
-        Units.inchesToMeters(-1),
-        Units.inchesToMeters(9),
-        new Rotation3d(Units.degreesToRadians(-6), 0, Units.degreesToRadians(-90)))
+        Units.inchesToMeters(3.75),
+        Units.inchesToMeters(12.5),
+        Units.inchesToMeters(8.75),
+        new Rotation3d(Units.rotationsToDegrees(10), 0, Units.degreesToRadians(90)))
   };
 
   public static final Frequency UPDATE_THREAD_FREQUENCY = Hertz.of(60);

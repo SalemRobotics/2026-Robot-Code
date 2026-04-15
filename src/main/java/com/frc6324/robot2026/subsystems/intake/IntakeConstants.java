@@ -56,7 +56,8 @@ public final class IntakeConstants {
                   .withMotionMagicCruiseVelocity(RotationsPerSecond.of(5))
                   .withMotionMagicAcceleration(RotationsPerSecondPerSecond.of(25))
                   .withMotionMagicJerk(0))
-          .withMotorOutput(new MotorOutputConfigs().withInverted(InvertedValue.Clockwise_Positive))
+          .withMotorOutput(
+              new MotorOutputConfigs().withInverted(InvertedValue.CounterClockwise_Positive))
           .withSlot0(new Slot0Configs().withKP(200).withKI(10).withKD(6.7).withKV(1).withKS(0.1))
           .withSlot1(new Slot1Configs().withKP(60).withKD(6.7).withKV(1).withKA(0.25).withKS(0.1))
           .withSlot2(new Slot2Configs().withKP(80).withKD(6.7).withKV(1).withKA(0.25).withKS(0.1))

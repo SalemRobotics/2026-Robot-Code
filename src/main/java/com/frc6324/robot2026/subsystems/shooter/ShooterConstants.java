@@ -36,7 +36,22 @@ public final class ShooterConstants {
   public static final double TIME_TO_LAUNCH_FUEL = 0.04;
 
   static {
-    // TODO: tune tree maps
+    HUB_SHOT_MAP.put(0.000, new HubShotParams(Rotations.of(0.0050), RotationsPerSecond.of(38.25)));
+    HUB_SHOT_MAP.put(2.000, new HubShotParams(Rotations.of(0.0050), RotationsPerSecond.of(38.25)));
+    HUB_SHOT_MAP.put(2.400, new HubShotParams(Rotations.of(0.0050), RotationsPerSecond.of(41.00)));
+    HUB_SHOT_MAP.put(2.959, new HubShotParams(Rotations.of(0.0125), RotationsPerSecond.of(42.50)));
+    HUB_SHOT_MAP.put(3.376, new HubShotParams(Rotations.of(0.0180), RotationsPerSecond.of(43.00)));
+    HUB_SHOT_MAP.put(3.915, new HubShotParams(Rotations.of(0.0250), RotationsPerSecond.of(44.50)));
+    HUB_SHOT_MAP.put(4.572, new HubShotParams(Rotations.of(0.0350), RotationsPerSecond.of(46.50)));
+    HUB_SHOT_MAP.put(5.139, new HubShotParams(Rotations.of(0.0420), RotationsPerSecond.of(47.00)));
+
+    // TODO: Actually tune this :p
+    PASSING_VELOCITY_MAP.put(0.00, RotationsPerSecond.of(20));
+    PASSING_VELOCITY_MAP.put(1.00, RotationsPerSecond.of(25));
+    PASSING_VELOCITY_MAP.put(2.50, RotationsPerSecond.of(30));
+    PASSING_VELOCITY_MAP.put(5.00, RotationsPerSecond.of(40));
+    PASSING_VELOCITY_MAP.put(7.50, RotationsPerSecond.of(52.5));
+    PASSING_VELOCITY_MAP.put(10.0, RotationsPerSecond.of(67));
   }
 
   private ShooterConstants() {
@@ -100,7 +115,7 @@ public final class ShooterConstants {
 
     public static final AngularVelocity DRUM_IDLE_SPEED = RPM.of(2000);
     public static final AngularVelocity DRUM_CLOSE_HUB_SHOT_SPEED = RPM.of(2100);
-    public static final MotorAlignmentValue DRUM_MOTOR_ALIGNMENT = MotorAlignmentValue.Opposed;
+    public static final AngularVelocity DRUM_VELOCITY_TOLERANCE = RotationsPerSecond.of(10);
 
     public static final TalonFXConfiguration DRUM_MOTOR_CONFIG =
         new TalonFXConfiguration()
@@ -134,9 +149,9 @@ public final class ShooterConstants {
     public static final int HOOD_MOTOR_ID = 45;
     public static final double HOOD_REDUCTION = 5 * 10.4;
 
-    public static final Angle HOOD_MAX_ANGLE = Rotations.one();
-    public static final Angle HOOD_STOW_ANGLE = Rotations.of(0.03);
-    public static final Angle HOOD_POSITION_TOLERANCE = Rotations.of(0.005);
+    public static final Angle HOOD_MAX_ANGLE = Rotations.of(0.075);
+    public static final Angle HOOD_STOW_ANGLE = Rotations.of(0.005);
+    public static final Angle HOOD_POSITION_TOLERANCE = Rotations.of(0.01);
 
     public static final TalonFXConfiguration HOOD_MOTOR_CONFIG =
         new TalonFXConfiguration()
@@ -200,6 +215,10 @@ public final class ShooterConstants {
    */
   public record HubShotParams(Angle hoodAngle, AngularVelocity drumVelocity)
       implements Interpolatable<HubShotParams> {
+    public HubShotParams(AngularVelocity velocity) {
+      this(HoodConstants.HOOD_STOW_ANGLE, velocity);
+    }
+
     @Override
     public HubShotParams interpolate(HubShotParams endValue, double t) {
       if (t == 0) {

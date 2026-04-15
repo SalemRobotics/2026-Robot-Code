@@ -115,7 +115,8 @@ public final class ShooterCommands {
 
     @Override
     public void end(boolean interrupted) {
-      shooter.stopFlywheel();
+      shooter.stopDrum();
+      shooter.stopAccelerators();
       rollers.stopRollers();
 
       indexer.stopKickerWheel();
@@ -126,7 +127,8 @@ public final class ShooterCommands {
     @Override
     public void execute() {
       shooter.shootUpAgainstHub();
-      if (!indexerRunning) {
+
+      if (!indexerRunning && shooter.drumAtSpeed()) {
         indexer.runKickerWheel();
         indexer.runIndexerWheel();
 
@@ -206,7 +208,7 @@ public final class ShooterCommands {
 
     @Override
     public void end(boolean interrupted) {
-      shooter.stopFlywheel();
+      shooter.stopDrum();
       rollers.stopRollers();
 
       indexer.stopKickerWheel();
@@ -356,11 +358,13 @@ public final class ShooterCommands {
       final boolean atRobotAngle =
           MathUtil.isNear(robotYaw.getRadians(), targetFacing.getRadians(), tolerance);
       final boolean atHoodAngle = shooter.atTargetHoodAngle();
+      final boolean atDrumSpeed = shooter.drumAtSpeed();
 
       Logger.recordOutput(logKey + "/AtRobotAngle", atRobotAngle);
       Logger.recordOutput(logKey + "/AtHoodSetpoint", atHoodAngle);
+      Logger.recordOutput(logKey + "/AtDrumSetpoint", atDrumSpeed);
 
-      final boolean should = atRobotAngle && atHoodAngle;
+      final boolean should = atRobotAngle && atHoodAngle && atDrumSpeed;
       return debouncer.calculate(should);
     }
   }
@@ -507,7 +511,7 @@ public final class ShooterCommands {
         // use
         shooter.spinUpForHubShot(dist);
       } else {
-        shooter.stopFlywheel();
+        shooter.stopDrum();
       }
 
       final Pose2d poseIn1Sec = DrivingUtils.estimateFuturePose(0.5);

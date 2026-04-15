@@ -20,8 +20,6 @@ import static com.frc6324.robot2026.Constants.*;
 import com.frc6324.lib.util.FieldConstants.LinesVertical;
 import com.frc6324.lib.util.IOLayer;
 import com.frc6324.lib.util.PoseExtensions;
-import com.frc6324.robot2026.commands.AutoCommands;
-import com.frc6324.robot2026.commands.AutoCommands.AllianceSide;
 import com.frc6324.robot2026.commands.DriveCommands;
 import com.frc6324.robot2026.commands.ShooterCommands;
 import com.frc6324.robot2026.commands.ShooterCommands.*;
@@ -75,10 +73,7 @@ public class RobotContainer {
 
         intake = new Intake(new IntakeIOTalonFX());
         apriltag =
-            new AprilTagVision(
-                    new AprilTagIOPhoton(driveIO, intake::visionAvailable),
-                    new AprilTagIOPhoton(driveIO),
-                    new AprilTagIOPhoton(driveIO))
+            new AprilTagVision(new AprilTagIOPhoton(driveIO), new AprilTagIOPhoton(driveIO))
                 .withConsumer(drive);
         indexer = new Indexer(new IndexerIOTalonFX());
         rollers = new Rollers(new RollerIOTalonFX());
@@ -90,9 +85,7 @@ public class RobotContainer {
 
         apriltag =
             new AprilTagVision(
-                new AprilTagIOSim(driveIO, drive),
-                new AprilTagIOSim(driveIO, drive),
-                new AprilTagIOSim(driveIO, drive));
+                new AprilTagIOSim(driveIO, drive), new AprilTagIOSim(driveIO, drive));
         indexer = new Indexer(new IndexerIOSim());
         intake = new Intake(new IntakeIOSim());
         rollers = new Rollers(new RollerIOSim());
@@ -101,7 +94,7 @@ public class RobotContainer {
       default -> {
         drive = new SwerveDrive(new DriveIOReplay());
 
-        apriltag = new AprilTagVision(IOLayer::replay, IOLayer::replay, IOLayer::replay);
+        apriltag = new AprilTagVision(IOLayer::replay, IOLayer::replay);
         indexer = new Indexer(IOLayer::replay);
         intake = new Intake(IOLayer::replay);
         rollers = new Rollers(IOLayer::replay);
@@ -113,19 +106,6 @@ public class RobotContainer {
     configureBindings();
 
     autoChooser.addDefaultOption("No Auto", Commands.none());
-    autoChooser.addOption(
-        "Left Double Trench", AutoCommands.doubleTrenchAuto(AllianceSide.Left, intake));
-    autoChooser.addOption(
-        "Right Double Trench", AutoCommands.doubleTrenchAuto(AllianceSide.Right, intake));
-    autoChooser.addOption(
-        "Left Triple Trench", AutoCommands.tripleTrenchAuto(AllianceSide.Left, intake));
-    autoChooser.addOption(
-        "Right Triple Trench", AutoCommands.tripleTrenchAuto(AllianceSide.Right, intake));
-    autoChooser.addOption(
-        "Left Sweep-Pass Score", AutoCommands.sweepPassScoreAuto(AllianceSide.Left, intake));
-    autoChooser.addOption(
-        "Right Sweep-Pass Score", AutoCommands.sweepPassScoreAuto(AllianceSide.Right, intake));
-    autoChooser.addOption("Depot-Outpost Score", AutoCommands.allianceZoneAuto());
   }
 
   private void configureNamedCommands() {

@@ -1,5 +1,6 @@
 package com.frc6324.robot2026.subsystems.shooter;
 
+import static com.frc6324.lib.util.PhoenixUtil.tryUntilOk;
 import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.AcceleratorConstants.*;
 import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.DrumConstants.*;
 import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.HoodConstants.*;
@@ -14,7 +15,6 @@ import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.StrictFollower;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.frc6324.lib.util.PhoenixUtil;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
@@ -64,15 +64,14 @@ public class ShooterIOTalonFX implements ShooterIO {
 
   @SuppressWarnings("resource")
   public ShooterIOTalonFX() {
-    PhoenixUtil.tryUntilOk(
-        5, () -> acceleratorTalon.getConfigurator().apply(ACCELERATOR_MOTOR_CONFIG));
-    PhoenixUtil.tryUntilOk(5, () -> hoodTalon.getConfigurator().apply(HOOD_MOTOR_CONFIG));
+    tryUntilOk(5, () -> acceleratorTalon.getConfigurator().apply(ACCELERATOR_MOTOR_CONFIG));
+    tryUntilOk(5, () -> hoodTalon.getConfigurator().apply(HOOD_MOTOR_CONFIG));
 
     // Set output signals to 1KHz for followers
     drumLeader.getMotorVoltage().setUpdateFrequency(Hertz.of(1000));
     drumLeader.getTorqueCurrent().setUpdateFrequency(Hertz.of(1000));
 
-    PhoenixUtil.tryUntilOk(5, () -> drumLeader.getConfigurator().apply(DRUM_MOTOR_CONFIG));
+    tryUntilOk(5, () -> drumLeader.getConfigurator().apply(DRUM_MOTOR_CONFIG));
 
     for (int i = 0; i < drumFollowers.length; i++) {
       // talon isn't actually leaked here but java likes to complain :/
@@ -81,8 +80,8 @@ public class ShooterIOTalonFX implements ShooterIO {
       final TalonFXConfiguration config = DRUM_MOTOR_CONFIG;
       config.MotorOutput.Inverted = DRUM_FOLLOWER_DIRECTIONS[i];
 
-      PhoenixUtil.tryUntilOk(5, () -> talon.getConfigurator().apply(config));
-      PhoenixUtil.tryUntilOk(5, () -> talon.setControl(followerRequest));
+      tryUntilOk(5, () -> talon.getConfigurator().apply(config));
+      tryUntilOk(5, () -> talon.setControl(followerRequest));
 
       drumFollowers[i] = talon;
       final StatusSignalCollection signals =
@@ -111,7 +110,7 @@ public class ShooterIOTalonFX implements ShooterIO {
 
   @Override
   public void setHoodPosition(Angle position) {
-    hoodTalon.setControl(hoodRequest.withPosition(position).withSlot(HOOD_MOTOR_ID));
+    hoodTalon.setControl(hoodRequest.withPosition(position).withSlot(0));
   }
 
   @Override

@@ -2,7 +2,6 @@ package com.frc6324.robot2026.subsystems.indexer;
 
 import static com.frc6324.lib.util.PhoenixUtil.tryUntilOk;
 import static com.frc6324.robot2026.subsystems.indexer.IndexerConstants.*;
-import static edu.wpi.first.units.Units.Hertz;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
@@ -19,10 +18,6 @@ public class IndexerIOTalonFX implements IndexerIO {
 
   private final VelocityTorqueCurrentFOC kickerRequest =
       new VelocityTorqueCurrentFOC(0).withOverrideCoastDurNeutral(true);
-  private final VelocityTorqueCurrentFOC spinnerRequest =
-      new VelocityTorqueCurrentFOC(0)
-          .withOverrideCoastDurNeutral(true)
-          .withUpdateFreqHz(Hertz.of(500));
 
   private final StatusSignal<AngularVelocity> kickerVelocity = kicker.getVelocity();
   private final StatusSignal<Voltage> kickerVoltage = kicker.getMotorVoltage();
