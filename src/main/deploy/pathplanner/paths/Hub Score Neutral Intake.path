@@ -4,12 +4,12 @@
     {
       "anchor": {
         "x": 3.25,
-        "y": 5.6
+        "y": 5.4
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.911921708185054,
-        "y": 7.052953736654803
+        "x": 2.9895277334996044,
+        "y": 6.877211629518312
       },
       "isLocked": false,
       "linkedName": "Trench Hub Score"
@@ -20,11 +20,11 @@
         "y": 7.4
       },
       "prevControl": {
-        "x": 2.6,
+        "x": 2.1,
         "y": 7.4
       },
       "nextControl": {
-        "x": 4.6,
+        "x": 3.85,
         "y": 7.4
       },
       "isLocked": false,
@@ -33,63 +33,63 @@
     {
       "anchor": {
         "x": 5.7,
-        "y": 7.3757295373665475
+        "y": 7.4
       },
       "prevControl": {
-        "x": 5.208267287319066,
-        "y": 7.3757295373665475
+        "x": 5.45,
+        "y": 7.4
       },
       "nextControl": {
-        "x": 7.014780471875408,
-        "y": 7.3757295373665475
+        "x": 7.0,
+        "y": 7.4
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 6.354863582443654,
-        "y": 5.751091340450771
+        "x": 6.35,
+        "y": 5.75
       },
       "prevControl": {
-        "x": 6.935249193163233,
-        "y": 7.043768382508018
+        "x": 6.983927392611049,
+        "y": 7.109461680554975
       },
       "nextControl": {
-        "x": 6.118161328588376,
-        "y": 5.223890865954923
+        "x": 6.1386908691296505,
+        "y": 5.296846106481675
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 5.849181494661923,
-        "y": 4.707449584816134
+        "x": 5.9,
+        "y": 4.7
       },
       "prevControl": {
-        "x": 5.940818352305046,
-        "y": 5.275598102203481
+        "x": 5.9,
+        "y": 5.2
       },
       "nextControl": {
-        "x": 5.795385527876631,
-        "y": 4.373914590747333
+        "x": 5.9,
+        "y": 4.4
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.8073546856465015,
-        "y": 4.5568208778173185
+        "x": 7.8,
+        "y": 4.5
       },
       "prevControl": {
-        "x": 7.333950177935943,
-        "y": 4.115693950177936
+        "x": 7.446446609406726,
+        "y": 4.146446609406726
       },
       "nextControl": {
-        "x": 8.250202913114746,
-        "y": 4.969474907958182
+        "x": 8.153553390593274,
+        "y": 4.853553390593273
       },
       "isLocked": false,
       "linkedName": null
@@ -97,15 +97,15 @@
     {
       "anchor": {
         "x": 7.6,
-        "y": 5.6
+        "y": 5.5
       },
       "prevControl": {
         "x": 7.85,
-        "y": 5.6
+        "y": 5.5
       },
       "nextControl": {
-        "x": 5.619036783788914,
-        "y": 5.6
+        "x": 7.35,
+        "y": 5.5
       },
       "isLocked": false,
       "linkedName": null
@@ -113,11 +113,11 @@
     {
       "anchor": {
         "x": 3.25,
-        "y": 5.6
+        "y": 5.4
       },
       "prevControl": {
-        "x": 4.4382579252449,
-        "y": 5.6
+        "x": 3.5,
+        "y": 5.4
       },
       "nextControl": null,
       "isLocked": false,
@@ -147,10 +147,28 @@
     },
     {
       "waypointRelativePos": 6.2,
-      "rotationDegrees": 125.00000000000001
+      "rotationDegrees": 180.0
+    },
+    {
+      "waypointRelativePos": 6.8,
+      "rotationDegrees": 180.0
     }
   ],
-  "constraintZones": [],
+  "constraintZones": [
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 3.4,
+      "maxWaypointRelativePos": 5.995618838992372,
+      "constraints": {
+        "maxVelocity": 1.5,
+        "maxAcceleration": 9.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 1080.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
   "pointTowardsZones": [],
   "eventMarkers": [
     {

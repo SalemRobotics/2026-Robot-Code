@@ -36,14 +36,24 @@ public final class ShooterConstants {
   public static final double TIME_TO_LAUNCH_FUEL = 0.04;
 
   static {
-    HUB_SHOT_MAP.put(0.000, new HubShotParams(Rotations.of(0.0050), RotationsPerSecond.of(38.25)));
-    HUB_SHOT_MAP.put(2.000, new HubShotParams(Rotations.of(0.0050), RotationsPerSecond.of(38.25)));
-    HUB_SHOT_MAP.put(2.400, new HubShotParams(Rotations.of(0.0050), RotationsPerSecond.of(41.00)));
-    HUB_SHOT_MAP.put(2.959, new HubShotParams(Rotations.of(0.0125), RotationsPerSecond.of(42.50)));
-    HUB_SHOT_MAP.put(3.376, new HubShotParams(Rotations.of(0.0180), RotationsPerSecond.of(43.00)));
-    HUB_SHOT_MAP.put(3.915, new HubShotParams(Rotations.of(0.0250), RotationsPerSecond.of(44.50)));
-    HUB_SHOT_MAP.put(4.572, new HubShotParams(Rotations.of(0.0350), RotationsPerSecond.of(46.50)));
-    HUB_SHOT_MAP.put(5.139, new HubShotParams(Rotations.of(0.0420), RotationsPerSecond.of(47.00)));
+    HUB_SHOT_MAP.put(
+        0.000, new HubShotParams(Rotations.of(0.0050), RotationsPerSecond.of(38.25))); // OLD
+    HUB_SHOT_MAP.put(
+        2.000, new HubShotParams(Rotations.of(0.0050), RotationsPerSecond.of(38.25))); // OLD
+    HUB_SHOT_MAP.put(
+        2.400, new HubShotParams(Rotations.of(0.0050), RotationsPerSecond.of(41.00))); // OLD
+    HUB_SHOT_MAP.put(
+        2.688, new HubShotParams(Rotations.of(0.0550), RotationsPerSecond.of(42.00))); // NEW
+    HUB_SHOT_MAP.put(
+        2.959, new HubShotParams(Rotations.of(0.0125), RotationsPerSecond.of(42.50))); // NEW
+    HUB_SHOT_MAP.put(
+        3.376, new HubShotParams(Rotations.of(0.0180), RotationsPerSecond.of(43.00))); // OLD
+    HUB_SHOT_MAP.put(
+        3.802, new HubShotParams(Rotations.of(0.0725), RotationsPerSecond.of(45.00))); // OLD
+    HUB_SHOT_MAP.put(
+        4.572, new HubShotParams(Rotations.of(0.0750), RotationsPerSecond.of(46.50))); // OLD
+    HUB_SHOT_MAP.put(
+        5.139, new HubShotParams(Rotations.of(0.0800), RotationsPerSecond.of(47.00))); // OLD
 
     // TODO: Actually tune this :p
     PASSING_VELOCITY_MAP.put(0.00, RotationsPerSecond.of(20));
@@ -70,7 +80,9 @@ public final class ShooterConstants {
                     .withStatorCurrentLimit(Amps.of(80))
                     .withStatorCurrentLimitEnable(true)
                     .withSupplyCurrentLimit(Amps.of(40))
-                    .withSupplyCurrentLimitEnable(true))
+                    .withSupplyCurrentLimitEnable(true)
+                    .withSupplyCurrentLowerTime(Seconds.of(0.1))
+                    .withSupplyCurrentLowerLimit(Amps.of(20)))
             .withFeedback(
                 new FeedbackConfigs()
                     .withFeedbackSensorSource(FeedbackSensorSourceValue.RotorSensor)
@@ -116,6 +128,7 @@ public final class ShooterConstants {
     public static final AngularVelocity DRUM_IDLE_SPEED = RPM.of(2000);
     public static final AngularVelocity DRUM_CLOSE_HUB_SHOT_SPEED = RPM.of(2100);
     public static final AngularVelocity DRUM_VELOCITY_TOLERANCE = RotationsPerSecond.of(10);
+    public static final AngularVelocity DRUM_OFFSET_STEP = RotationsPerSecond.of(0.25);
 
     public static final TalonFXConfiguration DRUM_MOTOR_CONFIG =
         new TalonFXConfiguration()
@@ -124,13 +137,15 @@ public final class ShooterConstants {
                     .withStatorCurrentLimit(Amps.of(150))
                     .withStatorCurrentLimitEnable(true)
                     .withSupplyCurrentLimit(Amps.of(60))
-                    .withSupplyCurrentLimitEnable(true))
+                    .withSupplyCurrentLimitEnable(true)
+                    .withSupplyCurrentLowerTime(Seconds.of(0.25))
+                    .withSupplyCurrentLowerLimit(Amps.of(20)))
             .withMotorOutput(
                 new MotorOutputConfigs()
                     .withControlTimesyncFreqHz(Hertz.of(500))
                     .withNeutralMode(NeutralModeValue.Coast))
             .withSlot0(new Slot0Configs().withKP(9).withKI(5).withKD(0.15).withKS(10).withKV(0.2))
-            .withSlot1(new Slot1Configs().withKP(5).withKI(5).withKS(0.15).withKS(10).withKV(0.2));
+            .withSlot1(new Slot1Configs().withKP(3).withKS(0.15).withKS(10).withKV(0.2));
 
     public static final int DRUM_SHOOTING_SLOT = 0;
     public static final int DRUM_SPINUP_SLOT = 1;
@@ -149,7 +164,7 @@ public final class ShooterConstants {
     public static final int HOOD_MOTOR_ID = 45;
     public static final double HOOD_REDUCTION = 5 * 10.4;
 
-    public static final Angle HOOD_MAX_ANGLE = Rotations.of(0.075);
+    public static final Angle HOOD_MAX_ANGLE = Rotations.of(0.1);
     public static final Angle HOOD_STOW_ANGLE = Rotations.of(0.005);
     public static final Angle HOOD_POSITION_TOLERANCE = Rotations.of(0.01);
 

@@ -91,6 +91,8 @@ public class Robot extends LoggedRobot {
     // Only enabled for LEDs
     RobotController.setEnabled6V(true);
 
+    RobotController.setBrownoutVoltage(6.324);
+
     // Silence warnings for disconnected joysticks
     DriverStation.silenceJoystickConnectionWarning(true);
     SignalLogger.enableAutoLogging(false);

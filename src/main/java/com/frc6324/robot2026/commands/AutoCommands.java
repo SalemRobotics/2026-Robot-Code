@@ -18,28 +18,10 @@ public final class AutoCommands {
     throw new IllegalAccessError();
   }
 
-  public static Command allianceZoneAuto() {
-    return new PathPlannerAuto("Depot Outpost Score");
-  }
-
   public static Command doubleTrenchAuto(AllianceSide side, Intake intake) {
     return Commands.deadline(
             Commands.waitUntil(intake::isSafeToTrench), intake.run(() -> intake.deploy(false)))
         .onlyIf(RobotBase::isReal)
         .andThen(new PathPlannerAuto("Double Trench", side == AllianceSide.Right));
-  }
-
-  public static Command sweepPassScoreAuto(AllianceSide side, Intake intake) {
-    return Commands.deadline(
-            Commands.waitUntil(intake::isSafeToTrench), intake.run(() -> intake.deploy(false)))
-        .onlyIf(RobotBase::isReal)
-        .andThen(new PathPlannerAuto("Sweep Pass Shoot", side == AllianceSide.Right));
-  }
-
-  public static Command tripleTrenchAuto(AllianceSide side, Intake intake) {
-    return Commands.deadline(
-            Commands.waitUntil(intake::isSafeToTrench), intake.run(() -> intake.deploy(false)))
-        .onlyIf(RobotBase::isReal)
-        .andThen(new PathPlannerAuto("Triple Trench", side == AllianceSide.Right));
   }
 }

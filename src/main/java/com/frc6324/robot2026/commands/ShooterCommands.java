@@ -209,6 +209,7 @@ public final class ShooterCommands {
     @Override
     public void end(boolean interrupted) {
       shooter.stopDrum();
+      shooter.stopAccelerators();
       rollers.stopRollers();
 
       indexer.stopKickerWheel();
@@ -466,7 +467,10 @@ public final class ShooterCommands {
 
     @Override
     boolean shouldIndex(Rotation2d targetFacing, double distanceToTarget) {
-      return true;
+      final boolean atDrumSpeed = shooter.drumAtSpeed();
+      Logger.recordOutput(logKey + "/AtDrumSetpoint", atDrumSpeed);
+
+      return atDrumSpeed;
     }
   }
 

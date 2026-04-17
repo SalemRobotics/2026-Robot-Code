@@ -3,6 +3,7 @@ package com.frc6324.robot2026.subsystems.indexer;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
 
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
@@ -51,7 +52,9 @@ public final class IndexerConstants {
                   .withStatorCurrentLimit(Amps.of(60))
                   .withStatorCurrentLimitEnable(true)
                   .withSupplyCurrentLimit(Amps.of(40))
-                  .withSupplyCurrentLimitEnable(true))
+                  .withSupplyCurrentLimitEnable(true)
+                  .withSupplyCurrentLowerTime(Seconds.of(0.1))
+                  .withSupplyCurrentLowerLimit(Amps.of(20)))
           // FEEDBACK
           .withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(3))
           .withMotorOutput(new MotorOutputConfigs().withInverted(InvertedValue.Clockwise_Positive))

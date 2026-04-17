@@ -25,6 +25,8 @@ public final class Shooter extends SubsystemBase {
   private AngularVelocity drumSetpoint = RadiansPerSecond.zero();
   private boolean drumAtSetpoint = false;
 
+  private AngularVelocity velocityOffset = RotationsPerSecond.zero();
+
   /**
    * Creates a new shooter subsystem.
    *
@@ -38,8 +40,16 @@ public final class Shooter extends SubsystemBase {
     return hoodAtSetpoint;
   }
 
+  public void decrementOffset() {
+    velocityOffset = velocityOffset.minus(DRUM_OFFSET_STEP);
+  }
+
   public boolean drumAtSpeed() {
     return drumAtSetpoint;
+  }
+
+  public void incrementOffset() {
+    velocityOffset = velocityOffset.plus(DRUM_OFFSET_STEP);
   }
 
   /**
@@ -56,6 +66,7 @@ public final class Shooter extends SubsystemBase {
 
   @Override
   public void periodic() {
+    // Update the shooter inputs and log them
     io.updateInputs(inputs);
     Logger.processInputs("Shooter", inputs);
 
@@ -63,10 +74,14 @@ public final class Shooter extends SubsystemBase {
     drumAtSetpoint = inputs.drumVelocity.isNear(drumSetpoint, DRUM_VELOCITY_TOLERANCE);
 
     Logger.recordOutput("Shooter/Hood Setpoint", hoodSetpoint);
-    Logger.recordOutput("Shooter/Hood At Setpoint", hoodAtSetpoint);
     Logger.recordOutput("Shooter/Flywheel Setpoint", drumSetpoint);
+    Logger.recordOutput("Shooter/Velocity Offset", velocityOffset);
 
     LoggedTracer.record("Shooter periodic");
+  }
+
+  public void resetOffset() {
+    velocityOffset = RotationsPerSecond.zero();
   }
 
   /**
@@ -75,7 +90,7 @@ public final class Shooter extends SubsystemBase {
    * @param velocity The velocity setpoint.
    */
   private void setDrumVelocity(AngularVelocity velocity, int slot) {
-    io.setDrumVelocity(velocity, slot);
+    io.setDrumVelocity(velocity.plus(velocityOffset), slot);
     io.setAcceleratorVelocity(velocity);
     drumSetpoint = velocity;
   }
