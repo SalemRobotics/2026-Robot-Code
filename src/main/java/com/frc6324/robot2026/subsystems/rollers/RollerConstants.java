@@ -2,7 +2,6 @@ package com.frc6324.robot2026.subsystems.rollers;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.RPM;
-import static edu.wpi.first.units.Units.Seconds;
 
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
@@ -25,10 +24,8 @@ public final class RollerConstants {
       new TalonFXConfiguration()
           .withCurrentLimits(
               new CurrentLimitsConfigs()
-                  .withSupplyCurrentLimit(Amps.of(40))
-                  .withSupplyCurrentLimitEnable(true)
-                  .withSupplyCurrentLowerTime(Seconds.of(0.1))
-                  .withSupplyCurrentLowerLimit(Amps.of(15)))
+                  .withSupplyCurrentLimit(Amps.of(50))
+                  .withSupplyCurrentLimitEnable(true))
           .withSlot0(new Slot0Configs().withKP(5).withKD(0.001).withKS(1).withKV(1));
   public static final MotorAlignmentValue ROLLER_ALIGNMENT = MotorAlignmentValue.Opposed;
   public static final AngularVelocity ROLLER_SPIN_VELOCITY = RPM.of(6000);

@@ -19,6 +19,7 @@ import static com.frc6324.robot2026.Constants.*;
 
 import com.frc6324.lib.util.FieldConstants.LinesVertical;
 import com.frc6324.lib.util.IOLayer;
+import com.frc6324.lib.util.LoggedTracer;
 import com.frc6324.lib.util.PoseExtensions;
 import com.frc6324.robot2026.commands.AutoCommands;
 import com.frc6324.robot2026.commands.AutoCommands.AllianceSide;
@@ -70,53 +71,89 @@ public class RobotContainer {
 
     switch (Constants.CURRENT_MODE) {
       case REAL -> {
+        LoggedTracer.reset();
         final DriveIOCTRE driveIO = new DriveIOCTRE();
         drive = new SwerveDrive(driveIO);
+        LoggedTracer.record("Init/Drive init");
 
         intake = new Intake(new IntakeIOTalonFX());
+        LoggedTracer.record("Init/Intake init");
         apriltag =
             new AprilTagVision(
                     new AprilTagIOPhoton(driveIO),
                     new AprilTagIOPhoton(driveIO),
                     new AprilTagIOPhoton(driveIO))
                 .withConsumer(drive);
+        LoggedTracer.record("Init/AprilTag init");
+
         indexer = new Indexer(new IndexerIOTalonFX());
+        LoggedTracer.record("Init/Indexer init");
+
         rollers = new Rollers(new RollerIOTalonFX());
+        LoggedTracer.record("Init/Rollers init");
+
         shooter = new Shooter(new ShooterIOTalonFX());
+        LoggedTracer.record("Init/Shooter init");
       }
       case SIM -> {
+        LoggedTracer.reset();
         final DriveIOSim driveIO = new DriveIOSim();
         drive = new SwerveDrive(driveIO);
+        LoggedTracer.record("Init/Drive init");
 
         apriltag =
             new AprilTagVision(
                 new AprilTagIOSim(driveIO, drive),
                 new AprilTagIOSim(driveIO, drive),
                 new AprilTagIOSim(driveIO, drive));
+        LoggedTracer.record("Init/AprilTag init");
+
         indexer = new Indexer(new IndexerIOSim());
+        LoggedTracer.record("Init/Indexer init");
+
         intake = new Intake(new IntakeIOSim());
+        LoggedTracer.record("Init/Intake init");
+
         rollers = new Rollers(new RollerIOSim());
+        LoggedTracer.record("Init/Rollers init");
+
         shooter = new Shooter(new ShooterIOSim());
+        LoggedTracer.record("Init/Shooter init");
       }
       default -> {
+        LoggedTracer.reset();
         drive = new SwerveDrive(new DriveIOReplay());
+        LoggedTracer.record("Init/Drive init");
 
         apriltag = new AprilTagVision(IOLayer::replay, IOLayer::replay, IOLayer::replay);
+        LoggedTracer.record("Init/AprilTag init");
+
         indexer = new Indexer(IOLayer::replay);
+        LoggedTracer.record("Init/Indexer init");
+
         intake = new Intake(IOLayer::replay);
+        LoggedTracer.record("Init/Intake init");
+
         rollers = new Rollers(IOLayer::replay);
+        LoggedTracer.record("Init/Rollers init");
+
         shooter = new Shooter(IOLayer::replay);
+        LoggedTracer.record("Init/Shooter init");
       }
     }
 
     configureNamedCommands();
+    LoggedTracer.record("Init/Auto command bindings");
+
     configureBindings();
+    LoggedTracer.record("Init/Controller Bindings");
 
     autoChooser.addDefaultOption("No Auto", Commands.none());
     autoChooser.addOption(
         "Left Double Trench", AutoCommands.doubleTrenchAuto(AllianceSide.Left, intake));
     autoChooser.addOption(
         "Right Double Trench", AutoCommands.doubleTrenchAuto(AllianceSide.Right, intake));
+    LoggedTracer.record("Init/Auto chooser");
   }
 
   private void configureNamedCommands() {

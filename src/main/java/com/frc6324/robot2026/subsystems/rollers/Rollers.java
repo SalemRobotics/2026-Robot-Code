@@ -44,7 +44,7 @@ public final class Rollers extends SubsystemBase {
     leaderDisconnectedAlert.set(leaderDisconnected);
     followerDisconnectedAlert.set(followerDisconnected);
 
-    LoggedTracer.record("Rollers periodic");
+    LoggedTracer.record("Periodic/Rollers periodic");
   }
 
   /** Starts the intake's rollers. */

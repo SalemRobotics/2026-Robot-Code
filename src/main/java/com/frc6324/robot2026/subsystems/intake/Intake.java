@@ -67,7 +67,7 @@ public final class Intake extends SubsystemBase {
     extensionDistance =
         INTAKE_EXTENSION.times(inputs.motorPosition.div(INTAKE_DEPLOYED_POSITION).magnitude());
 
-    LoggedTracer.record("Intake periodic");
+    LoggedTracer.record("Periodic/Intake periodic");
   }
 
   public void retract() {

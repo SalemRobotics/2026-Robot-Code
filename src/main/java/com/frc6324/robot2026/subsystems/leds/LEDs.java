@@ -64,7 +64,7 @@ public final class LEDs extends VirtualSubsystem {
     dataPattern.applyTo(dataView);
 
     leds.setData(buffer);
-    LoggedTracer.record("LEDs periodic");
+    LoggedTracer.record("Periodic/LEDs periodic");
   }
 
   @UninstantiableClass

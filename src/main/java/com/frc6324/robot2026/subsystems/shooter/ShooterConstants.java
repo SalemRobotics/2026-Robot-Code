@@ -80,9 +80,7 @@ public final class ShooterConstants {
                     .withStatorCurrentLimit(Amps.of(80))
                     .withStatorCurrentLimitEnable(true)
                     .withSupplyCurrentLimit(Amps.of(40))
-                    .withSupplyCurrentLimitEnable(true)
-                    .withSupplyCurrentLowerTime(Seconds.of(0.1))
-                    .withSupplyCurrentLowerLimit(Amps.of(20)))
+                    .withSupplyCurrentLimitEnable(true))
             .withFeedback(
                 new FeedbackConfigs()
                     .withFeedbackSensorSource(FeedbackSensorSourceValue.RotorSensor)
@@ -134,12 +132,10 @@ public final class ShooterConstants {
         new TalonFXConfiguration()
             .withCurrentLimits(
                 new CurrentLimitsConfigs()
-                    .withStatorCurrentLimit(Amps.of(150))
+                    .withStatorCurrentLimit(Amps.of(100))
                     .withStatorCurrentLimitEnable(true)
                     .withSupplyCurrentLimit(Amps.of(60))
-                    .withSupplyCurrentLimitEnable(true)
-                    .withSupplyCurrentLowerTime(Seconds.of(0.25))
-                    .withSupplyCurrentLowerLimit(Amps.of(20)))
+                    .withSupplyCurrentLimitEnable(true))
             .withMotorOutput(
                 new MotorOutputConfigs()
                     .withControlTimesyncFreqHz(Hertz.of(500))

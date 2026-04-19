@@ -160,7 +160,7 @@ public final class ObjectDetection extends VirtualSubsystem {
       Logger.processInputs("Vision/Object Detection/" + CAMERA_NAMES[i], currentInputs);
     }
 
-    LoggedTracer.record("Object Detection Periodic");
+    LoggedTracer.record("Periodic/Objdetect Periodic");
   }
 
   /**

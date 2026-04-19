@@ -95,7 +95,7 @@ public class Robot extends LoggedRobot {
 
     // Silence warnings for disconnected joysticks
     DriverStation.silenceJoystickConnectionWarning(true);
-    SignalLogger.enableAutoLogging(false);
+    SignalLogger.start();
 
     // Start the akit logger
     Logger.start();

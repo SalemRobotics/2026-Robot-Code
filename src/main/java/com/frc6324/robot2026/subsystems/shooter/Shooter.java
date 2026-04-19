@@ -77,7 +77,7 @@ public final class Shooter extends SubsystemBase {
     Logger.recordOutput("Shooter/Flywheel Setpoint", drumSetpoint);
     Logger.recordOutput("Shooter/Velocity Offset", velocityOffset);
 
-    LoggedTracer.record("Shooter periodic");
+    LoggedTracer.record("Periodic/Shooter periodic");
   }
 
   public void resetOffset() {

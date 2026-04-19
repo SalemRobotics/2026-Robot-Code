@@ -24,7 +24,7 @@ public final class Indexer extends SubsystemBase {
   public void periodic() {
     motorsIO.updateInputs(motorInputs);
     Logger.processInputs("Indexer", motorInputs);
-    LoggedTracer.record("Indexer periodic");
+    LoggedTracer.record("Periodic/Indexer periodic");
   }
 
   public void runIndexerWheel() {

@@ -48,7 +48,7 @@ public final class IntakeConstants {
               new CurrentLimitsConfigs()
                   .withStatorCurrentLimit(Amps.of(70))
                   .withStatorCurrentLimitEnable(true)
-                  .withSupplyCurrentLimit(Amps.of(45))
+                  .withSupplyCurrentLimit(Amps.of(40))
                   .withSupplyCurrentLimitEnable(true))
           .withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(INTAKE_REDUCTION))
           .withMotionMagic(
