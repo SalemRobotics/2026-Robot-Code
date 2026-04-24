@@ -20,6 +20,8 @@ import com.frc6324.lib.util.LoggedTracer;
 import com.frc6324.lib.util.PhoenixUtil;
 import com.frc6324.lib.util.VirtualSubsystem;
 import com.frc6324.robot2026.sim.MapleSimManager;
+import com.pathplanner.lib.commands.FollowPathCommand;
+import com.pathplanner.lib.commands.PathfindingCommand;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -107,6 +109,10 @@ public class Robot extends LoggedRobot {
     // Initialize the robot container
     robotContainer = new RobotContainer();
     PhoenixUtil.synchronizeSignals(2);
+
+    // Schedule the PathPlanner warmup commands
+    CommandScheduler.getInstance()
+        .schedule(FollowPathCommand.warmupCommand(), PathfindingCommand.warmupCommand());
   }
 
   /**

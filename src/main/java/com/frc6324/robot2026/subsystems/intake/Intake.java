@@ -71,7 +71,7 @@ public final class Intake extends SubsystemBase {
   }
 
   public void retract() {
-    io.setPosition(INTAKE_RETRACTED_POSITION, INTAKE_RETRACT_SLOT);
+    io.setPositionProfiled(INTAKE_RETRACTED_POSITION, INTAKE_RETRACT_SLOT);
   }
 
   @Override
@@ -82,6 +82,10 @@ public final class Intake extends SubsystemBase {
 
     Logger.recordOutput(
         "Intake/MechanismTransform", new Transform3d(mechTranslation, Rotation3d.kZero));
+  }
+
+  public boolean shouldSendOut() {
+    return inputs.motorPosition.gt(INTAKE_DEPLOYED_POSITION.plus(INTAKE_RETRACTED_POSITION).div(2));
   }
 
   public void spring() {

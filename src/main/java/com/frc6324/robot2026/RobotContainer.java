@@ -209,7 +209,10 @@ public class RobotContainer {
                 LEDState.intaking = false;
               }
             },
-            () -> LEDState.intaking = false));
+            () -> {
+              rollers.stopRollers();
+              LEDState.intaking = false;
+            }));
 
     indexer.setDefaultCommand(
         indexer.run(

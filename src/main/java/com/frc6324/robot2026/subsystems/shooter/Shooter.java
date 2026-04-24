@@ -153,7 +153,7 @@ public final class Shooter extends SubsystemBase {
       return;
     }
 
-    setHoodAngle(params.hoodAngle());
+    stowHood();
     setDrumVelocity(DRUM_IDLE_SPEED, DRUM_SPINUP_SLOT);
   }
 

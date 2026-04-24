@@ -89,7 +89,7 @@ public final class ShooterCommands {
                     drive, indexer, intake, rollers, shooter, controller);
               }
             },
-            Set.of(drive, indexer, intake, shooter))
+            Set.of(drive, indexer, intake, rollers, shooter))
         .until(switchCondition);
   }
 
@@ -210,6 +210,7 @@ public final class ShooterCommands {
     public void end(boolean interrupted) {
       shooter.stopDrum();
       shooter.stopAccelerators();
+      shooter.stowHood();
       rollers.stopRollers();
 
       indexer.stopKickerWheel();
@@ -244,7 +245,7 @@ public final class ShooterCommands {
           kickerRunning = true;
         }
 
-        final boolean intakeTimedOut = intakeCommandTimeout.hasElapsed(0.420);
+        final boolean intakeTimedOut = intakeCommandTimeout.hasElapsed(1);
         if (sendingIntakeOut) {
           if (intakeTimedOut || intake.isDeployed()) {
             intake.retract();
@@ -293,7 +294,7 @@ public final class ShooterCommands {
       indexer.stopKickerWheel();
 
       kickerRunning = false;
-      sendingIntakeOut = !intake.isDeployed();
+      sendingIntakeOut = intake.shouldSendOut();
       intakeCommandTimeout.start();
 
       rollers.spinRollers();

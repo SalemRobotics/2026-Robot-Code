@@ -36,24 +36,14 @@ public final class ShooterConstants {
   public static final double TIME_TO_LAUNCH_FUEL = 0.04;
 
   static {
-    HUB_SHOT_MAP.put(
-        0.000, new HubShotParams(Rotations.of(0.0050), RotationsPerSecond.of(38.25))); // OLD
-    HUB_SHOT_MAP.put(
-        2.000, new HubShotParams(Rotations.of(0.0050), RotationsPerSecond.of(38.25))); // OLD
-    HUB_SHOT_MAP.put(
-        2.400, new HubShotParams(Rotations.of(0.0050), RotationsPerSecond.of(41.00))); // OLD
-    HUB_SHOT_MAP.put(
-        2.688, new HubShotParams(Rotations.of(0.0550), RotationsPerSecond.of(42.00))); // NEW
-    HUB_SHOT_MAP.put(
-        2.959, new HubShotParams(Rotations.of(0.0125), RotationsPerSecond.of(42.50))); // NEW
-    HUB_SHOT_MAP.put(
-        3.376, new HubShotParams(Rotations.of(0.0180), RotationsPerSecond.of(43.00))); // OLD
-    HUB_SHOT_MAP.put(
-        3.802, new HubShotParams(Rotations.of(0.0725), RotationsPerSecond.of(45.00))); // OLD
-    HUB_SHOT_MAP.put(
-        4.572, new HubShotParams(Rotations.of(0.0750), RotationsPerSecond.of(46.50))); // OLD
-    HUB_SHOT_MAP.put(
-        5.139, new HubShotParams(Rotations.of(0.0800), RotationsPerSecond.of(47.00))); // OLD
+    HUB_SHOT_MAP.put(0.000, new HubShotParams(Rotations.of(0.0060), RotationsPerSecond.of(38.75)));
+    HUB_SHOT_MAP.put(2.000, new HubShotParams(Rotations.of(0.0080), RotationsPerSecond.of(38.75)));
+    HUB_SHOT_MAP.put(2.400, new HubShotParams(Rotations.of(0.0150), RotationsPerSecond.of(41.50)));
+    HUB_SHOT_MAP.put(2.959, new HubShotParams(Rotations.of(0.0240), RotationsPerSecond.of(43.00)));
+    HUB_SHOT_MAP.put(3.376, new HubShotParams(Rotations.of(0.0300), RotationsPerSecond.of(43.00)));
+    HUB_SHOT_MAP.put(3.915, new HubShotParams(Rotations.of(0.0300), RotationsPerSecond.of(44.50)));
+    HUB_SHOT_MAP.put(4.572, new HubShotParams(Rotations.of(0.0400), RotationsPerSecond.of(47.00)));
+    HUB_SHOT_MAP.put(5.139, new HubShotParams(Rotations.of(0.0550), RotationsPerSecond.of(47.50)));
 
     // TODO: Actually tune this :p
     PASSING_VELOCITY_MAP.put(0.00, RotationsPerSecond.of(20));
@@ -158,7 +148,9 @@ public final class ShooterConstants {
   @UninstantiableClass
   public final class HoodConstants {
     public static final int HOOD_MOTOR_ID = 45;
-    public static final double HOOD_REDUCTION = 5 * 10.4;
+    public static final int HOOD_ENCODER_ID = 46;
+    public static final double HOOD_ROTOR_TO_ENCODER = 5;
+    public static final double HOOD_ENCODER_TO_MECHANISM = 10.2;
 
     public static final Angle HOOD_MAX_ANGLE = Rotations.of(0.1);
     public static final Angle HOOD_STOW_ANGLE = Rotations.of(0.005);
@@ -174,8 +166,10 @@ public final class ShooterConstants {
                     .withSupplyCurrentLimitEnable(true))
             .withFeedback(
                 new FeedbackConfigs()
-                    .withFeedbackSensorSource(FeedbackSensorSourceValue.RotorSensor)
-                    .withSensorToMechanismRatio(HOOD_REDUCTION))
+                    .withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder)
+                    .withFeedbackRemoteSensorID(HOOD_ENCODER_ID)
+                    .withRotorToSensorRatio(HOOD_ROTOR_TO_ENCODER)
+                    .withSensorToMechanismRatio(HOOD_ENCODER_TO_MECHANISM))
             .withMotorOutput(
                 new MotorOutputConfigs()
                     .withControlTimesyncFreqHz(Hertz.of(100))

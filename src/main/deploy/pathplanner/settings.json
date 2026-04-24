@@ -6,7 +6,7 @@
   "autoFolders": [],
   "defaultMaxVel": 5.2,
   "defaultMaxAccel": 7.0,
-  "defaultMaxAngVel": 540.0,
+  "defaultMaxAngVel": 760.0,
   "defaultMaxAngAccel": 1080.0,
   "defaultNominalVoltage": 12.0,
   "robotMass": 70.0,
@@ -28,5 +28,7 @@
   "brModuleY": -0.302,
   "bumperOffsetX": 0.0,
   "bumperOffsetY": 0.0,
-  "robotFeatures": []
+  "robotFeatures": [
+    "{\"name\":\"Rectangle\",\"type\":\"rounded_rect\",\"data\":{\"center\":{\"x\":0.525,\"y\":0.0},\"size\":{\"width\":0.686,\"length\":0.2},\"borderRadius\":0.05,\"strokeWidth\":0.02,\"filled\":false}}"
+  ]
 }

@@ -9,6 +9,8 @@ import org.littletonrobotics.junction.AutoLog;
 public interface IntakeIO {
   default void setPosition(Angle position, int slot) {}
 
+  default void setPositionProfiled(Angle position, int slot) {}
+
   default void spring() {}
 
   /**

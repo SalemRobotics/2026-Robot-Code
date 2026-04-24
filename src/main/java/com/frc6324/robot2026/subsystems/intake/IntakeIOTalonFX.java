@@ -5,6 +5,7 @@ import static com.frc6324.robot2026.subsystems.intake.IntakeConstants.*;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -14,6 +15,8 @@ import edu.wpi.first.units.measure.*;
 public class IntakeIOTalonFX implements IntakeIO {
   protected final TalonFX talon = new TalonFX(INTAKE_MOTOR_ID, INTAKE_CAN_BUS);
   private final PositionTorqueCurrentFOC request = new PositionTorqueCurrentFOC(0);
+  private final MotionMagicTorqueCurrentFOC profiledRequest = new MotionMagicTorqueCurrentFOC(0);
+
   // Status signals
   private final StatusSignal<Angle> deployPosition = talon.getPosition();
   private final StatusSignal<AngularVelocity> deployVelocity = talon.getVelocity();
@@ -36,6 +39,11 @@ public class IntakeIOTalonFX implements IntakeIO {
   @Override
   public void setPosition(Angle position, int slot) {
     talon.setControl(request.withPosition(position).withSlot(slot));
+  }
+
+  @Override
+  public void setPositionProfiled(Angle position, int slot) {
+    talon.setControl(profiledRequest.withPosition(position).withSlot(slot));
   }
 
   @Override
