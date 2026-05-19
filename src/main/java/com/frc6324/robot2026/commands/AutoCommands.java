@@ -24,4 +24,11 @@ public final class AutoCommands {
         .onlyIf(RobotBase::isReal)
         .andThen(new PathPlannerAuto("Double Trench", side == AllianceSide.Right));
   }
+
+  public static Command doubleTrenchReversedAuto(AllianceSide side, Intake intake) {
+    return Commands.deadline(
+            Commands.waitUntil(intake::isSafeToTrench), intake.run(() -> intake.deploy(false)))
+        .onlyIf(RobotBase::isReal)
+        .andThen(new PathPlannerAuto("Double Trench Reversed", side == AllianceSide.Right));
+  }
 }

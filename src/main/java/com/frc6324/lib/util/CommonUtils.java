@@ -3,6 +3,7 @@ package com.frc6324.lib.util;
 import static edu.wpi.first.units.Units.*;
 
 import com.frc6324.lib.UninstantiableClass;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.LinearAccelerationUnit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -39,6 +40,51 @@ public final class CommonUtils {
   public static LinearVelocity getVelocity(AngularVelocity velocity, Distance radius) {
     final double dist = radius.in(Meters) * velocity.in(RadiansPerSecond);
     return MetersPerSecond.of(dist);
+  }
+
+  /**
+   * Checks if two polygons intersect or otherwise overlap each other.
+   *
+   * @param shape1 The first shape's corners.
+   * @param shape2 The second shape's corners.
+   * @return Whether an intersection is present.
+   */
+  public static boolean polygonsIntersect(Translation2d[] shape1, Translation2d[] shape2) {
+    return !(hasSeparatingAxis(shape1, shape2) || hasSeparatingAxis(shape2, shape1));
+  }
+
+  private static boolean hasSeparatingAxis(Translation2d[] shape1, Translation2d[] shape2) {
+    for (int i = 0; i < shape1.length; i++) {
+      final Translation2d p1 = shape1[i];
+      final Translation2d p2 = shape1[(i + 1) % shape1.length];
+
+      final double edgeX = p2.getX() - p1.getX();
+      final double edgeY = p2.getY() - p1.getY();
+
+      final double axisX = -edgeY;
+      final double axisY = edgeX;
+
+      final double[] proj1 = projectPolygon(shape1, axisX, axisY);
+      final double[] proj2 = projectPolygon(shape2, axisX, axisY);
+
+      if (proj1[1] < proj2[0] || proj2[1] < proj1[0]) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static double[] projectPolygon(Translation2d[] shape, double axisX, double axisY) {
+    double min = Double.POSITIVE_INFINITY;
+    double max = Double.NEGATIVE_INFINITY;
+
+    for (final Translation2d p : shape) {
+      final double projection = p.getX() * axisX + p.getY() * axisY;
+      min = Math.min(min, projection);
+      max = Math.max(max, projection);
+    }
+
+    return new double[] {min, max};
   }
 
   @Contract("-> fail")

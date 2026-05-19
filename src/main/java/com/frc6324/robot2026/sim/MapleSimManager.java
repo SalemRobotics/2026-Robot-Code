@@ -157,6 +157,7 @@ public final class MapleSimManager {
 
     try {
       simulationLock.lock();
+
       if (currentTimestamp - lastLaunchTimestamp > ShooterConstants.TIME_TO_LAUNCH_FUEL
           && intakeSim.obtainGamePieceFromIntake()) {
         final Pose2d drivePose = driveSimulation.getSimulatedDriveTrainPose();

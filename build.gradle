@@ -1,3 +1,4 @@
+import edu.wpi.first.gradlerio.GradleRIOPlugin
 import groovy.json.JsonSlurper;
 
 plugins {
@@ -79,7 +80,7 @@ wpi.java.debugJni = false
 def includeDesktopSupport = true
 
 // Configuration for AdvantageKit
-task(replayWatch, type: JavaExec) {
+tasks.register('replayWatch', JavaExec) {
     mainClass = "org.littletonrobotics.junction.ReplayWatch"
     classpath = sourceSets.main.runtimeClasspath
 }
@@ -142,7 +143,7 @@ jar {
     from('src') { into 'backup/src' }
     from('vendordeps') { into 'backup/vendordeps' }
     from('build.gradle') { into 'backup' }
-    manifest edu.wpi.first.gradlerio.GradleRIOPlugin.javaManifest(ROBOT_MAIN_CLASS)
+    manifest GradleRIOPlugin.javaManifest(ROBOT_MAIN_CLASS)
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
@@ -152,7 +153,7 @@ wpi.java.configureExecutableTasks(jar)
 wpi.java.configureTestTasks(test)
 
 // Configure string concat to always inline compile
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
     options.compilerArgs.add '-XDstringConcat=inline'
 }
 
@@ -168,7 +169,7 @@ gversion {
 }
 
 // Create commit with working changes on event branches
-task(eventDeploy) {
+tasks.register('eventDeploy') {
     doLast {
         if (project.gradle.startParameter.taskNames.any({ it.toLowerCase().contains("deploy") })) {
             def branchPrefix = "event"
@@ -198,6 +199,7 @@ task(eventDeploy) {
         }
     }
 }
+
 createVersionFile.dependsOn(eventDeploy)
 
 // Spotless formatting
@@ -222,7 +224,7 @@ spotless {
             exclude "**/build/**", "**/build-*/**"
         }
         greclipse()
-        indentWithSpaces(4)
+        leadingTabsToSpaces(4)
         trimTrailingWhitespace()
         endWithNewline()
     }
@@ -239,7 +241,7 @@ spotless {
             exclude "**/build/**", "**/build-*/**"
         }
         trimTrailingWhitespace()
-        indentWithSpaces(2)
+        leadingTabsToSpaces(2)
         endWithNewline()
     }
 }

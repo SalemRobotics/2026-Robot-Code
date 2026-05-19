@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
  */
 @UninstantiableClass
 public final class FieldConstants {
-  public static final FieldType FIELD_TYPE = FieldType.ANDYMARK;
+  public static final FieldType FIELD_TYPE = FieldType.WELDED;
 
   // AprilTag related constants
   public static final int APRILTAG_COUNT = AprilTagLayoutType.OFFICIAL.getLayout().getTags().size();
@@ -320,10 +320,25 @@ public final class FieldConstants {
         new Translation2d(0, AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(29).get().getY());
   }
 
+  private static final Translation2d HUB_CORNER_TRANSLATION =
+      new Translation2d(Units.inchesToMeters(27), Units.inchesToMeters(27));
+
   public static Pose2d getAllianceHub() {
     return switch (DriverStation.getAlliance().orElse(Alliance.Blue)) {
       case Blue -> Hub.BLUE_HUB;
       case Red -> Hub.RED_HUB;
+    };
+  }
+
+  public static Translation2d[] getAllianceHubCorners() {
+    final Translation2d baseHub = getAllianceHub().getTranslation();
+    final Translation2d topLeft = baseHub.plus(HUB_CORNER_TRANSLATION);
+
+    return new Translation2d[] {
+      topLeft,
+      topLeft.rotateAround(baseHub, Rotation2d.kCW_90deg),
+      topLeft.rotateAround(baseHub, Rotation2d.k180deg),
+      topLeft.rotateAround(baseHub, Rotation2d.kCW_90deg)
     };
   }
 

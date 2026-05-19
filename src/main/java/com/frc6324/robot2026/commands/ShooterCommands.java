@@ -4,6 +4,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.frc6324.lib.UninstantiableClass;
 import com.frc6324.lib.util.AllianceFlipUtil;
 import com.frc6324.lib.util.Allocated;
+import com.frc6324.lib.util.CommonUtils;
 import com.frc6324.lib.util.FieldConstants;
 import com.frc6324.lib.util.FieldConstants.LinesVertical;
 import com.frc6324.lib.util.PoseExtensions;
@@ -354,7 +355,8 @@ public final class ShooterCommands {
 
     @Override
     boolean shouldIndex(Rotation2d targetFacing, double distanceToTarget) {
-      final double tolerance = CLOSE_ANGLE_TOLERANCE + TOLERANCE_DECAY_PER_METER * distanceToTarget;
+      final double tolerance =
+          Math.max(0.25, CLOSE_ANGLE_TOLERANCE + TOLERANCE_DECAY_PER_METER * distanceToTarget);
 
       final Rotation2d robotYaw = drive.getPose().getRotation();
       final boolean atRobotAngle =
@@ -396,8 +398,16 @@ public final class ShooterCommands {
   }
 
   public static class PassToAllianceZoneCommand extends AbstractShootAtCommand {
+    private static final Translation2d LEFT_DRUM_TRANSLATION =
+        new Translation2d(Units.inchesToMeters(-13.5), Units.inchesToMeters(10));
+    private static final Translation2d RIGHT_DRUM_TRANSLATION =
+        new Translation2d(Units.inchesToMeters(-13.5), Units.inchesToMeters(-10));
+
     private final XboxController controller;
+    private Translation2d[] hubCorners;
     private List<Translation2d> allianceZoneTranslations;
+    private List<Translation2d> farAllianceZoneTranslations;
+    private Translation2d centerTranslation;
     private boolean underTrench;
 
     public PassToAllianceZoneCommand(
@@ -431,26 +441,81 @@ public final class ShooterCommands {
 
     @Override
     Translation2d getTarget() {
-      return drive.getPose().getTranslation().nearest(allianceZoneTranslations);
+      final Pose2d pose = drive.getPose();
+      final Translation2d translation = pose.getTranslation();
+
+      final Translation2d delta = centerTranslation.minus(translation);
+      final Rotation2d angle = delta.getAngle().plus(Rotation2d.k180deg);
+
+      final Translation2d drumL = translation.plus(LEFT_DRUM_TRANSLATION.rotateBy(angle));
+      final Translation2d drumR = translation.plus(RIGHT_DRUM_TRANSLATION.rotateBy(angle));
+      final Translation2d targetR = centerTranslation.plus(RIGHT_DRUM_TRANSLATION.rotateBy(angle));
+      final Translation2d targetL = centerTranslation.plus(LEFT_DRUM_TRANSLATION.rotateBy(angle));
+
+      final Translation2d[] shotPoints = {drumL, drumR, targetR, targetL};
+      Logger.recordOutput(logKey + "/ShotRectangleCorners", shotPoints);
+
+      final boolean conflict = CommonUtils.polygonsIntersect(shotPoints, hubCorners);
+
+      Logger.recordOutput(logKey + "/ConflictToCenterShot", conflict);
+
+      if (conflict) {
+        final Translation2d near = translation.nearest(allianceZoneTranslations);
+        final Translation2d nearDelta = near.minus(pose.getTranslation());
+        final Rotation2d nearAngle = nearDelta.getAngle().plus(Rotation2d.k180deg);
+
+        final Translation2d nearDrumL = translation.plus(LEFT_DRUM_TRANSLATION.rotateBy(nearAngle));
+        final Translation2d nearDrumR =
+            translation.plus(RIGHT_DRUM_TRANSLATION.rotateBy(nearAngle));
+        final Translation2d nearTargetR = near.plus(RIGHT_DRUM_TRANSLATION.rotateBy(nearAngle));
+        final Translation2d nearTargetL = near.plus(LEFT_DRUM_TRANSLATION.rotateBy(nearAngle));
+
+        final Translation2d[] nearShotPoints = {nearDrumL, nearDrumR, nearTargetR, nearTargetL};
+        final boolean nearConflict = CommonUtils.polygonsIntersect(nearShotPoints, hubCorners);
+
+        if (nearConflict) {
+          return translation.nearest(farAllianceZoneTranslations);
+        }
+
+        return near;
+      }
+
+      return centerTranslation;
     }
 
     @Override
     public void initialize() {
       final double x =
           switch (DriverStation.getAlliance().orElse(Alliance.Blue)) {
-            case Blue -> LinesVertical.ALLIANCE_ZONE / 2;
-            case Red -> (LinesVertical.OPP_ALIANCE_ZONE + FieldConstants.FIELD_LENGTH) / 2;
+            case Blue -> 0;
+            case Red -> FieldConstants.FIELD_LENGTH;
           };
 
-      allianceZoneTranslations =
-          List.of(
-              new Translation2d(x, FieldConstants.FIELD_WIDTH / 5),
-              new Translation2d(x, FieldConstants.FIELD_WIDTH / 4),
-              new Translation2d(x, FieldConstants.FIELD_WIDTH * 0.75),
-              new Translation2d(x, FieldConstants.FIELD_WIDTH * 0.8));
+      hubCorners = FieldConstants.getAllianceHubCorners();
 
+      final Translation2d leftAllianceTranslation =
+          new Translation2d(x, FieldConstants.FIELD_WIDTH * 14 / 20);
+      final Translation2d rightAllianceTranslation =
+          new Translation2d(x, FieldConstants.FIELD_WIDTH * 6 / 20);
+
+      final Translation2d leftFarAllianceTranslation =
+          new Translation2d(x, FieldConstants.FIELD_WIDTH * 17 / 20);
+      final Translation2d rightFarAllianceTranslation =
+          new Translation2d(x, FieldConstants.FIELD_WIDTH * 3 / 20);
+
+      centerTranslation = new Translation2d(x, FieldConstants.FIELD_WIDTH / 2);
+      allianceZoneTranslations = List.of(leftAllianceTranslation, rightAllianceTranslation);
+      farAllianceZoneTranslations =
+          List.of(leftFarAllianceTranslation, rightFarAllianceTranslation);
+
+      Logger.recordOutput(logKey + "/HubCorners", hubCorners);
       Logger.recordOutput(
-          logKey + "/AllPassingPoses", allianceZoneTranslations.toArray(Translation2d[]::new));
+          logKey + "/AllPassingPoses",
+          leftFarAllianceTranslation,
+          leftAllianceTranslation,
+          centerTranslation,
+          rightAllianceTranslation,
+          rightFarAllianceTranslation);
       super.initialize();
     }
 

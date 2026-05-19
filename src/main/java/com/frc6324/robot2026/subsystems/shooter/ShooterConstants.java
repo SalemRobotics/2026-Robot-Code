@@ -8,17 +8,11 @@ import com.ctre.phoenix6.signals.*;
 import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
 import com.frc6324.lib.UninstantiableClass;
 import com.frc6324.robot2026.Constants;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.interpolation.Interpolatable;
-import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
-import edu.wpi.first.math.interpolation.InverseInterpolator;
+import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.math.interpolation.*;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.*;
 
 @UninstantiableClass
 public final class ShooterConstants {
@@ -45,13 +39,13 @@ public final class ShooterConstants {
     HUB_SHOT_MAP.put(4.572, new HubShotParams(Rotations.of(0.0400), RotationsPerSecond.of(47.00)));
     HUB_SHOT_MAP.put(5.139, new HubShotParams(Rotations.of(0.0550), RotationsPerSecond.of(47.50)));
 
-    // TODO: Actually tune this :p
-    PASSING_VELOCITY_MAP.put(0.00, RotationsPerSecond.of(20));
-    PASSING_VELOCITY_MAP.put(1.00, RotationsPerSecond.of(25));
-    PASSING_VELOCITY_MAP.put(2.50, RotationsPerSecond.of(30));
-    PASSING_VELOCITY_MAP.put(5.00, RotationsPerSecond.of(40));
-    PASSING_VELOCITY_MAP.put(7.50, RotationsPerSecond.of(52.5));
-    PASSING_VELOCITY_MAP.put(10.0, RotationsPerSecond.of(67));
+    PASSING_VELOCITY_MAP.put(1.00, RotationsPerSecond.of(20));
+    PASSING_VELOCITY_MAP.put(3.00, RotationsPerSecond.of(25));
+    PASSING_VELOCITY_MAP.put(4.50, RotationsPerSecond.of(30));
+    PASSING_VELOCITY_MAP.put(7.00, RotationsPerSecond.of(40));
+    PASSING_VELOCITY_MAP.put(9.50, RotationsPerSecond.of(52.5));
+    PASSING_VELOCITY_MAP.put(12.0, RotationsPerSecond.of(67));
+    PASSING_VELOCITY_MAP.put(15.0, RotationsPerSecond.of(80));
   }
 
   private ShooterConstants() {
