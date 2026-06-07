@@ -31,4 +31,12 @@ public final class AutoCommands {
         .onlyIf(RobotBase::isReal)
         .andThen(new PathPlannerAuto("Double Trench Reversed", side == AllianceSide.Right));
   }
+
+  public static Command nashobaDoubleTrenchAuto(AllianceSide side) {
+    return new PathPlannerAuto("Nashoba Double Trench", side == AllianceSide.Right);
+  }
+
+  public static Command forceDoubleTrenchAuto(AllianceSide side) {
+    return new PathPlannerAuto("Force Double Trench", side == AllianceSide.Right);
+  }
 }

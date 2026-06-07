@@ -51,7 +51,7 @@ public class IndexerIOTalonFX implements IndexerIO {
 
   @Override
   public void setBeltVelocity(AngularVelocity velocity) {
-    belt.set(0.5);
+    belt.set(1);
   }
 
   @Override

@@ -136,7 +136,7 @@ public final class ShooterCommands {
         indexerRunning = true;
       }
 
-      final boolean intakeTimedOut = intakeCommandTimeout.hasElapsed(0.420);
+      final boolean intakeTimedOut = intakeCommandTimeout.hasElapsed(1);
       if (sendingIntakeOut) {
         if (intakeTimedOut || intake.isDeployed()) {
           intake.retract();

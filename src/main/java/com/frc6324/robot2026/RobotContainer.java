@@ -153,12 +153,25 @@ public class RobotContainer {
         "Left Double Trench", AutoCommands.doubleTrenchAuto(AllianceSide.Left, intake));
     autoChooser.addOption(
         "Right Double Trench", AutoCommands.doubleTrenchAuto(AllianceSide.Right, intake));
+
+    autoChooser.addOption(
+        "Nashoba Left Double Trench", AutoCommands.nashobaDoubleTrenchAuto(AllianceSide.Left));
+    autoChooser.addOption(
+        "Nashoba Right Double Trench", AutoCommands.nashobaDoubleTrenchAuto(AllianceSide.Right));
+
+    autoChooser.addOption(
+        "Force Left Double Trench", AutoCommands.forceDoubleTrenchAuto(AllianceSide.Left));
+    autoChooser.addOption(
+        "Force Right Double Trench", AutoCommands.forceDoubleTrenchAuto(AllianceSide.Right));
+
     autoChooser.addOption(
         "Left Double Trench Reversed",
         AutoCommands.doubleTrenchReversedAuto(AllianceSide.Left, intake));
+
     autoChooser.addOption(
         "Right Double Trench Reversed",
         AutoCommands.doubleTrenchReversedAuto(AllianceSide.Right, intake));
+
     LoggedTracer.record("Init/Auto chooser");
   }
 
