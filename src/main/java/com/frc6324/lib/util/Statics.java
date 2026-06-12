@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 The Blue Devils.
+ * Copyright (c) 2026 The Blue Devils.
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -27,7 +27,6 @@ import org.jetbrains.annotations.NotNull;
 public final class Statics {
   @Contract(" -> fail")
   private Statics() {
-    // Throw an Error since this means a reflection attack took place.
     throw new IllegalAccessError();
   }
 

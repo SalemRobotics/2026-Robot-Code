@@ -1,0 +1,163 @@
+{
+ "name":"Autos",
+ "version":2,
+ "type":"Swerve",
+ "variables":{
+  "expressions":{
+   "BumpCrossHeading":{
+    "dimension":"Angle",
+    "var":{
+     "exp":"90 deg",
+     "val":1.5707963267948966
+    }
+   },
+   "BumpCrossY":{
+    "dimension":"Length",
+    "var":{
+     "exp":"5.5 m",
+     "val":5.5
+    }
+   },
+   "DepotIntakeX":{
+    "dimension":"Length",
+    "var":{
+     "exp":"0.5 m",
+     "val":0.5
+    }
+   }
+  },
+  "poses":{
+   "CenterScore":{
+    "x":{
+     "exp":"2.5 m",
+     "val":2.5
+    },
+    "y":{
+     "exp":"4 m",
+     "val":4.0
+    },
+    "heading":{
+     "exp":"180 deg",
+     "val":3.141592653589793
+    }
+   },
+   "HubShotPose":{
+    "x":{
+     "exp":"3 m",
+     "val":3.0
+    },
+    "y":{
+     "exp":"5.5 m",
+     "val":5.5
+    },
+    "heading":{
+     "exp":"120 deg",
+     "val":2.0943951023931953
+    }
+   },
+   "OutpostIntake":{
+    "x":{
+     "exp":"0.6 m",
+     "val":0.6
+    },
+    "y":{
+     "exp":"0.65 m",
+     "val":0.65
+    },
+    "heading":{
+     "exp":"180 deg",
+     "val":3.141592653589793
+    }
+   },
+   "TrenchStart":{
+    "x":{
+     "exp":"4 m",
+     "val":4.0
+    },
+    "y":{
+     "exp":"7.4 m",
+     "val":7.4
+    },
+    "heading":{
+     "exp":"180 deg",
+     "val":3.141592653589793
+    }
+   }
+  }
+ },
+ "config":{
+  "frontLeft":{
+   "x":{
+    "exp":"10.875 in",
+    "val":0.276225
+   },
+   "y":{
+    "exp":"10.875 in",
+    "val":0.276225
+   }
+  },
+  "backLeft":{
+   "x":{
+    "exp":"-11 in",
+    "val":-0.2794
+   },
+   "y":{
+    "exp":"11 in",
+    "val":0.2794
+   }
+  },
+  "mass":{
+   "exp":"140 lbs",
+   "val":63.502931800000006
+  },
+  "inertia":{
+   "exp":"6.883 kg m ^ 2",
+   "val":6.883
+  },
+  "gearing":{
+   "exp":"6.03",
+   "val":6.03
+  },
+  "radius":{
+   "exp":"2 in",
+   "val":0.0508
+  },
+  "vmax":{
+   "exp":"5500 RPM",
+   "val":575.9586531581288
+  },
+  "tmax":{
+   "exp":"1.7 N * m",
+   "val":1.7
+  },
+  "cof":{
+   "exp":"2",
+   "val":2.0
+  },
+  "bumper":{
+   "front":{
+    "exp":"17 in",
+    "val":0.4318
+   },
+   "side":{
+    "exp":"17 in",
+    "val":0.4318
+   },
+   "back":{
+    "exp":"17 in",
+    "val":0.4318
+   }
+  },
+  "differentialTrackWidth":{
+   "exp":"22 in",
+   "val":0.5588
+  }
+ },
+ "generationFeatures":[],
+ "codegen":{
+  "root":"../../java/com/frc6324/robot2026/generated",
+  "genVars":true,
+  "genTrajData":true,
+  "useChoreoLib":true
+ }
+}
