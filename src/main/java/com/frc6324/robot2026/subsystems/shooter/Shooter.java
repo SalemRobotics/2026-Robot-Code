@@ -6,7 +6,7 @@ import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.DrumCons
 import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.HoodConstants.*;
 import static edu.wpi.first.units.Units.*;
 
-import com.frc6324.lib.util.LoggedTracer;
+import com.frc6324.lib.util.logging.LoggedTracer;
 import com.frc6324.robot2026.sim.MapleSimManager;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -50,6 +50,11 @@ public final class Shooter extends SubsystemBase {
 
   public void incrementOffset() {
     velocityOffset = velocityOffset.plus(DRUM_OFFSET_STEP);
+  }
+
+  public boolean noFuelSeen() {
+    // TODO: update this when the beam break is added
+    return false;
   }
 
   /**

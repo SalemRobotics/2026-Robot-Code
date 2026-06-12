@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file at
 // the root directory of this project.
 
-package com.frc6324.lib.util;
+package com.frc6324.lib.util.logging;
 
 import edu.wpi.first.wpilibj.Timer;
 import org.littletonrobotics.junction.Logger;

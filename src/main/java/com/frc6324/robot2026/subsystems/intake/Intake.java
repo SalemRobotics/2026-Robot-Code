@@ -4,7 +4,7 @@ import static com.frc6324.robot2026.subsystems.intake.IntakeConstants.*;
 import static edu.wpi.first.units.Units.*;
 
 import com.frc6324.lib.util.CommonUtils;
-import com.frc6324.lib.util.LoggedTracer;
+import com.frc6324.lib.util.logging.LoggedTracer;
 import com.frc6324.robot2026.sim.MapleSimManager;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;

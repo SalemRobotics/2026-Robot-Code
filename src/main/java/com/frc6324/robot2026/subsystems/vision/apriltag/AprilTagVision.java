@@ -2,8 +2,8 @@ package com.frc6324.robot2026.subsystems.vision.apriltag;
 
 import static com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagConstants.*;
 
-import com.frc6324.lib.util.LoggedTracer;
 import com.frc6324.lib.util.VirtualSubsystem;
+import com.frc6324.lib.util.logging.LoggedTracer;
 import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagIO.VisionEstimation;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;

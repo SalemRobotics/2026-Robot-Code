@@ -16,16 +16,20 @@
 package com.frc6324.robot2026;
 
 import static com.frc6324.robot2026.Constants.*;
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Radians;
 
+import com.frc6324.lib.util.AllianceFlipUtil;
+import com.frc6324.lib.util.FieldConstants.LinesHorizontal;
 import com.frc6324.lib.util.FieldConstants.LinesVertical;
-import com.frc6324.lib.util.IOLayer;
-import com.frc6324.lib.util.LoggedTracer;
 import com.frc6324.lib.util.PoseExtensions;
-import com.frc6324.robot2026.commands.AutoCommands;
-import com.frc6324.robot2026.commands.AutoCommands.AllianceSide;
+import com.frc6324.lib.util.logging.IOLayer;
+import com.frc6324.lib.util.logging.LoggedTracer;
 import com.frc6324.robot2026.commands.DriveCommands;
 import com.frc6324.robot2026.commands.ShooterCommands;
 import com.frc6324.robot2026.commands.ShooterCommands.*;
+import com.frc6324.robot2026.commands.autos.Auto;
+import com.frc6324.robot2026.commands.autos.NeutralZoneAutos;
 import com.frc6324.robot2026.subsystems.drive.*;
 import com.frc6324.robot2026.subsystems.drive.DriveIO.DriveIOReplay;
 import com.frc6324.robot2026.subsystems.indexer.*;
@@ -36,14 +40,20 @@ import com.frc6324.robot2026.subsystems.rollers.*;
 import com.frc6324.robot2026.subsystems.shooter.*;
 import com.frc6324.robot2026.subsystems.vision.apriltag.*;
 import com.frc6324.robot2026.subsystems.vision.objdetect.*;
-import com.pathplanner.lib.auto.NamedCommands;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import java.util.Arrays;
 import lombok.experimental.ExtensionMethod;
 import org.littletonrobotics.junction.LoggedPowerDistribution;
+import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 @ExtensionMethod(PoseExtensions.class)
@@ -60,11 +70,16 @@ public class RobotContainer {
   private final PowerDistribution pdh = new PowerDistribution();
   private final LoggedPowerDistribution loggedPDH =
       LoggedPowerDistribution.getInstance(pdh.getModule(), pdh.getType());
-  private final LoggedDashboardChooser<Command> autoChooser =
-      new LoggedDashboardChooser<>("Auto Selection");
 
+  private final LoggedDashboardChooser<Auto> autoChooser =
+      new LoggedDashboardChooser<>("Auto Selection");
   private final CommandXboxController controller =
       new CommandXboxController(DRIVER_CONTROLLER_PORT);
+
+  public final Field2d field = new Field2d();
+  private Command cachedAutoCommand = null;
+  private Pose2d cachedAutoStartingPose = null;
+  private Pose2d[] rawAutoPreviewPoses = new Pose2d[] {};
 
   public RobotContainer() {
     pdh.setSwitchableChannel(true);
@@ -142,63 +157,55 @@ public class RobotContainer {
       }
     }
 
-    configureNamedCommands();
-    LoggedTracer.record("Init/Auto command bindings");
-
     configureBindings();
     LoggedTracer.record("Init/Controller Bindings");
 
-    autoChooser.addDefaultOption("No Auto", Commands.none());
-    autoChooser.addOption(
-        "Left Double Trench", AutoCommands.doubleTrenchAuto(AllianceSide.Left, intake));
-    autoChooser.addOption(
-        "Right Double Trench", AutoCommands.doubleTrenchAuto(AllianceSide.Right, intake));
+    autoChooser.addDefaultOption("No Auto", Auto.doNothing());
 
-    autoChooser.addOption(
-        "Nashoba Left Double Trench", AutoCommands.nashobaDoubleTrenchAuto(AllianceSide.Left));
-    autoChooser.addOption(
-        "Nashoba Right Double Trench", AutoCommands.nashobaDoubleTrenchAuto(AllianceSide.Right));
+    final Auto.Builder builder = new Auto.Builder(drive, indexer, intake, rollers, shooter);
+    NeutralZoneAutos.addToChooser(autoChooser, builder);
 
-    autoChooser.addOption(
-        "Force Left Double Trench", AutoCommands.forceDoubleTrenchAuto(AllianceSide.Left));
-    autoChooser.addOption(
-        "Force Right Double Trench", AutoCommands.forceDoubleTrenchAuto(AllianceSide.Right));
+    autoChooser.onChange(
+        auto -> {
+          if (auto == null) {
+            rawAutoPreviewPoses = new Pose2d[0];
+            field.getObject("Auto Start").setPoses(rawAutoPreviewPoses);
+            field.getObject("Auto Path").setPoses(rawAutoPreviewPoses);
 
-    autoChooser.addOption(
-        "Left Double Trench Reversed",
-        AutoCommands.doubleTrenchReversedAuto(AllianceSide.Left, intake));
+            cachedAutoCommand = null;
+            cachedAutoStartingPose = null;
 
-    autoChooser.addOption(
-        "Right Double Trench Reversed",
-        AutoCommands.doubleTrenchReversedAuto(AllianceSide.Right, intake));
+            return;
+          }
 
+          final Pose2d[] pathPoses = auto.previewPoses().toArray(Pose2d[]::new);
+          if (pathPoses.length == 0) {
+            rawAutoPreviewPoses = new Pose2d[0];
+            field.getObject("Auto Start").setPoses(rawAutoPreviewPoses);
+            field.getObject("Auto Path").setPoses(rawAutoPreviewPoses);
+            return;
+          }
+
+          pathPoses[0] = auto.startingPose();
+          rawAutoPreviewPoses = pathPoses;
+
+          // Apply alliance flip for initial preview
+          final Pose2d[] flippedPoses =
+              Arrays.stream(rawAutoPreviewPoses)
+                  .map(AllianceFlipUtil::apply)
+                  .toArray(Pose2d[]::new);
+
+          field.getObject("Auto Start").setPose(flippedPoses[0]);
+          field.getObject("Auto Path").setPoses(flippedPoses);
+
+          Logger.recordOutput("Auto/PathPoses", flippedPoses);
+
+          cachedAutoCommand = auto.command();
+          cachedAutoStartingPose = auto.startingPose();
+        });
+
+    SmartDashboard.putData("Auto Preview", field);
     LoggedTracer.record("Init/Auto chooser");
-  }
-
-  private void configureNamedCommands() {
-    NamedCommands.registerCommand(
-        "Intake",
-        Commands.run(
-            () -> {
-              intake.deploy(false);
-              rollers.spinRollers();
-            },
-            intake,
-            rollers));
-    NamedCommands.registerCommand(
-        "Outtake",
-        Commands.run(
-            () -> {
-              intake.deploy(false);
-              rollers.outtake();
-            },
-            intake,
-            rollers));
-    NamedCommands.registerCommand("RetractIntake", intake.run(intake::retract));
-    NamedCommands.registerCommand("IdleShooter", new IdleShooterCommand(shooter, drive));
-    NamedCommands.registerCommand(
-        "ShootIntoHub",
-        new ShootIntoHubCommand(drive, indexer, intake, rollers, shooter, "AutoShootIntoHub"));
   }
 
   private void configureBindings() {
@@ -284,6 +291,75 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return autoChooser.get();
+    if (cachedAutoCommand != null) {
+      final Command cmd = cachedAutoCommand;
+
+      // Reset auto cache
+      cachedAutoCommand = null;
+      cachedAutoStartingPose = null;
+
+      return cmd;
+    }
+
+    final Auto option = autoChooser.get();
+    return option == null ? Commands.none() : option.command();
+  }
+
+  public Pose2d getAutonomousStartingPose() {
+    return cachedAutoStartingPose;
+  }
+
+  /**
+   * Updates the checks displayed on the driver station. These include:
+   *
+   * <ul>
+   *   <li>Whether the robot is on the wrong side of the alliance
+   *   <li>Whether the robot is near its starting point rotationally and transationally
+   *   <li>Whether the odometry thinks that the robot is on the correct alliance
+   * </ul>
+   */
+  public void updateAutoChecks() {
+    final Pose2d drivePose = drive.getPose();
+
+    final double robotX = drivePose.getX();
+    final double robotY = drivePose.getY();
+
+    final Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
+
+    final boolean onCorrectAlliance =
+        (drivePose.getX() > LinesVertical.CENTER && alliance == Alliance.Red)
+            || (drivePose.getX() < LinesVertical.CENTER && alliance == Alliance.Blue);
+    Logger.recordOutput("AutoChecks/OdometryOnCorrectAlliance", onCorrectAlliance);
+
+    if (cachedAutoStartingPose == null) {
+      // No auto selected, return
+      return;
+    }
+
+    final double startX = cachedAutoStartingPose.getX();
+    final double startY = cachedAutoStartingPose.getY();
+
+    final boolean onCorrectSide =
+        (startX < LinesHorizontal.CENTER - 0.1 && robotX < LinesHorizontal.CENTER - 0.1)
+            || (startX > LinesHorizontal.CENTER + 0.1 && robotX > LinesHorizontal.CENTER + 0.1);
+    Logger.recordOutput("AutoChecks/RobotOnCorrectSide", onCorrectSide);
+
+    final boolean withinXTolerance = MathUtil.isNear(robotX, startX, 0.05);
+    final boolean withinYTolerance = MathUtil.isNear(robotY, startY, 0.05);
+
+    Logger.recordOutput("AutoChecks/WithinXTolerance", withinXTolerance);
+    Logger.recordOutput("AutoChecks/WithinYTolerance", withinYTolerance);
+
+    final boolean withinHeadingTolerance =
+        MathUtil.isNear(
+            drivePose.getRotation().getRadians(),
+            cachedAutoStartingPose.getRotation().getRadians(),
+            Radians.convertFrom(10, Degrees));
+    Logger.recordOutput("AutoChecks/WithinHeadingTolerance", withinHeadingTolerance);
+  }
+
+  /** Updates the robot's pose on the field widget sent to the driver station. */
+  public void updateFieldWidget() {
+    field.setRobotPose(drive.getPose());
   }
 }

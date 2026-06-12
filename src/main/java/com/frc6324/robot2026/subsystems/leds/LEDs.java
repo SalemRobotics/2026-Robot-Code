@@ -3,8 +3,8 @@ package com.frc6324.robot2026.subsystems.leds;
 import static com.frc6324.robot2026.subsystems.leds.LEDsConstants.*;
 
 import com.frc6324.lib.UninstantiableClass;
-import com.frc6324.lib.util.LoggedTracer;
 import com.frc6324.lib.util.VirtualSubsystem;
+import com.frc6324.lib.util.logging.LoggedTracer;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.wpilibj.AddressableLED;

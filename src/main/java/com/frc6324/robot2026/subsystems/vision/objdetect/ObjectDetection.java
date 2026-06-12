@@ -2,8 +2,8 @@ package com.frc6324.robot2026.subsystems.vision.objdetect;
 
 import static com.frc6324.robot2026.subsystems.vision.objdetect.ObjectDetectionConstants.*;
 
-import com.frc6324.lib.util.LoggedTracer;
 import com.frc6324.lib.util.VirtualSubsystem;
+import com.frc6324.lib.util.logging.LoggedTracer;
 import com.frc6324.robot2026.subsystems.vision.objdetect.ObjDetectIO.ObjDetectInputs;
 import com.frc6324.robot2026.subsystems.vision.objdetect.ObjDetectIO.VisibleGamePiece;
 import edu.wpi.first.math.geometry.Rotation2d;

@@ -28,6 +28,8 @@ public final class Constants {
 
   public static final int DRIVER_CONTROLLER_PORT = 0;
 
+  public static final boolean TUNING_ENABLED = true;
+
   /** The mode that should be run when the robot is being simulated. */
   public static final Mode SIM_MODE = Mode.SIM;
 

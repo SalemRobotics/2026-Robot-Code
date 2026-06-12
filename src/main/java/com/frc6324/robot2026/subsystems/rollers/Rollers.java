@@ -1,6 +1,6 @@
 package com.frc6324.robot2026.subsystems.rollers;
 
-import com.frc6324.lib.util.LoggedTracer;
+import com.frc6324.lib.util.logging.LoggedTracer;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;

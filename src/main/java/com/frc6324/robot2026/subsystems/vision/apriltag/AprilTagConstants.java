@@ -47,7 +47,10 @@ public final class AprilTagConstants {
         Units.inchesToMeters(3.75),
         Units.inchesToMeters(12.5),
         Units.inchesToMeters(8.75),
-        new Rotation3d(Units.rotationsToDegrees(10), 0, Units.degreesToRadians(90)))
+        new Rotation3d(
+            Units.degreesToRadians(10), // uhhhh....
+            0,
+            Units.degreesToRadians(90)))
   };
 
   public static final Frequency UPDATE_THREAD_FREQUENCY = Hertz.of(60);

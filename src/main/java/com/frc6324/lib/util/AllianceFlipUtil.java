@@ -13,7 +13,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-
 package com.frc6324.lib.util;
 
 import com.frc6324.lib.UninstantiableClass;
@@ -85,7 +84,7 @@ public final class AllianceFlipUtil {
   @Contract("_ -> new")
   public static @NotNull Translation2d applyUnchecked(@NotNull Translation2d translation) {
     return new Translation2d(
-        applyXUnchecked(translation.getX()), applyYUnchecked(translation.getX()));
+        applyXUnchecked(translation.getX()), applyYUnchecked(translation.getY()));
   }
 
   public static Translation2d apply(Translation2d translation) {

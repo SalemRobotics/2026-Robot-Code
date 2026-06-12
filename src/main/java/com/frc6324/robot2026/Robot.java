@@ -16,12 +16,10 @@
 package com.frc6324.robot2026;
 
 import com.ctre.phoenix6.SignalLogger;
-import com.frc6324.lib.util.LoggedTracer;
 import com.frc6324.lib.util.PhoenixUtil;
 import com.frc6324.lib.util.VirtualSubsystem;
+import com.frc6324.lib.util.logging.LoggedTracer;
 import com.frc6324.robot2026.sim.MapleSimManager;
-import com.pathplanner.lib.commands.FollowPathCommand;
-import com.pathplanner.lib.commands.PathfindingCommand;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -109,10 +107,6 @@ public class Robot extends LoggedRobot {
     // Initialize the robot container
     robotContainer = new RobotContainer();
     PhoenixUtil.synchronizeSignals(2);
-
-    // Schedule the PathPlanner warmup commands
-    CommandScheduler.getInstance()
-        .schedule(FollowPathCommand.warmupCommand(), PathfindingCommand.warmupCommand());
   }
 
   /**
@@ -183,6 +177,8 @@ public class Robot extends LoggedRobot {
     Logger.recordOutput("Match/Hub Active", getIsAllianceActive());
     Logger.recordOutput("Match/Phase Time", getTimeLeftInPhase());
 
+    robotContainer.updateFieldWidget();
+
     // Set thread to highest priority to improve performance
     // Threads.setCurrentThreadPriority(true, 99);
 
@@ -206,7 +202,9 @@ public class Robot extends LoggedRobot {
   public void disabledInit() {}
 
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+    Logger.runEveryN(5, robotContainer::updateAutoChecks);
+  }
 
   @Override
   public void disabledExit() {}

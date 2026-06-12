@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 The Blue Devils.
+ * Copyright (c) 2026 The Blue Devils.
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -13,22 +13,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-package com.frc6324.lib.util;
+package com.frc6324.lib.util.logging;
 
-import com.frc6324.lib.UninstantiableClass;
 import org.jetbrains.annotations.Contract;
 
 /**
  * A utility class for interacting with I/O interfaces that are annotated with {@link
  * java.lang.FunctionalInterface FunctionalInterface}.
  */
-@UninstantiableClass
-public final class IOLayer {
-  @Contract(" -> fail")
-  private IOLayer() {
-    // Throw an Error since this means a reflection attack took place.
-    throw new IllegalAccessError();
-  }
+public interface IOLayer<Inputs> {
+  void updateInputs(Inputs inputs);
 
   /**
    * A replay implementation for an I/O layer. This only works if the I/O interface is a {@link
@@ -48,11 +42,11 @@ public final class IOLayer {
    *
    * @implNote This function does not actually do anything and is functionally equivalent to
    *     <pre>{@code (inputs) -> {}}</pre>
-   *     However, this allows us to avoid allocating multiple lambda objects.
-   * @param <T> The type of the loggable inputs
+   *
+   * @param <I> The type of the loggable inputs
    * @param value The inputs a real or simulated I/O abstraction would modify; these are ignored in
    *     replay so they can accurately be restored from a log file.
    */
   @Contract(pure = true)
-  public static <T> void replay(T value) {}
+  public static <I> void replay(I value) {}
 }

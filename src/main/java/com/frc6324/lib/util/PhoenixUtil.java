@@ -1,10 +1,18 @@
-// Copyright (c) 2021-2025 Littleton Robotics
-// http://github.com/Mechanical-Advantage
-//
-// Use of this source code is governed by a BSD
-// license that can be found in the LICENSE file
-// at the root directory of this project.
-
+/*
+ * Copyright (c) 2026 The Blue Devils.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
 package com.frc6324.lib.util;
 
 import static edu.wpi.first.units.Units.Hertz;
@@ -19,32 +27,49 @@ import edu.wpi.first.units.measure.Frequency;
 import edu.wpi.first.wpilibj.DriverStation;
 import java.util.function.Supplier;
 
+/** Utilities for working with the Phoenix 6 API. */
 @UninstantiableClass
 public final class PhoenixUtil {
+  private static final Frequency SIGNAL_FREQUENCY = Hertz.of(100);
+  private static final StatusSignalCollection canivoreSignals = new StatusSignalCollection();
+
   private PhoenixUtil() {
     throw new IllegalAccessError();
   }
 
-  private static final Frequency SIGNAL_FREQUENCY = Hertz.of(100);
-  private static final StatusSignalCollection canivoreSignals = new StatusSignalCollection();
-
   /** Attempts to run the command until no error is produced. */
-  public static void tryUntilOk(int maxAttempts, Supplier<StatusCode> command, String message) {
+  /**
+   * Attempts to run a given command until it returns a code of OK.
+   *
+   * @param maxAttempts The maximum number of tries before this command gives up.
+   * @param command The Phoenix 6 command to run.
+   * @param message The message to print before the status code's description.
+   * @return Whether the call succeeded
+   */
+  public static boolean tryUntilOk(int maxAttempts, Supplier<StatusCode> command, String message) {
     StatusCode error = StatusCode.StatusCodeNotInitialized;
 
     for (int i = 0; i < maxAttempts; i++) {
       error = command.get();
 
       if (error.isOK()) {
-        return;
+        return true;
       }
     }
 
     DriverStation.reportError(message + error.getDescription(), false);
+    return false;
   }
 
-  public static void tryUntilOk(int maxAttempts, Supplier<StatusCode> command) {
-    tryUntilOk(maxAttempts, command, "Error trying to apply phoenix command: ");
+  /**
+   * Attempts to run a given command until it returns a code of OK.
+   *
+   * @param maxAttempts The maximum number of tries before this command gives up.
+   * @param command The Phoenix 6 command to run.
+   * @return Whether the call succeeded
+   */
+  public static boolean tryUntilOk(int maxAttempts, Supplier<StatusCode> command) {
+    return tryUntilOk(maxAttempts, command, "Error trying to apply phoenix command: ");
   }
 
   /**
@@ -63,10 +88,17 @@ public final class PhoenixUtil {
     canivoreSignals.addSignals(signals);
   }
 
+  /**
+   * Waits for every signal registered to the cache in a blocking call so that the CANivore can
+   * synchronize them.
+   *
+   * @param timeout The maximum time to wait.
+   */
   public static void synchronizeSignals(double timeout) {
     canivoreSignals.waitForAll(timeout);
   }
 
+  /** Refreshes every signal in the CANivore status signal cache. */
   public static void refreshAllSignals() {
     canivoreSignals.refreshAll();
   }
