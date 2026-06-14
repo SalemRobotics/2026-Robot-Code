@@ -7,9 +7,10 @@ import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import com.frc6324.lib.util.AllianceSide;
 import com.frc6324.lib.util.FieldConstants;
+import com.frc6324.robot2026.RobotState;
 import com.frc6324.robot2026.commands.ShooterCommands.ShootIntoHubCommand;
 import com.frc6324.robot2026.generated.ChoreoTraj;
-import com.frc6324.robot2026.subsystems.drive.SwerveDrive;
+import com.frc6324.robot2026.subsystems.drive.Drive;
 import com.frc6324.robot2026.subsystems.indexer.Indexer;
 import com.frc6324.robot2026.subsystems.intake.Intake;
 import com.frc6324.robot2026.subsystems.rollers.Rollers;
@@ -70,7 +71,7 @@ public record Auto(
 
   public static class Builder {
     public final AutoFactory factory;
-    final SwerveDrive drive;
+    final Drive drive;
     final Indexer indexer;
     final Intake intake;
     final Rollers rollers;
@@ -78,7 +79,12 @@ public record Auto(
     final Map<String, Command> eventBindings = new HashMap<>();
 
     public Builder(
-        SwerveDrive drive, Indexer indexer, Intake intake, Rollers rollers, Shooter shooter) {
+        RobotState robotState,
+        Drive drive,
+        Indexer indexer,
+        Intake intake,
+        Rollers rollers,
+        Shooter shooter) {
       this.drive = drive;
       this.indexer = indexer;
       this.intake = intake;
@@ -86,7 +92,8 @@ public record Auto(
       this.shooter = shooter;
 
       factory =
-          new AutoFactory(drive::getPose, drive::setPose, (SwerveSample sample) -> {}, true, drive);
+          new AutoFactory(
+              robotState::getPose, robotState::setPose, (SwerveSample sample) -> {}, true, drive);
 
       CommandScheduler.getInstance().schedule(factory.warmupCmd());
     }

@@ -3,7 +3,7 @@ package com.frc6324.robot2026.subsystems.vision.apriltag;
 import static com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagConstants.*;
 
 import com.frc6324.lib.util.Lazy;
-import com.frc6324.lib.util.PoseExtensions.PoseSupplier;
+import com.frc6324.robot2026.RobotState;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
@@ -24,14 +24,12 @@ public final class AprilTagIOSim extends AprilTagIOPhoton {
               .setFPS(CAMERA_FPS[index])
               .setExposureTimeMs(10));
 
-  public AprilTagIOSim(OdometryPoseGetter odometryPoseGetter, PoseSupplier robotPoseGetter) {
-    super(odometryPoseGetter);
-
+  public AprilTagIOSim() {
     if (!system.isInitialized()) {
       VisionSystemSim sim = system.get();
 
       sim.addAprilTags(APRILTAG_LAYOUT);
-      VisionUpdateThread.addCallback(() -> sim.update(robotPoseGetter.getPose()));
+      VisionUpdateThread.addCallback(() -> sim.update(RobotState.getInstance().getPose()));
     }
 
     system.get().addCamera(cameraSim, ROBOT_TO_CAMERAS[index]);

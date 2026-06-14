@@ -6,7 +6,8 @@ import choreo.trajectory.Trajectory;
 import com.frc6324.lib.util.AllianceFlipUtil;
 import com.frc6324.lib.util.logging.LoggedTrigger;
 import com.frc6324.lib.util.logging.LoggedTunableNumber;
-import com.frc6324.robot2026.subsystems.drive.SwerveDrive;
+import com.frc6324.robot2026.RobotState;
+import com.frc6324.robot2026.subsystems.drive.Drive;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.Debouncer;
@@ -38,7 +39,8 @@ public final class TrajectoryFollower extends Command {
   private final PIDController yController;
   private final PIDController headingController;
 
-  private final SwerveDrive drive;
+  private final Drive drive;
+  private final RobotState robotState = RobotState.getInstance();
   private final Map<String, Command> eventCommands;
   private final Trajectory<SwerveSample> trajectory;
 
@@ -59,7 +61,7 @@ public final class TrajectoryFollower extends Command {
       PIDController yController,
       PIDController headingController,
       Trajectory<SwerveSample> trajectory,
-      SwerveDrive drive,
+      Drive drive,
       Map<String, Command> eventCommands) {
     this.xController = xController;
     this.yController = yController;
@@ -86,7 +88,13 @@ public final class TrajectoryFollower extends Command {
         if (cmd != null) {
           CommandScheduler.getInstance().schedule(cmd);
         } else {
-          DriverStation.reportError("Command " + name + " referenced in trajectory " + trajectory.name() + " does not exist.", false);
+          DriverStation.reportError(
+              "Command "
+                  + name
+                  + " referenced in trajectory "
+                  + trajectory.name()
+                  + " does not exist.",
+              false);
         }
 
         nextEventIndex++;
@@ -152,7 +160,7 @@ public final class TrajectoryFollower extends Command {
     lastTimestamp = timestamp;
 
     final boolean flip = AllianceFlipUtil.shouldFlip();
-    final Pose2d robotPose = drive.getPose();
+    final Pose2d robotPose = robotState.getPose();
 
     SwerveSample sample =
         trajectory
@@ -212,7 +220,7 @@ public final class TrajectoryFollower extends Command {
                       robotPose.getRotation().getRadians(), targetPose.getRotation().getRadians()));
         };
 
-    drive.runFieldCentric(speeds);
+    drive.runFieldRelative(speeds);
 
     Logger.recordOutput("Auto/FollowerCommand/TargetPose", targetPose);
     Logger.recordOutput("Auto/FollowerCommand/TrackingState", state);
@@ -236,7 +244,7 @@ public final class TrajectoryFollower extends Command {
       return false;
     }
 
-    final Pose2d robotPose = drive.getPose();
+    final Pose2d robotPose = robotState.getPose();
     final Pose2d target =
         trajectory.getFinalPose(AllianceFlipUtil.shouldFlip()).orElse(Pose2d.kZero);
 

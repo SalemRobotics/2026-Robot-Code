@@ -9,7 +9,7 @@ import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.frc6324.lib.util.PhoenixUtil;
+import com.frc6324.lib.util.PhoenixUtil.SignalCache;
 import edu.wpi.first.units.measure.*;
 
 public class IndexerIOTalonFX implements IndexerIO {
@@ -34,8 +34,8 @@ public class IndexerIOTalonFX implements IndexerIO {
   };
 
   public IndexerIOTalonFX() {
-    PhoenixUtil.addSignals(kicker, kickerSignals);
-    PhoenixUtil.addSignals(belt, beltSignals);
+    SignalCache.addSignals(kicker, kickerSignals);
+    SignalCache.addSignals(belt, beltSignals);
     ParentDevice.optimizeBusUtilizationForAll(0, kicker, belt);
 
     tryUntilOk(5, () -> kicker.getConfigurator().apply(INDEXER_KICKER_CONFIG));

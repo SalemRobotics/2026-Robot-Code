@@ -16,7 +16,7 @@
 package com.frc6324.robot2026;
 
 import com.ctre.phoenix6.SignalLogger;
-import com.frc6324.lib.util.PhoenixUtil;
+import com.frc6324.lib.util.PhoenixUtil.SignalCache;
 import com.frc6324.lib.util.VirtualSubsystem;
 import com.frc6324.lib.util.logging.LoggedTracer;
 import com.frc6324.robot2026.sim.MapleSimManager;
@@ -106,7 +106,7 @@ public class Robot extends LoggedRobot {
 
     // Initialize the robot container
     robotContainer = new RobotContainer();
-    PhoenixUtil.synchronizeSignals(2);
+    SignalCache.synchronizeSignals(2);
   }
 
   /**
@@ -185,7 +185,7 @@ public class Robot extends LoggedRobot {
     // Runs the command scheduler
 
     LoggedTracer.reset();
-    PhoenixUtil.refreshAllSignals();
+    SignalCache.refreshAllSignals();
     LoggedTracer.record("Phoenix Refresh");
 
     VirtualSubsystem.allPeriodics();
@@ -268,6 +268,14 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void simulationPeriodic() {
-    MapleSimManager.getInstance().simulationPeriodic();
+    if (Logger.hasReplaySource()) {
+      return;
+    }
+
+    final MapleSimManager manager = MapleSimManager.getInstance();
+
+    manager.simulationPeriodic();
+    RobotState.getInstance()
+        .setPose(manager.getMainRobotDriveSimulation().getSimulatedDriveTrainPose());
   }
 }

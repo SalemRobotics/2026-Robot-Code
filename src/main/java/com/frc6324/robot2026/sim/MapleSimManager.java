@@ -4,7 +4,8 @@ import static edu.wpi.first.units.Units.*;
 
 import com.frc6324.lib.LazySingleton;
 import com.frc6324.lib.util.CommonUtils;
-import com.frc6324.robot2026.subsystems.drive.DrivetrainConstants;
+import com.frc6324.robot2026.RobotState;
+import com.frc6324.robot2026.subsystems.drive.DriveConstants;
 import com.frc6324.robot2026.subsystems.intake.IntakeConstants;
 import com.frc6324.robot2026.subsystems.shooter.ShooterConstants;
 import com.frc6324.robot2026.subsystems.shooter.ShooterConstants.DrumConstants;
@@ -35,7 +36,7 @@ public final class MapleSimManager {
   private final RebuiltArena arena;
   private final SwerveDriveSimulation driveSimulation =
       new SwerveDriveSimulation(
-          DrivetrainConstants.MAPLE_SIM_CONFIG, DrivetrainConstants.SIM_STARTING_POSE);
+          DriveConstants.MAPLE_SIM_CONFIG, RobotState.getInstance().getPose());
   private final IntakeSimulation intakeSim =
       IntakeSimulation.OverTheBumperIntake(
           "Fuel",
@@ -196,6 +197,8 @@ public final class MapleSimManager {
       Logger.recordOutput("FieldSimulation/BlueAllianceScore", arena.getScore(Alliance.Blue));
       Logger.recordOutput("FieldSimulation/RedAllianceScore", arena.getScore(Alliance.Red));
 
+      Logger.recordOutput(
+          "FieldSimulation/MainRobot/Position", driveSimulation.getSimulatedDriveTrainPose());
       Logger.recordOutput("FieldSimulation/MainRobot/IntakeExtended", intakeExtended);
       Logger.recordOutput("FieldSimulation/MainRobot/IntakeActive", intakeSim.isRunning());
       Logger.recordOutput(

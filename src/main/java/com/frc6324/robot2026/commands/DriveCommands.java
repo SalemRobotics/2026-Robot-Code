@@ -2,12 +2,13 @@ package com.frc6324.robot2026.commands;
 
 import static edu.wpi.first.units.Units.Degrees;
 
-import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.frc6324.lib.UninstantiableClass;
 import com.frc6324.lib.util.PoseExtensions;
-import com.frc6324.robot2026.subsystems.drive.SwerveDrive;
+import com.frc6324.robot2026.subsystems.drive.Drive;
+import com.frc6324.robot2026.subsystems.drive.DriveConstants;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.XboxController;
@@ -21,9 +22,9 @@ import org.littletonrobotics.junction.Logger;
 public final class DriveCommands {
   static final double ANGLE_TOLERANCE = 2.5;
   static final double POSITION_TOLERANCE = Units.inchesToMeters(2);
-  static final double TRANSLATION_MAX_VELOCITY = SwerveDrive.getMaxLinearSpeed();
+  static final double TRANSLATION_MAX_VELOCITY = DriveConstants.MAX_LINEAR_SPEED_METERS_PER_SEC;
   static final double TRANSLATION_MAX_ACCELERATION = 7;
-  static final double ANGLE_MAX_VELOCITY = SwerveDrive.getMaxAngularSpeed();
+  static final double ANGLE_MAX_VELOCITY = DriveConstants.MAX_ANGULAR_SPEED_RADS_PER_SEC;
   static final double ANGLE_MAX_ACCELERATION = Units.degreesToRadians(720);
   static final double CONTROLLER_INPUT_EXP = 2;
   static final double DEADBAND = 0.1;
@@ -71,19 +72,13 @@ public final class DriveCommands {
    * @param controller The controller to get input from.
    * @return The drive command.
    */
-  public static Command joystickDrive(final SwerveDrive drive, final XboxController controller) {
-    final SwerveRequest.FieldCentric request =
-        new SwerveRequest.FieldCentric()
-            .withDriveRequestType(SwerveDrive.DRIVE_REQUEST)
-            .withSteerRequestType(SwerveDrive.STEER_REQUEST)
-            .withDesaturateWheelSpeeds(true);
-
+  public static Command joystickDrive(final Drive drive, final XboxController controller) {
     return drive.run(
         () -> {
           // Get the linear velocity
           Translation2d linearVelocity = getLinearVelocityFromJoysticks(controller);
           // Multiply the linear velocity by the drivetrain's max speed
-          linearVelocity = linearVelocity.times(SwerveDrive.getMaxLinearSpeed());
+          linearVelocity = linearVelocity.times(DriveConstants.MAX_LINEAR_SPEED_METERS_PER_SEC);
 
           // Get the rotational input
           double omega = -controller.getRightX();
@@ -92,18 +87,15 @@ public final class DriveCommands {
           // Raise the rotational input to a higher power for finer control
           omega = Math.copySign(Math.pow(omega, CONTROLLER_INPUT_EXP), omega);
           // Multiply rotational input by max speed
-          omega *= SwerveDrive.getMaxAngularSpeed();
+          omega *= DriveConstants.MAX_ANGULAR_SPEED_RADS_PER_SEC;
 
           // Log the controller values
           Logger.recordOutput("DriveCommands/JoystickDrive/TranslationVector", linearVelocity);
           Logger.recordOutput("DriveCommands/JoystickDrive/RotationalRate", omega);
 
           // Send the request to the drivetrain
-          drive.setControl(
-              request
-                  .withVelocityX(linearVelocity.getX())
-                  .withVelocityY(linearVelocity.getY())
-                  .withRotationalRate(omega));
+          drive.runFieldRelative(
+              new ChassisSpeeds(linearVelocity.getX(), linearVelocity.getY(), omega));
         });
   }
 }

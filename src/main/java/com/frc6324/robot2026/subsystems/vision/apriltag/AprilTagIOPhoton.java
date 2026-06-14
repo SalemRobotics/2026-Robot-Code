@@ -2,6 +2,7 @@ package com.frc6324.robot2026.subsystems.vision.apriltag;
 
 import static com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagConstants.*;
 
+import com.frc6324.robot2026.RobotState;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -27,7 +28,7 @@ public class AprilTagIOPhoton implements AprilTagIO {
   private static int cameraIndex = 0;
 
   protected final int index = cameraIndex++;
-  private final OdometryPoseGetter odometryPoseAtTime;
+  private final RobotState robotState = new RobotState();
 
   private final Lock updateLock = new ReentrantLock();
   private final AtomicReference<HashSet<Integer>> tagsSeen = new AtomicReference<>(new HashSet<>());
@@ -42,15 +43,14 @@ public class AprilTagIOPhoton implements AprilTagIO {
   private Matrix<N8, N1> distortionCoefficients = camera.getDistCoeffs().orElse(null);
   private final BooleanSupplier enableSignal;
 
-  public AprilTagIOPhoton(OdometryPoseGetter odometryPoseGetter, BooleanSupplier enableSignal) {
-    odometryPoseAtTime = odometryPoseGetter;
+  public AprilTagIOPhoton(BooleanSupplier enableSignal) {
     this.enableSignal = enableSignal;
 
     VisionUpdateThread.addCallback(this::updateOdometry);
   }
 
-  public AprilTagIOPhoton(OdometryPoseGetter odometryPoseGetter) {
-    this(odometryPoseGetter, () -> true);
+  public AprilTagIOPhoton() {
+    this(() -> true);
   }
 
   /**
@@ -98,7 +98,7 @@ public class AprilTagIOPhoton implements AprilTagIO {
         estimatedPose = multitagOpt.get();
         strategy = EstimationStrategy.Multitag;
       } else {
-        final Optional<Pose2d> odomPoseOpt = odometryPoseAtTime.samplePoseAt(timestamp);
+        final Optional<Pose2d> odomPoseOpt = robotState.samplePoseAt(timestamp);
         Optional<EstimatedRobotPose> constrainedSolvePNPOpt = Optional.empty();
 
         if (cameraMatrix != null && distCoeffs != null && odomPoseOpt.isPresent()) {

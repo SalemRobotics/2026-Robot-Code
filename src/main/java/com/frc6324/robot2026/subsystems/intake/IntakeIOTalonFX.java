@@ -9,7 +9,7 @@ import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.frc6324.lib.util.PhoenixUtil;
+import com.frc6324.lib.util.PhoenixUtil.SignalCache;
 import edu.wpi.first.units.measure.*;
 
 public class IntakeIOTalonFX implements IntakeIO {
@@ -28,7 +28,7 @@ public class IntakeIOTalonFX implements IntakeIO {
   };
 
   public IntakeIOTalonFX() {
-    PhoenixUtil.addSignals(talon, signals);
+    SignalCache.addSignals(talon, signals);
     talon.optimizeBusUtilization(0);
 
     // Set configurations for the motor
