@@ -24,6 +24,8 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
+import java.util.Collection;
+import java.util.function.ToDoubleFunction;
 import org.jetbrains.annotations.Contract;
 
 @UninstantiableClass
@@ -55,6 +57,40 @@ public final class CommonUtils {
   public static LinearVelocity getVelocity(AngularVelocity velocity, Distance radius) {
     final double dist = radius.in(Meters) * velocity.in(RadiansPerSecond);
     return MetersPerSecond.of(dist);
+  }
+
+  /**
+   * Maps a raw array to an array of doubles using the provided mapping function without allocating
+   * a {@link java.util.stream.Stream Stream}.
+   *
+   * @param <T> The type of items contained in the array.
+   * @param mapping A function that maps an item of type {@link T} (or any of its superclasses) to a
+   *     double.
+   * @param items The items to map.
+   * @return An array of doubles returned by calling {@code mapping} on each element of {@code
+   *     items}.
+   */
+  @SafeVarargs
+  // SAFETY: varargs is neither modified nor returned
+  public static <T> double[] mapToDouble(ToDoubleFunction<? super T> mapping, T... items) {
+    final double[] result = new double[items.length];
+    for (int i = 0; i < items.length; i++) {
+      result[i] = mapping.applyAsDouble(items[i]);
+    }
+
+    return result;
+  }
+
+  public static <T> double[] mapToDouble(ToDoubleFunction<? super T> mapping, Collection<T> items) {
+    final int length = items.size();
+    final double[] result = new double[length];
+
+    int i = 0;
+    for (final T value : items) {
+      result[i++] = mapping.applyAsDouble(value);
+    }
+
+    return result;
   }
 
   /**

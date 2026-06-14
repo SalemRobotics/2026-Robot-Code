@@ -4,6 +4,7 @@ import static com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagConstants
 
 import com.frc6324.lib.util.VirtualSubsystem;
 import com.frc6324.lib.util.logging.LoggedTracer;
+import com.frc6324.robot2026.RobotState;
 import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagIO.VisionEstimation;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
@@ -20,7 +21,7 @@ public class AprilTagVision extends VirtualSubsystem {
   private final AprilTagIO[] io;
   private final VisionInputsAutoLogged[] inputs;
   private final Alert[] disconnectedAlerts;
-  private final ArrayList<VisionConsumer> consumers = new ArrayList<>();
+  private final RobotState robotState = new RobotState();
 
   private final ArrayList<Pose2d> allRobotPoses = new ArrayList<>();
   private final ArrayList<Pose2d> allRobotPosesAccepted = new ArrayList<>();
@@ -108,12 +109,10 @@ public class AprilTagVision extends VirtualSubsystem {
             ANGULAR_STDDEV_BASELINE * stddevFactor * CAMERA_STDDEV_FACTORS[cameraIndex];
 
         // Send the update to all consumers
-        consumers.forEach(
-            c ->
-                c.addVisionMeasurement(
-                    robotPose,
-                    estimation.timestamp(),
-                    VecBuilder.fill(linearStddev, linearStddev, angularStddev)));
+        robotState.addVisionMeasurement(
+            robotPose,
+            estimation.timestamp(),
+            VecBuilder.fill(linearStddev, linearStddev, angularStddev));
       }
 
       // Log camera summary data
@@ -130,17 +129,6 @@ public class AprilTagVision extends VirtualSubsystem {
     }
 
     LoggedTracer.record("Periodic/AprilTag periodic");
-  }
-
-  /**
-   * Adds a consumer that will accept updates deemed acceptable from vision odometry.
-   *
-   * @param consumer The consumer to add.
-   * @return This subsystem for easier method chaining.
-   */
-  public AprilTagVision withConsumer(VisionConsumer consumer) {
-    consumers.add(consumer);
-    return this;
   }
 
   /** Marks a consumer of vision data. */

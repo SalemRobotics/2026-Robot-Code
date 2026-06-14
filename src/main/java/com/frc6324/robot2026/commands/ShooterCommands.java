@@ -1,17 +1,16 @@
 package com.frc6324.robot2026.commands;
 
-import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.frc6324.lib.UninstantiableClass;
-import com.frc6324.lib.util.AllianceFlipUtil;
 import com.frc6324.lib.util.Allocated;
 import com.frc6324.lib.util.CommonUtils;
 import com.frc6324.lib.util.FieldConstants;
 import com.frc6324.lib.util.FieldConstants.LinesVertical;
 import com.frc6324.lib.util.PoseExtensions;
 import com.frc6324.lib.util.PoseExtensions.PoseSupplier;
+import com.frc6324.robot2026.RobotState;
 import com.frc6324.robot2026.sim.MapleSimManager;
-import com.frc6324.robot2026.subsystems.drive.DrivingUtils;
-import com.frc6324.robot2026.subsystems.drive.SwerveDrive;
+import com.frc6324.robot2026.subsystems.drive.Drive;
+import com.frc6324.robot2026.subsystems.drive.DriveConstants;
 import com.frc6324.robot2026.subsystems.indexer.Indexer;
 import com.frc6324.robot2026.subsystems.intake.Intake;
 import com.frc6324.robot2026.subsystems.leds.LEDs.LEDState;
@@ -55,7 +54,7 @@ public final class ShooterCommands {
    * @return
    */
   public static Command genericShootCommand(
-      SwerveDrive drive,
+      Drive drive,
       Indexer indexer,
       Intake intake,
       Rollers rollers,
@@ -65,7 +64,8 @@ public final class ShooterCommands {
 
     final BooleanSupplier switchCondition =
         () -> {
-          final boolean inAlliance = FieldConstants.isInAllianceZone(drive.getPose());
+          final boolean inAlliance =
+              FieldConstants.isInAllianceZone(RobotState.getInstance().getPose());
 
           if (inAllianceZone.get() != inAlliance) {
             inAllianceZone.set(inAlliance);
@@ -77,7 +77,8 @@ public final class ShooterCommands {
 
     return Commands.defer(
             () -> {
-              final boolean inAlliance = FieldConstants.isInAllianceZone(drive.getPose());
+              final boolean inAlliance =
+                  FieldConstants.isInAllianceZone(RobotState.getInstance().getPose());
 
               inAllianceZone.set(inAlliance);
               if (inAlliance) {
@@ -167,26 +168,19 @@ public final class ShooterCommands {
   }
 
   abstract static class AbstractShootAtCommand extends Command {
-    protected final SwerveDrive drive;
+    protected final Drive drive;
     protected final Indexer indexer;
     protected final Intake intake;
     protected final Rollers rollers;
     protected final Shooter shooter;
     protected final String logKey;
 
-    protected SwerveRequest.FieldCentricFacingAngle request =
-        new SwerveRequest.FieldCentricFacingAngle()
-            .withDriveRequestType(SwerveDrive.DRIVE_REQUEST)
-            .withSteerRequestType(SwerveDrive.STEER_REQUEST)
-            .withHeadingPID(DriveCommands.POINTING_KP, 0, DriveCommands.POINTING_KD)
-            .withDesaturateWheelSpeeds(true);
-
     private boolean kickerRunning = false;
     private boolean sendingIntakeOut = false;
     private final Timer intakeCommandTimeout = new Timer();
 
     protected AbstractShootAtCommand(
-        SwerveDrive drive,
+        Drive drive,
         Indexer indexer,
         Intake intake,
         Rollers rollers,
@@ -221,7 +215,7 @@ public final class ShooterCommands {
     @Override
     public void execute() {
       // Get the robot and shooter's positions
-      final Pose2d robotPose = drive.getPose();
+      final Pose2d robotPose = RobotState.getInstance().getPose();
 
       // Calculate the linear distance to the target
       final Translation2d target = getTarget();
@@ -230,7 +224,7 @@ public final class ShooterCommands {
       final Rotation2d facing = delta.getAngle().plus(Rotation2d.k180deg);
 
       applyDriverInput();
-      drive.setControl(request.withTargetDirection(AllianceFlipUtil.apply(facing)));
+      // drive.setControl(request.withTargetDirection(AllianceFlipUtil.apply(facing)));
 
       // Command the shooter
       final double distance = delta.getNorm();
@@ -319,7 +313,7 @@ public final class ShooterCommands {
     private Translation2d hubTranslation;
 
     public ShootIntoHubCommand(
-        SwerveDrive drive,
+        Drive drive,
         Indexer indexer,
         Intake intake,
         Rollers rollers,
@@ -358,7 +352,7 @@ public final class ShooterCommands {
       final double tolerance =
           Math.max(0.25, CLOSE_ANGLE_TOLERANCE + TOLERANCE_DECAY_PER_METER * distanceToTarget);
 
-      final Rotation2d robotYaw = drive.getPose().getRotation();
+      final Rotation2d robotYaw = RobotState.getInstance().getPose().getRotation();
       final boolean atRobotAngle =
           MathUtil.isNear(robotYaw.getRadians(), targetFacing.getRadians(), tolerance);
       final boolean atHoodAngle = shooter.atTargetHoodAngle();
@@ -377,7 +371,7 @@ public final class ShooterCommands {
     private final XboxController controller;
 
     public DriverShootIntoHubCommand(
-        SwerveDrive drive,
+        Drive drive,
         Indexer indexer,
         Intake intake,
         Rollers rollers,
@@ -390,10 +384,7 @@ public final class ShooterCommands {
     @Override
     protected void applyDriverInput() {
       Translation2d velocity = DriveCommands.getLinearVelocityFromJoysticks(controller);
-      velocity = velocity.times(SwerveDrive.getMaxLinearSpeed() / 3);
-
-      request.VelocityX = velocity.getX();
-      request.VelocityY = velocity.getY();
+      velocity = velocity.times(DriveConstants.MAX_LINEAR_SPEED_METERS_PER_SEC / 3);
     }
   }
 
@@ -411,7 +402,7 @@ public final class ShooterCommands {
     private boolean underTrench;
 
     public PassToAllianceZoneCommand(
-        SwerveDrive drive,
+        Drive drive,
         Indexer indexer,
         Intake intake,
         Rollers rollers,
@@ -424,10 +415,7 @@ public final class ShooterCommands {
     @Override
     protected void applyDriverInput() {
       Translation2d velocity = DriveCommands.getLinearVelocityFromJoysticks(controller);
-      velocity = velocity.times(SwerveDrive.getMaxLinearSpeed() / 1.5);
-
-      request.VelocityX = velocity.getX();
-      request.VelocityY = velocity.getY();
+      velocity = velocity.times(DriveConstants.MAX_LINEAR_SPEED_METERS_PER_SEC / 1.5);
     }
 
     @Override
@@ -441,7 +429,7 @@ public final class ShooterCommands {
 
     @Override
     Translation2d getTarget() {
-      final Pose2d pose = drive.getPose();
+      final Pose2d pose = RobotState.getInstance().getPose();
       final Translation2d translation = pose.getTranslation();
 
       final Translation2d delta = centerTranslation.minus(translation);
@@ -521,7 +509,7 @@ public final class ShooterCommands {
 
     @Override
     public void execute() {
-      final Pose2d robotPose = drive.getPose();
+      final Pose2d robotPose = RobotState.getInstance().getPose();
 
       underTrench =
           robotPose.boundedWithinX(LinesVertical.ALLIANCE_ZONE, LinesVertical.NEUTRAL_ZONE_NEAR)
@@ -584,12 +572,8 @@ public final class ShooterCommands {
         shooter.stopDrum();
       }
 
-      final Pose2d poseIn1Sec = DrivingUtils.estimateFuturePose(0.5);
       if (robotPose.boundedWithinX(LinesVertical.ALLIANCE_ZONE, LinesVertical.NEUTRAL_ZONE_NEAR)
           || robotPose.boundedWithinX(
-              LinesVertical.NEUTRAL_ZONE_FAR, LinesVertical.OPP_ALIANCE_ZONE)
-          || poseIn1Sec.boundedWithinX(LinesVertical.ALLIANCE_ZONE, LinesVertical.NEUTRAL_ZONE_NEAR)
-          || poseIn1Sec.boundedWithinX(
               LinesVertical.NEUTRAL_ZONE_FAR, LinesVertical.OPP_ALIANCE_ZONE)) {
         // Stow the hood if we're going under the trench
         shooter.stowHood();

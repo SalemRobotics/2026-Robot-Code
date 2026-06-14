@@ -16,6 +16,10 @@
 package com.frc6324.robot2026;
 
 import static com.frc6324.robot2026.Constants.*;
+import static com.frc6324.robot2026.generated.TunerConstants.BackLeft;
+import static com.frc6324.robot2026.generated.TunerConstants.BackRight;
+import static com.frc6324.robot2026.generated.TunerConstants.FrontLeft;
+import static com.frc6324.robot2026.generated.TunerConstants.FrontRight;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 
@@ -30,8 +34,16 @@ import com.frc6324.robot2026.commands.ShooterCommands;
 import com.frc6324.robot2026.commands.ShooterCommands.*;
 import com.frc6324.robot2026.commands.autos.Auto;
 import com.frc6324.robot2026.commands.autos.NeutralZoneAutos;
-import com.frc6324.robot2026.subsystems.drive.*;
-import com.frc6324.robot2026.subsystems.drive.DriveIO.DriveIOReplay;
+import com.frc6324.robot2026.sim.MapleSimManager;
+import com.frc6324.robot2026.subsystems.drive.Drive;
+import com.frc6324.robot2026.subsystems.drive.can.CANBusIOCANivore;
+import com.frc6324.robot2026.subsystems.drive.gyro.GyroIOPigeon2;
+import com.frc6324.robot2026.subsystems.drive.gyro.GyroIOSim;
+import com.frc6324.robot2026.subsystems.drive.module.ModuleIOReplay;
+import com.frc6324.robot2026.subsystems.drive.module.ModuleIOSim;
+import com.frc6324.robot2026.subsystems.drive.module.ModuleIOTalonFX;
+import com.frc6324.robot2026.subsystems.drive.odometry.OdometryThreadReal;
+import com.frc6324.robot2026.subsystems.drive.odometry.OdometryThreadSim;
 import com.frc6324.robot2026.subsystems.indexer.*;
 import com.frc6324.robot2026.subsystems.intake.*;
 import com.frc6324.robot2026.subsystems.leds.LEDs;
@@ -52,6 +64,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import java.util.Arrays;
 import lombok.experimental.ExtensionMethod;
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
+import org.ironmaple.simulation.drivesims.SwerveModuleSimulation;
 import org.littletonrobotics.junction.LoggedPowerDistribution;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
@@ -65,7 +79,7 @@ public class RobotContainer {
   private final LEDs leds = new LEDs();
   private final Rollers rollers;
   private final Shooter shooter;
-  private final SwerveDrive drive;
+  private final Drive drive;
 
   private final PowerDistribution pdh = new PowerDistribution();
   private final LoggedPowerDistribution loggedPDH =
@@ -87,18 +101,25 @@ public class RobotContainer {
     switch (Constants.CURRENT_MODE) {
       case REAL -> {
         LoggedTracer.reset();
-        final DriveIOCTRE driveIO = new DriveIOCTRE();
-        drive = new SwerveDrive(driveIO);
+
+        final OdometryThreadReal odometryThread = new OdometryThreadReal();
+        drive =
+            new Drive(
+                new ModuleIOTalonFX(odometryThread, FrontLeft),
+                new ModuleIOTalonFX(odometryThread, FrontRight),
+                new ModuleIOTalonFX(odometryThread, BackLeft),
+                new ModuleIOTalonFX(odometryThread, BackRight),
+                new CANBusIOCANivore(),
+                new GyroIOPigeon2(odometryThread),
+                odometryThread);
+
         LoggedTracer.record("Init/Drive init");
 
         intake = new Intake(new IntakeIOTalonFX());
         LoggedTracer.record("Init/Intake init");
         apriltag =
             new AprilTagVision(
-                    new AprilTagIOPhoton(driveIO),
-                    new AprilTagIOPhoton(driveIO),
-                    new AprilTagIOPhoton(driveIO))
-                .withConsumer(drive);
+                new AprilTagIOPhoton(), new AprilTagIOPhoton(), new AprilTagIOPhoton());
         LoggedTracer.record("Init/AprilTag init");
 
         indexer = new Indexer(new IndexerIOTalonFX());
@@ -112,15 +133,25 @@ public class RobotContainer {
       }
       case SIM -> {
         LoggedTracer.reset();
-        final DriveIOSim driveIO = new DriveIOSim();
-        drive = new SwerveDrive(driveIO);
+
+        final SwerveDriveSimulation simulation =
+            MapleSimManager.getInstance().getMainRobotDriveSimulation();
+        final SwerveModuleSimulation[] modules = simulation.getModules();
+
+        drive =
+            new Drive(
+                new ModuleIOSim(modules[0], FrontRight),
+                new ModuleIOSim(modules[1], FrontRight),
+                new ModuleIOSim(modules[2], FrontRight),
+                new ModuleIOSim(modules[3], FrontRight),
+                IOLayer::replay,
+                new GyroIOSim(simulation.getGyroSimulation()),
+                new OdometryThreadSim());
+
         LoggedTracer.record("Init/Drive init");
 
         apriltag =
-            new AprilTagVision(
-                new AprilTagIOSim(driveIO, drive),
-                new AprilTagIOSim(driveIO, drive),
-                new AprilTagIOSim(driveIO, drive));
+            new AprilTagVision(new AprilTagIOSim(), new AprilTagIOSim(), new AprilTagIOSim());
         LoggedTracer.record("Init/AprilTag init");
 
         indexer = new Indexer(new IndexerIOSim());
@@ -137,7 +168,16 @@ public class RobotContainer {
       }
       default -> {
         LoggedTracer.reset();
-        drive = new SwerveDrive(new DriveIOReplay());
+        drive =
+            new Drive(
+                new ModuleIOReplay(),
+                new ModuleIOReplay(),
+                new ModuleIOReplay(),
+                new ModuleIOReplay(),
+                IOLayer::replay,
+                IOLayer::replay,
+                IOLayer::replay);
+
         LoggedTracer.record("Init/Drive init");
 
         apriltag = new AprilTagVision(IOLayer::replay, IOLayer::replay, IOLayer::replay);
@@ -162,7 +202,8 @@ public class RobotContainer {
 
     autoChooser.addDefaultOption("No Auto", Auto.doNothing());
 
-    final Auto.Builder builder = new Auto.Builder(drive, indexer, intake, rollers, shooter);
+    final Auto.Builder builder =
+        new Auto.Builder(RobotState.getInstance(), drive, indexer, intake, rollers, shooter);
     NeutralZoneAutos.addToChooser(autoChooser, builder);
 
     autoChooser.onChange(
@@ -210,12 +251,12 @@ public class RobotContainer {
 
   private void configureBindings() {
     drive.setDefaultCommand(DriveCommands.joystickDrive(drive, controller.getHID()));
-    shooter.setDefaultCommand(new IdleShooterCommand(shooter, drive));
+    shooter.setDefaultCommand(new IdleShooterCommand(shooter, RobotState.getInstance()::getPose));
 
     intake.setDefaultCommand(
         intake.run(
             () -> {
-              if (drive
+              if (RobotState.getInstance()
                   .getPose()
                   .boundedWithinX(
                       LinesVertical.NEUTRAL_ZONE_NEAR, LinesVertical.NEUTRAL_ZONE_FAR)) {
@@ -225,7 +266,7 @@ public class RobotContainer {
     rollers.setDefaultCommand(
         rollers.runEnd(
             () -> {
-              final Pose2d drivePose = drive.getPose();
+              final Pose2d drivePose = RobotState.getInstance().getPose();
               if (drivePose.boundedWithinX(
                   LinesVertical.NEUTRAL_ZONE_NEAR, LinesVertical.NEUTRAL_ZONE_FAR)) {
                 rollers.spinRollers();
@@ -319,7 +360,7 @@ public class RobotContainer {
    * </ul>
    */
   public void updateAutoChecks() {
-    final Pose2d drivePose = drive.getPose();
+    final Pose2d drivePose = RobotState.getInstance().getPose();
 
     final double robotX = drivePose.getX();
     final double robotY = drivePose.getY();
@@ -360,6 +401,6 @@ public class RobotContainer {
 
   /** Updates the robot's pose on the field widget sent to the driver station. */
   public void updateFieldWidget() {
-    field.setRobotPose(drive.getPose());
+    field.setRobotPose(RobotState.getInstance().getPose());
   }
 }
