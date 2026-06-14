@@ -21,7 +21,7 @@ public class AprilTagVision extends VirtualSubsystem {
   private final AprilTagIO[] io;
   private final VisionInputsAutoLogged[] inputs;
   private final Alert[] disconnectedAlerts;
-  private final RobotState robotState = new RobotState();
+  private final RobotState robotState = RobotState.getInstance();
 
   private final ArrayList<Pose2d> allRobotPoses = new ArrayList<>();
   private final ArrayList<Pose2d> allRobotPosesAccepted = new ArrayList<>();

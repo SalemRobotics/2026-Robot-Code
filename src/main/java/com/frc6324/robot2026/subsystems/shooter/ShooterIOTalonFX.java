@@ -7,18 +7,11 @@ import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.HoodCons
 import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.SHOOTER_CAN_BUS;
 import static edu.wpi.first.units.Units.Hertz;
 
-import com.ctre.phoenix6.BaseStatusSignal;
-import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.StatusSignalCollection;
+import com.ctre.phoenix6.*;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.PositionVoltage;
-import com.ctre.phoenix6.controls.StrictFollower;
-import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.*;
 import com.ctre.phoenix6.hardware.TalonFX;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.units.measure.*;
 
 public class ShooterIOTalonFX implements ShooterIO {
   protected final TalonFX acceleratorTalon = new TalonFX(ACCELERATOR_MOTOR_ID, SHOOTER_CAN_BUS);

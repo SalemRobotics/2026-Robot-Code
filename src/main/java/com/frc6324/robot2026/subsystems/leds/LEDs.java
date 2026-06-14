@@ -7,12 +7,7 @@ import com.frc6324.lib.util.VirtualSubsystem;
 import com.frc6324.lib.util.logging.LoggedTracer;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
-import edu.wpi.first.wpilibj.AddressableLED;
-import edu.wpi.first.wpilibj.AddressableLEDBuffer;
-import edu.wpi.first.wpilibj.AddressableLEDBufferView;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.LEDPattern;
-import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.*;
 
 public final class LEDs extends VirtualSubsystem {
   private final AddressableLED leds = new AddressableLED(LED_RIO_PWM_PORT);

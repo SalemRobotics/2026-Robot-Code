@@ -6,9 +6,7 @@ import com.frc6324.robot2026.RobotState;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.math.numbers.N8;
+import edu.wpi.first.math.numbers.*;
 import edu.wpi.first.wpilibj.Timer;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -28,7 +26,7 @@ public class AprilTagIOPhoton implements AprilTagIO {
   private static int cameraIndex = 0;
 
   protected final int index = cameraIndex++;
-  private final RobotState robotState = new RobotState();
+  private final RobotState robotState = RobotState.getInstance();
 
   private final Lock updateLock = new ReentrantLock();
   private final AtomicReference<HashSet<Integer>> tagsSeen = new AtomicReference<>(new HashSet<>());

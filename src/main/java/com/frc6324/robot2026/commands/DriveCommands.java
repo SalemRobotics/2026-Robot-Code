@@ -3,7 +3,9 @@ package com.frc6324.robot2026.commands;
 import static edu.wpi.first.units.Units.Degrees;
 
 import com.frc6324.lib.UninstantiableClass;
+import com.frc6324.lib.util.AllianceFlipUtil;
 import com.frc6324.lib.util.PoseExtensions;
+import com.frc6324.lib.util.logging.LoggedTunableProfiledPID;
 import com.frc6324.robot2026.subsystems.drive.Drive;
 import com.frc6324.robot2026.subsystems.drive.DriveConstants;
 import edu.wpi.first.math.MathUtil;
@@ -20,18 +22,20 @@ import org.littletonrobotics.junction.Logger;
 @UninstantiableClass
 @ExtensionMethod(PoseExtensions.class)
 public final class DriveCommands {
-  static final double ANGLE_TOLERANCE = 2.5;
-  static final double POSITION_TOLERANCE = Units.inchesToMeters(2);
-  static final double TRANSLATION_MAX_VELOCITY = DriveConstants.MAX_LINEAR_SPEED_METERS_PER_SEC;
-  static final double TRANSLATION_MAX_ACCELERATION = 7;
-  static final double ANGLE_MAX_VELOCITY = DriveConstants.MAX_ANGULAR_SPEED_RADS_PER_SEC;
-  static final double ANGLE_MAX_ACCELERATION = Units.degreesToRadians(720);
-  static final double CONTROLLER_INPUT_EXP = 2;
-  static final double DEADBAND = 0.1;
+  public static final double ANGLE_TOLERANCE = 2.5;
+  public static final double POSITION_TOLERANCE = Units.inchesToMeters(2);
+  public static final double TRANSLATION_MAX_VELOCITY =
+      DriveConstants.MAX_LINEAR_SPEED_METERS_PER_SEC;
+  public static final double TRANSLATION_MAX_ACCELERATION = 7;
+  public static final double ANGLE_MAX_VELOCITY = DriveConstants.MAX_ANGULAR_SPEED_RADS_PER_SEC;
+  public static final double ANGLE_MAX_ACCELERATION = Units.degreesToRadians(720);
+  public static final double CONTROLLER_INPUT_EXP = 2;
+  public static final double DEADBAND = 0.1;
 
-  static final double POINTING_KP = 10;
-  static final double POINTING_KD = 0.02;
-  static final Angle POINTING_TOLERANCE = Degrees.of(1);
+  public static final double POINTING_KP = 10;
+  public static final double POINTING_KI = 0;
+  public static final double POINTING_KD = 0.02;
+  public static final Angle POINTING_TOLERANCE = Degrees.of(1);
 
   @Contract(value = "_ -> fail", pure = true)
   private DriveCommands() {
@@ -52,8 +56,6 @@ public final class DriveCommands {
     magnitude = Math.pow(magnitude, CONTROLLER_INPUT_EXP);
 
     // Calculate the direction in which to drive
-    // The use of arctan to calculate direction can be shown by this graph:
-    // https://www.desmos.com/calculator/5dbrh321dh
     final Rotation2d direction = new Rotation2d(Math.atan2(y, x));
 
     // Return a translation of the given magnitude following the calculated
@@ -79,6 +81,10 @@ public final class DriveCommands {
           Translation2d linearVelocity = getLinearVelocityFromJoysticks(controller);
           // Multiply the linear velocity by the drivetrain's max speed
           linearVelocity = linearVelocity.times(DriveConstants.MAX_LINEAR_SPEED_METERS_PER_SEC);
+          // Rotate the linear velocity to map to the current alliance
+          if (AllianceFlipUtil.shouldFlip()) {
+            linearVelocity = linearVelocity.unaryMinus();
+          }
 
           // Get the rotational input
           double omega = -controller.getRightX();
@@ -97,5 +103,14 @@ public final class DriveCommands {
           drive.runFieldRelative(
               new ChassisSpeeds(linearVelocity.getX(), linearVelocity.getY(), omega));
         });
+  }
+
+  /**
+   * @param name The name of the PID controller (used for dashboard inputs)
+   * @return
+   */
+  public static LoggedTunableProfiledPID makeHeadingController(String name) {
+    return new LoggedTunableProfiledPID(
+        name, POINTING_KP, POINTING_KI, POINTING_KD, ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION);
   }
 }

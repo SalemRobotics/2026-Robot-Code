@@ -6,15 +6,11 @@ import com.frc6324.lib.util.FieldConstants;
 import com.frc6324.lib.util.Lazy;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Twist2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.wpilibj.RobotBase;
 import java.util.Optional;
 import org.littletonrobotics.junction.AutoLogOutput;
 
@@ -48,6 +44,10 @@ public class RobotState {
           // from a starting position on the blue or red alliance.
           STARTING_POSE);
 
+  private RobotState() {
+    // AutoLogOutputManager.addObject(this);
+  }
+
   public void addOdometryObservation(
       double timestamp, SwerveModulePosition[] modulePositions, Optional<Rotation2d> gyroAngle) {
     final Rotation2d rotation =
@@ -59,6 +59,7 @@ public class RobotState {
 
     rawGyroAngle = rotation;
     poseEstimator.updateWithTime(timestamp, rotation, modulePositions);
+    lastModulePositions = modulePositions;
   }
 
   public void addStateObservation(SwerveModuleState[] moduleStates) {
@@ -66,6 +67,10 @@ public class RobotState {
   }
 
   public void addVisionMeasurement(Pose2d pose, double timestamp, Matrix<N3, N1> stddevs) {
+    if (!RobotBase.isReal()) {
+      return;
+    }
+
     poseEstimator.addVisionMeasurement(pose, timestamp, stddevs);
   }
 

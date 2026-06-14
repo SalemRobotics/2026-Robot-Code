@@ -20,8 +20,7 @@ import static com.frc6324.robot2026.generated.TunerConstants.BackLeft;
 import static com.frc6324.robot2026.generated.TunerConstants.BackRight;
 import static com.frc6324.robot2026.generated.TunerConstants.FrontLeft;
 import static com.frc6324.robot2026.generated.TunerConstants.FrontRight;
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.*;
 
 import com.frc6324.lib.util.AllianceFlipUtil;
 import com.frc6324.lib.util.FieldConstants.LinesHorizontal;
@@ -29,21 +28,15 @@ import com.frc6324.lib.util.FieldConstants.LinesVertical;
 import com.frc6324.lib.util.PoseExtensions;
 import com.frc6324.lib.util.logging.IOLayer;
 import com.frc6324.lib.util.logging.LoggedTracer;
-import com.frc6324.robot2026.commands.DriveCommands;
-import com.frc6324.robot2026.commands.ShooterCommands;
+import com.frc6324.robot2026.commands.*;
 import com.frc6324.robot2026.commands.ShooterCommands.*;
-import com.frc6324.robot2026.commands.autos.Auto;
-import com.frc6324.robot2026.commands.autos.NeutralZoneAutos;
+import com.frc6324.robot2026.commands.autos.*;
 import com.frc6324.robot2026.sim.MapleSimManager;
 import com.frc6324.robot2026.subsystems.drive.Drive;
 import com.frc6324.robot2026.subsystems.drive.can.CANBusIOCANivore;
-import com.frc6324.robot2026.subsystems.drive.gyro.GyroIOPigeon2;
-import com.frc6324.robot2026.subsystems.drive.gyro.GyroIOSim;
-import com.frc6324.robot2026.subsystems.drive.module.ModuleIOReplay;
-import com.frc6324.robot2026.subsystems.drive.module.ModuleIOSim;
-import com.frc6324.robot2026.subsystems.drive.module.ModuleIOTalonFX;
-import com.frc6324.robot2026.subsystems.drive.odometry.OdometryThreadReal;
-import com.frc6324.robot2026.subsystems.drive.odometry.OdometryThreadSim;
+import com.frc6324.robot2026.subsystems.drive.gyro.*;
+import com.frc6324.robot2026.subsystems.drive.module.*;
+import com.frc6324.robot2026.subsystems.drive.odometry.*;
 import com.frc6324.robot2026.subsystems.indexer.*;
 import com.frc6324.robot2026.subsystems.intake.*;
 import com.frc6324.robot2026.subsystems.leds.LEDs;
@@ -54,9 +47,8 @@ import com.frc6324.robot2026.subsystems.vision.apriltag.*;
 import com.frc6324.robot2026.subsystems.vision.objdetect.*;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -73,6 +65,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 @ExtensionMethod(PoseExtensions.class)
 @SuppressWarnings("unused")
 public class RobotContainer {
+  private final RobotState robotState = RobotState.getInstance();
   private final AprilTagVision apriltag;
   private final Indexer indexer;
   private final Intake intake;
@@ -203,7 +196,7 @@ public class RobotContainer {
     autoChooser.addDefaultOption("No Auto", Auto.doNothing());
 
     final Auto.Builder builder =
-        new Auto.Builder(RobotState.getInstance(), drive, indexer, intake, rollers, shooter);
+        new Auto.Builder(robotState, drive, indexer, intake, rollers, shooter);
     NeutralZoneAutos.addToChooser(autoChooser, builder);
 
     autoChooser.onChange(
@@ -251,12 +244,12 @@ public class RobotContainer {
 
   private void configureBindings() {
     drive.setDefaultCommand(DriveCommands.joystickDrive(drive, controller.getHID()));
-    shooter.setDefaultCommand(new IdleShooterCommand(shooter, RobotState.getInstance()::getPose));
+    shooter.setDefaultCommand(new IdleShooterCommand(shooter, robotState::getPose));
 
     intake.setDefaultCommand(
         intake.run(
             () -> {
-              if (RobotState.getInstance()
+              if (robotState
                   .getPose()
                   .boundedWithinX(
                       LinesVertical.NEUTRAL_ZONE_NEAR, LinesVertical.NEUTRAL_ZONE_FAR)) {
@@ -266,7 +259,7 @@ public class RobotContainer {
     rollers.setDefaultCommand(
         rollers.runEnd(
             () -> {
-              final Pose2d drivePose = RobotState.getInstance().getPose();
+              final Pose2d drivePose = robotState.getPose();
               if (drivePose.boundedWithinX(
                   LinesVertical.NEUTRAL_ZONE_NEAR, LinesVertical.NEUTRAL_ZONE_FAR)) {
                 rollers.spinRollers();
@@ -324,7 +317,7 @@ public class RobotContainer {
         .rightTrigger()
         .whileTrue(
             ShooterCommands.genericShootCommand(
-                drive, indexer, intake, rollers, shooter, controller));
+                robotState, drive, indexer, intake, rollers, shooter, controller));
 
     controller.povUp().onTrue(Commands.runOnce(shooter::incrementOffset));
     controller.povDown().onTrue(Commands.runOnce(shooter::decrementOffset));
@@ -360,7 +353,7 @@ public class RobotContainer {
    * </ul>
    */
   public void updateAutoChecks() {
-    final Pose2d drivePose = RobotState.getInstance().getPose();
+    final Pose2d drivePose = robotState.getPose();
 
     final double robotX = drivePose.getX();
     final double robotY = drivePose.getY();
@@ -401,6 +394,6 @@ public class RobotContainer {
 
   /** Updates the robot's pose on the field widget sent to the driver station. */
   public void updateFieldWidget() {
-    field.setRobotPose(RobotState.getInstance().getPose());
+    field.setRobotPose(robotState.getPose());
   }
 }
