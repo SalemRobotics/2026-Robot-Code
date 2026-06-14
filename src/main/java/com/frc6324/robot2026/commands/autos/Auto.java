@@ -71,6 +71,7 @@ public record Auto(
 
   public static class Builder {
     public final AutoFactory factory;
+    final RobotState robotState;
     final Drive drive;
     final Indexer indexer;
     final Intake intake;
@@ -85,6 +86,7 @@ public record Auto(
         Intake intake,
         Rollers rollers,
         Shooter shooter) {
+      this.robotState = robotState;
       this.drive = drive;
       this.indexer = indexer;
       this.intake = intake;
@@ -167,7 +169,8 @@ public record Auto(
     }
 
     public Command shootCommand() {
-      return new ShootIntoHubCommand(drive, indexer, intake, rollers, shooter, "AutoShootIntoHub")
+      return new ShootIntoHubCommand(
+              robotState, drive, indexer, intake, rollers, shooter, "AutoShootIntoHub")
           .until(shooter::noFuelSeen);
     }
 

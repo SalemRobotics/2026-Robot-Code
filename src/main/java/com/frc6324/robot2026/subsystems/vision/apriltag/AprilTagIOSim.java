@@ -4,9 +4,7 @@ import static com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagConstants
 
 import com.frc6324.lib.util.Lazy;
 import com.frc6324.robot2026.RobotState;
-import org.photonvision.simulation.PhotonCameraSim;
-import org.photonvision.simulation.SimCameraProperties;
-import org.photonvision.simulation.VisionSystemSim;
+import org.photonvision.simulation.*;
 
 public final class AprilTagIOSim extends AprilTagIOPhoton {
   private static final Lazy<VisionSystemSim> system =

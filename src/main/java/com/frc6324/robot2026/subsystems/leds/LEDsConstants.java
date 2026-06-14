@@ -1,8 +1,6 @@
 package com.frc6324.robot2026.subsystems.leds;
 
-import static edu.wpi.first.units.Units.Percent;
-import static edu.wpi.first.units.Units.Second;
-import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.*;
 
 import com.frc6324.lib.UninstantiableClass;
 import edu.wpi.first.wpilibj.LEDPattern;

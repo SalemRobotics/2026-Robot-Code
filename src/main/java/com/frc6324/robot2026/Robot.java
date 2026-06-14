@@ -20,17 +20,13 @@ import com.frc6324.lib.util.PhoenixUtil.SignalCache;
 import com.frc6324.lib.util.VirtualSubsystem;
 import com.frc6324.lib.util.logging.LoggedTracer;
 import com.frc6324.robot2026.sim.MapleSimManager;
-import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import java.util.Optional;
 import lombok.val;
-import org.littletonrobotics.junction.LogFileUtil;
-import org.littletonrobotics.junction.LoggedRobot;
-import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.*;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
@@ -96,6 +92,9 @@ public class Robot extends LoggedRobot {
     // Silence warnings for disconnected joysticks
     DriverStation.silenceJoystickConnectionWarning(true);
     SignalLogger.start();
+
+    // Warm up the robot state clas
+    RobotState.getInstance();
 
     // Start the akit logger
     Logger.start();
