@@ -5,11 +5,8 @@ import static edu.wpi.first.units.Units.*;
 
 import com.frc6324.lib.util.CommonUtils;
 import com.frc6324.lib.util.logging.LoggedTracer;
-import com.frc6324.robot2026.sim.MapleSimManager;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import lombok.experimental.ExtensionMethod;
@@ -26,13 +23,6 @@ public final class Intake extends SubsystemBase {
 
   public Intake(IntakeIO io) {
     this.io = io;
-
-    if (RobotBase.isSimulation()) {
-      isDeployed.onTrue(
-          Commands.runOnce(() -> MapleSimManager.getInstance().setIntakeExtended(true)));
-      isDeployed.onFalse(
-          Commands.runOnce(() -> MapleSimManager.getInstance().setIntakeExtended(false)));
-    }
   }
 
   public void deploy(boolean useEfficiencyMode) {

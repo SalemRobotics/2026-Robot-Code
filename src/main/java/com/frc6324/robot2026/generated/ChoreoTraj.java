@@ -24,18 +24,11 @@ public record ChoreoTraj(
     Pose2d initialPoseBlue,
     Pose2d endPoseBlue
 ) {
-    public static final ChoreoTraj HubShotNZPass = new ChoreoTraj(
-        "HubShotNZPass",
+    public static final ChoreoTraj CenterScoreDepotPass = new ChoreoTraj(
+        "CenterScoreDepotPass",
         OptionalInt.empty(),
-        5.45817,
-        new Pose2d(3, 5.5, Rotation2d.fromRadians(2.0944)),
-        new Pose2d(3, 5.5, Rotation2d.fromRadians(2.0944))
-    );
-    public static final ChoreoTraj TrenchStartPass = new ChoreoTraj(
-        "TrenchStartPass",
-        OptionalInt.empty(),
-        3.97741,
-        new Pose2d(4, 7.4, Rotation2d.fromRadians(3.14159)),
+        3.68108,
+        new Pose2d(2.5, 4, Rotation2d.fromRadians(3.14159)),
         new Pose2d(3, 5.5, Rotation2d.fromRadians(2.0944))
     );
     public static final ChoreoTraj HubOutpostIntake = new ChoreoTraj(
@@ -45,6 +38,13 @@ public record ChoreoTraj(
         new Pose2d(3.625, 3.8, Rotation2d.fromRadians(3.14159)),
         new Pose2d(0.6, 0.65, Rotation2d.fromRadians(3.14159))
     );
+    public static final ChoreoTraj HubShotNZPass = new ChoreoTraj(
+        "HubShotNZPass",
+        OptionalInt.empty(),
+        5.45817,
+        new Pose2d(3, 5.5, Rotation2d.fromRadians(2.0944)),
+        new Pose2d(3, 5.5, Rotation2d.fromRadians(2.0944))
+    );
     public static final ChoreoTraj OutpostScore = new ChoreoTraj(
         "OutpostScore",
         OptionalInt.empty(),
@@ -52,11 +52,11 @@ public record ChoreoTraj(
         new Pose2d(0.6, 0.65, Rotation2d.fromRadians(3.14159)),
         new Pose2d(2.5, 4, Rotation2d.fromRadians(3.14159))
     );
-    public static final ChoreoTraj CenterScoreDepotPass = new ChoreoTraj(
-        "CenterScoreDepotPass",
+    public static final ChoreoTraj TrenchStartPass = new ChoreoTraj(
+        "TrenchStartPass",
         OptionalInt.empty(),
-        3.68108,
-        new Pose2d(2.5, 4, Rotation2d.fromRadians(3.14159)),
+        3.98806,
+        new Pose2d(4, 7.4, Rotation2d.fromRadians(3.14159)),
         new Pose2d(3, 5.5, Rotation2d.fromRadians(2.0944))
     );
 
@@ -65,11 +65,11 @@ public record ChoreoTraj(
      * This allows for trajectory data to be looked up with strings during runtime.
      */
     public static final Map<String, ChoreoTraj> ALL_TRAJECTORIES = Map.ofEntries(
-        Map.entry("HubShotNZPass", HubShotNZPass),
-        Map.entry("TrenchStartPass", TrenchStartPass),
+        Map.entry("CenterScoreDepotPass", CenterScoreDepotPass),
         Map.entry("HubOutpostIntake", HubOutpostIntake),
+        Map.entry("HubShotNZPass", HubShotNZPass),
         Map.entry("OutpostScore", OutpostScore),
-        Map.entry("CenterScoreDepotPass", CenterScoreDepotPass)
+        Map.entry("TrenchStartPass", TrenchStartPass)
     );
 
     /**

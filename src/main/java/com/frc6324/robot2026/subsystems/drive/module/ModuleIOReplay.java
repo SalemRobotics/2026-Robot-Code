@@ -5,13 +5,7 @@ import edu.wpi.first.units.measure.*;
 
 public class ModuleIOReplay implements ModuleIO {
   @Override
-  public void setDriveCurrent(Current current) {}
-
-  @Override
   public void setDriveVoltage(Voltage volts) {}
-
-  @Override
-  public void setSteerCurrent(Current current) {}
 
   @Override
   public void setSteerVoltage(Voltage volts) {}

@@ -31,7 +31,6 @@ import com.frc6324.lib.util.logging.LoggedTracer;
 import com.frc6324.robot2026.commands.*;
 import com.frc6324.robot2026.commands.ShooterCommands.*;
 import com.frc6324.robot2026.commands.autos.*;
-import com.frc6324.robot2026.sim.MapleSimManager;
 import com.frc6324.robot2026.subsystems.drive.Drive;
 import com.frc6324.robot2026.subsystems.drive.can.CANBusIOCANivore;
 import com.frc6324.robot2026.subsystems.drive.gyro.*;
@@ -49,6 +48,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -56,8 +56,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import java.util.Arrays;
 import lombok.experimental.ExtensionMethod;
-import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
-import org.ironmaple.simulation.drivesims.SwerveModuleSimulation;
 import org.littletonrobotics.junction.LoggedPowerDistribution;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
@@ -127,18 +125,14 @@ public class RobotContainer {
       case SIM -> {
         LoggedTracer.reset();
 
-        final SwerveDriveSimulation simulation =
-            MapleSimManager.getInstance().getMainRobotDriveSimulation();
-        final SwerveModuleSimulation[] modules = simulation.getModules();
-
         drive =
             new Drive(
-                new ModuleIOSim(modules[0], FrontRight),
-                new ModuleIOSim(modules[1], FrontRight),
-                new ModuleIOSim(modules[2], FrontRight),
-                new ModuleIOSim(modules[3], FrontRight),
+                new ModuleIOSim(FrontRight),
+                new ModuleIOSim(FrontRight),
+                new ModuleIOSim(FrontRight),
+                new ModuleIOSim(FrontRight),
                 IOLayer::replay,
-                new GyroIOSim(simulation.getGyroSimulation()),
+                IOLayer::replay,
                 new OdometryThreadSim());
 
         LoggedTracer.record("Init/Drive init");

@@ -42,7 +42,6 @@ public class ModuleIOTalonFX implements ModuleIO {
   private final PositionVoltage positionVoltage = new PositionVoltage(0);
   private final VelocityVoltage velocityVoltage = new VelocityVoltage(0);
 
-  private final TorqueCurrentFOC torqueCurrent = new TorqueCurrentFOC(0);
   private final PositionTorqueCurrentFOC positionTorqueCurrent = new PositionTorqueCurrentFOC(0);
   private final VelocityTorqueCurrentFOC velocityTorqueCurrent = new VelocityTorqueCurrentFOC(0);
 
@@ -153,18 +152,8 @@ public class ModuleIOTalonFX implements ModuleIO {
   }
 
   @Override
-  public void setDriveCurrent(Current current) {
-    driveTalon.setControl(torqueCurrent.withOutput(current));
-  }
-
-  @Override
   public void setDriveVoltage(Voltage volts) {
     driveTalon.setControl(voltage.withOutput(volts));
-  }
-
-  @Override
-  public void setSteerCurrent(Current current) {
-    steerTalon.setControl(torqueCurrent.withOutput(current));
   }
 
   @Override

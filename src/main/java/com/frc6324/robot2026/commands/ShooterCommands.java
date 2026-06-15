@@ -6,7 +6,6 @@ import com.frc6324.lib.util.FieldConstants.LinesVertical;
 import com.frc6324.lib.util.PoseExtensions.PoseSupplier;
 import com.frc6324.lib.util.logging.LoggedTunableProfiledPID;
 import com.frc6324.robot2026.RobotState;
-import com.frc6324.robot2026.sim.MapleSimManager;
 import com.frc6324.robot2026.subsystems.drive.Drive;
 import com.frc6324.robot2026.subsystems.drive.DriveConstants;
 import com.frc6324.robot2026.subsystems.indexer.Indexer;
@@ -21,7 +20,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -270,11 +268,6 @@ public final class ShooterCommands {
         }
 
         kickerRunning = false;
-      }
-
-      // Launch a fuel during simulation
-      if (RobotBase.isSimulation()) {
-        MapleSimManager.getInstance().launchFuel();
       }
 
       // Log data about the command to preserve sanity

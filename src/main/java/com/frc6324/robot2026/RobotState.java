@@ -54,7 +54,7 @@ public class RobotState {
         gyroAngle.orElseGet(
             () -> {
               final Twist2d twist = kinematics.toTwist2d(lastModulePositions, modulePositions);
-              return new Rotation2d(twist.dtheta);
+              return rawGyroAngle.plus(new Rotation2d(twist.dtheta));
             });
 
     rawGyroAngle = rotation;

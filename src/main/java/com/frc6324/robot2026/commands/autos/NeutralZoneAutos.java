@@ -63,11 +63,8 @@ public final class NeutralZoneAutos {
               final TrajectoryFollower firstPass = builder.follow(loadedTrajectories.get(0));
               final TrajectoryFollower secondPass = builder.follow(loadedTrajectories.get(1));
 
-              // NOTE: proxies are used here for re-use of commands because Commands V2
-              // doesn't
-              // allow you to manually schedule commands in a composition or
+              routine.active().onTrue(Commands.sequence(first.resetOdometry(), firstPass));
 
-              routine.active().onTrue(firstPass.beforeStarting(first.resetOdometry()));
               routine
                   .observe(firstPass.done())
                   .onTrue(Commands.sequence(builder.shootCommand(3), secondPass.asProxy()));
