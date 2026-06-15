@@ -1,152 +1,196 @@
+/*
+ * Copyright (C) 2026 Windham Windup
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see <https://www.gnu.org/licenses/>.
+ */
+
 package com.frc6324.robot2026.subsystems.drive;
 
-import static com.frc6324.robot2026.subsystems.drive.DriveConstants.*;
 import static edu.wpi.first.units.Units.*;
 
-import com.frc6324.lib.util.CommonUtils;
-import com.frc6324.robot2026.subsystems.drive.module.*;
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.swerve.SwerveModuleConstants;
+import com.frc6324.robot2026.subsystems.drive.module.ModuleIO;
+import com.frc6324.robot2026.subsystems.drive.module.ModuleInputsAutoLogged;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.units.measure.*;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
-import edu.wpi.first.wpilibj.DriverStation;
-import lombok.experimental.ExtensionMethod;
 import org.littletonrobotics.junction.Logger;
 
-@ExtensionMethod(CommonUtils.class)
 public class Module {
-  private final String name;
   private final ModuleIO io;
   private final ModuleInputsAutoLogged inputs = new ModuleInputsAutoLogged();
+  private final int index;
+  private final SwerveModuleConstants<
+          TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
+      constants;
 
   private final Alert driveDisconnectedAlert;
-  private final Alert steerDisconnectedAlert;
-  private final Alert encoderDisconnectedAlert;
+  private final Alert turnDisconnectedAlert;
+  private final Alert turnEncoderDisconnectedAlert;
+  private SwerveModulePosition[] odometryPositions = new SwerveModulePosition[] {};
 
-  private SwerveModulePosition[] odometryPositions = new SwerveModulePosition[0];
-
-  public Module(int index, ModuleIO io) {
-    this.name = MODULE_NAMES[index];
+  /**
+   * Constructs a new Module instance.
+   *
+   * @param io IO interface for the module
+   * @param index Module index (0-3: FL, FR, BL, BR)
+   * @param constants Module-specific constants from DriveConstants
+   */
+  public Module(
+      ModuleIO io,
+      int index,
+      SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
+          constants) {
     this.io = io;
-
+    this.index = index;
+    this.constants = constants;
     driveDisconnectedAlert =
-        new Alert("Drivetrain", name + " drive motor is disconnected.", AlertType.kError);
-    steerDisconnectedAlert =
-        new Alert("Drivetrain", name + " steer motor is disconnected.", AlertType.kError);
-    encoderDisconnectedAlert =
-        new Alert("Drivetrain", name + " encoder is disconnected.", AlertType.kError);
+        new Alert(
+            "Disconnected drive motor on module " + Integer.toString(index) + ".",
+            AlertType.kError);
+    turnDisconnectedAlert =
+        new Alert(
+            "Disconnected turn motor on module " + Integer.toString(index) + ".", AlertType.kError);
+    turnEncoderDisconnectedAlert =
+        new Alert(
+            "Disconnected turn encoder on module " + Integer.toString(index) + ".",
+            AlertType.kError);
   }
 
-  private static double convertDrivePositionToMeters(double position) {
-    return position * WHEEL_RADIUS.in(Meters);
+  /** Updates inputs, processes odometry data, and updates connection alerts. */
+  public void periodic() {
+    io.updateInputs(inputs);
+    Logger.processInputs("Drive/Module" + Integer.toString(index), inputs);
+
+    // Calculate positions for odometry
+    int sampleCount = inputs.odometryWheelPositions.length; // All signals are sampled together
+    odometryPositions = new SwerveModulePosition[sampleCount];
+    for (int i = 0; i < sampleCount; i++) {
+      double positionMeters = inputs.odometryWheelPositions[i] * constants.WheelRadius;
+      Rotation2d angle = inputs.odometryAzimuthPositions[i];
+      odometryPositions[i] = new SwerveModulePosition(positionMeters, angle);
+    }
+
+    // Update alerts
+    driveDisconnectedAlert.set(!inputs.driveMotorConnected);
+    turnDisconnectedAlert.set(!inputs.steerMotorConnected);
+    turnEncoderDisconnectedAlert.set(!inputs.steerEncoderConnected);
   }
 
-  public Angle getDrivePosition() {
-    return inputs.drivePosition;
+  /**
+   * Runs the module with the specified setpoint state. Mutates the state to optimize it.
+   *
+   * @param state Desired module state (speed and angle), will be optimized
+   */
+  public void runSetpoint(SwerveModuleState state) {
+    // Optimize velocity setpoint
+    state.optimize(getAngle());
+    state.cosineScale(inputs.facing);
+
+    // Apply setpoints
+    io.setDriveVelocity(RadiansPerSecond.of(state.speedMetersPerSecond / constants.WheelRadius));
+    io.setSteerPosition(state.angle);
   }
 
-  public AngularVelocity getDriveVelocity() {
-    return inputs.driveVelocity;
+  /**
+   * Runs the module with the specified output while controlling to zero degrees.
+   *
+   * @param output Drive motor output voltage
+   */
+  public void runCharacterization(Voltage output) {
+    io.setDriveVoltage(output);
+    io.setSteerPosition(Rotation2d.kZero);
   }
 
-  public SwerveModulePosition getMeasuredPosition() {
-    return new SwerveModulePosition(getWheelPosition(), getModuleFacing());
+  /** Disables all outputs to motors. */
+  public void stop() {
+    io.setDriveVoltage(Volts.zero());
+    io.setSteerVoltage(Volts.zero());
   }
 
-  public SwerveModuleState getMeasuredState() {
-    return new SwerveModuleState(getWheelVelocity(), getModuleFacing());
-  }
-
-  public Rotation2d getModuleFacing() {
+  /**
+   * Returns the current turn angle of the module.
+   *
+   * @return Current module angle
+   */
+  public Rotation2d getAngle() {
     return inputs.facing;
   }
 
+  /**
+   * Returns the current drive position of the module in meters.
+   *
+   * @return Drive position in meters
+   */
+  public double getPositionMeters() {
+    return inputs.drivePosition.in(Radians) * constants.WheelRadius;
+  }
+
+  /**
+   * Returns the current drive velocity of the module in meters per second.
+   *
+   * @return Drive velocity in meters per second
+   */
+  public double getVelocityMetersPerSec() {
+    return inputs.driveVelocity.in(RadiansPerSecond) * constants.WheelRadius;
+  }
+
+  /**
+   * Returns the module position (turn angle and drive position).
+   *
+   * @return Module position containing angle and distance
+   */
+  public SwerveModulePosition getPosition() {
+    return new SwerveModulePosition(getPositionMeters(), getAngle());
+  }
+
+  /**
+   * Returns the module state (turn angle and drive velocity).
+   *
+   * @return Module state containing angle and velocity
+   */
+  public SwerveModuleState getState() {
+    return new SwerveModuleState(getVelocityMetersPerSec(), getAngle());
+  }
+
+  /**
+   * Returns the module positions received this cycle.
+   *
+   * @return Array of module positions from this cycle
+   */
   public SwerveModulePosition[] getOdometryPositions() {
     return odometryPositions;
   }
 
-  public Distance getWheelPosition() {
-    return getDrivePosition().getDistanceTraveled(WHEEL_RADIUS);
+  /**
+   * Returns the module position in radians.
+   *
+   * @return Drive position in radians
+   */
+  public double getWheelRadiusCharacterizationPosition() {
+    return inputs.drivePosition.in(Radians);
   }
 
-  public LinearVelocity getWheelVelocity() {
-    return getDriveVelocity().getVelocity(WHEEL_RADIUS);
-  }
-
-  public void periodic() {
-    io.updateInputs(inputs);
-    Logger.processInputs("Drive/" + name, inputs);
-
-    int sampleCount = inputs.odometryWheelPositions.length;
-    odometryPositions = new SwerveModulePosition[sampleCount];
-
-    for (int i = 0; i < sampleCount; i++) {
-      final double position = convertDrivePositionToMeters(inputs.odometryWheelPositions[i]);
-      final Rotation2d angle = inputs.odometryAzimuthPositions[i];
-
-      odometryPositions[i] = new SwerveModulePosition(position, angle);
-    }
-
-    if (DriverStation.isDisabled()) {
-      stop();
-    }
-
-    driveDisconnectedAlert.set(!inputs.driveMotorConnected);
-    steerDisconnectedAlert.set(!inputs.steerMotorConnected);
-    encoderDisconnectedAlert.set(!inputs.steerEncoderConnected);
-  }
-
-  public void runDriveCharacterization(Current current) {
-    io.setDriveCurrent(current);
-    io.setSteerCurrent(Amps.zero());
-  }
-
-  public void runDriveCharacterization(Voltage voltage) {
-    io.setDriveVoltage(voltage);
-    io.setSteerVoltage(Volts.zero());
-  }
-
-  public void runSetpoint(SwerveModuleState setpoint) {
-    setpoint.optimize(getModuleFacing());
-    setpoint.cosineScale(getModuleFacing());
-
-    final double desiredSpeed = setpoint.speedMetersPerSecond / WHEEL_RADIUS.in(Meters);
-
-    io.setDriveVelocity(RadiansPerSecond.of(desiredSpeed));
-    io.setSteerPosition(setpoint.angle);
-  }
-
-  public void runSetpoint(
-      SwerveModuleState setpoint,
-      LinearAcceleration acceleration,
-      Force feedforwardX,
-      Force feedforwardY) {
-    setpoint.optimize(getModuleFacing());
-    setpoint.cosineScale(getModuleFacing());
-
-    final double desiredMotorVelocity = setpoint.speedMetersPerSecond / WHEEL_RADIUS.in(Meters);
-    final double desiredAcceleration =
-        acceleration.in(MetersPerSecondPerSecond) / WHEEL_RADIUS.in(Meters);
-
-    final Translation2d force2d =
-        new Translation2d(feedforwardX.in(Newtons), feedforwardY.in(Newtons));
-    // Cosine scale the force vector
-    final double moduleFeedforwardForce =
-        force2d.getNorm() * force2d.getAngle().minus(getModuleFacing()).getCos();
-    final double moduleFeedforwardTorque = moduleFeedforwardForce * WHEEL_RADIUS.in(Meters);
-
-    io.setDriveVelocity(
-        RadiansPerSecond.of(desiredMotorVelocity),
-        RadiansPerSecondPerSecond.of(desiredAcceleration),
-        NewtonMeters.of(moduleFeedforwardTorque));
-    io.setSteerPosition(setpoint.angle);
-  }
-
-  public void stop() {
-    io.stopDriveMotor();
-    io.setSteerVoltage(Volts.zero());
+  /**
+   * Returns the module velocity in rotations/sec (Phoenix native units).
+   *
+   * @return Drive velocity in rotations per second
+   */
+  public double getFFCharacterizationVelocity() {
+    return inputs.driveVelocity.in(RadiansPerSecond);
   }
 }

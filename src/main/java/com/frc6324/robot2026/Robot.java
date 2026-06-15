@@ -19,7 +19,6 @@ import com.ctre.phoenix6.SignalLogger;
 import com.frc6324.lib.util.PhoenixUtil.SignalCache;
 import com.frc6324.lib.util.VirtualSubsystem;
 import com.frc6324.lib.util.logging.LoggedTracer;
-import com.frc6324.robot2026.sim.MapleSimManager;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -266,15 +265,5 @@ public class Robot extends LoggedRobot {
   public void testExit() {}
 
   @Override
-  public void simulationPeriodic() {
-    if (Logger.hasReplaySource()) {
-      return;
-    }
-
-    final MapleSimManager manager = MapleSimManager.getInstance();
-
-    manager.simulationPeriodic();
-    RobotState.getInstance()
-        .setPose(manager.getMainRobotDriveSimulation().getSimulatedDriveTrainPose());
-  }
+  public void simulationPeriodic() {}
 }

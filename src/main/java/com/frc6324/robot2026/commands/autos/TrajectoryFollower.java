@@ -162,47 +162,46 @@ public final class TrajectoryFollower extends Command {
     final boolean flip = AllianceFlipUtil.shouldFlip();
     final Pose2d robotPose = robotState.getPose();
 
+    // Sample at current followingTime to assess error for state machine
     SwerveSample sample =
         trajectory
             .sampleAt(followingTime, flip)
             .orElseGet(() -> trajectory.getFinalSample(flip).orElse(null));
-    Pose2d targetPose = sample.getPose();
 
     if (sample == null) {
       drive.stop();
       return;
     }
 
+    Pose2d targetPose = sample.getPose();
     double translationalError = robotPose.getTranslation().getDistance(targetPose.getTranslation());
 
-    final State previousState = state;
+    // State machine decision based on current error
     updateState(translationalError);
 
-    if (previousState == State.Following) {
+    // Only advance time when following
+    if (state == State.Following) {
       followingTime += dt;
       followingTime = MathUtil.clamp(followingTime, 0, trajectory.getTotalTime());
 
-      // Get the next sample along the trajectory
       sample =
           trajectory
               .sampleAt(followingTime, flip)
               .orElseGet(() -> trajectory.getFinalSample(flip).orElse(null));
-      targetPose = sample.getPose();
 
-      // If the sample doesn't exist, stop
       if (sample == null) {
         drive.stop();
         return;
       }
-    }
 
-    translationalError = robotPose.getTranslation().getDistance(targetPose.getTranslation());
+      targetPose = sample.getPose();
+      translationalError = robotPose.getTranslation().getDistance(targetPose.getTranslation());
+    }
 
     triggerEvents();
 
     final ChassisSpeeds speeds =
         switch (state) {
-          // When following the path, use feedback and feedforwards
           case Following ->
               new ChassisSpeeds(
                   sample.vx + xController.calculate(robotPose.getX(), targetPose.getX()),
@@ -211,7 +210,6 @@ public final class TrajectoryFollower extends Command {
                       + headingController.calculate(
                           robotPose.getRotation().getRadians(),
                           targetPose.getRotation().getRadians()));
-          // When recovering, only use feedback
           case Recovering ->
               new ChassisSpeeds(
                   xController.calculate(robotPose.getX(), targetPose.getX()),
@@ -221,6 +219,8 @@ public final class TrajectoryFollower extends Command {
         };
 
     drive.runFieldRelative(speeds);
+
+    Logger.recordOutput("Auto/FollowerCommand/CommandedSpeeds", speeds);
 
     Logger.recordOutput("Auto/FollowerCommand/TargetPose", targetPose);
     Logger.recordOutput("Auto/FollowerCommand/TrackingState", state);
@@ -233,9 +233,10 @@ public final class TrajectoryFollower extends Command {
   public void end(boolean interrupted) {
     finished = !interrupted;
     drive.stop();
-    Logger.recordOutput("Odometry/Trajectory", new Pose2d[] {});
+    Logger.recordOutput("Odometry/Trajectory", new Pose2d[0]);
     Logger.recordOutput("Odometry/TrajectorySetpoint", new Pose2d());
-    Logger.recordOutput("Auto/ResilientFollower/State", "DONE");
+
+    Logger.recordOutput("Auto/FollowerCommand/State", "DONE");
   }
 
   @Override

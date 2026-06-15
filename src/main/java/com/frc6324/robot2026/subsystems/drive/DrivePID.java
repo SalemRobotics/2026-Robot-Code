@@ -28,14 +28,14 @@ public class DrivePID {
     heading = new PIDController(headingP, headingI, headingD);
 
     this.translationP =
-        new LoggedTunableNumber("DrivePID/" + prefix + "/Translation/", translationP);
+        new LoggedTunableNumber("DrivePID/" + prefix + "/Translation/kP", translationP);
     this.translationI =
-        new LoggedTunableNumber("DrivePID/" + prefix + "/Translation/", translationI);
+        new LoggedTunableNumber("DrivePID/" + prefix + "/Translation/kI", translationI);
     this.translationD =
-        new LoggedTunableNumber("DrivePID/" + prefix + "/Translation/", translationD);
-    this.headingP = new LoggedTunableNumber("DrivePID/" + prefix + "/Heading/", headingP);
-    this.headingI = new LoggedTunableNumber("DrivePID/" + prefix + "/Heading/", headingI);
-    this.headingD = new LoggedTunableNumber("DrivePID/" + prefix + "/Heading/", headingD);
+        new LoggedTunableNumber("DrivePID/" + prefix + "/Translation/kD", translationD);
+    this.headingP = new LoggedTunableNumber("DrivePID/" + prefix + "/Heading/kP", headingP);
+    this.headingI = new LoggedTunableNumber("DrivePID/" + prefix + "/Heading/kI", headingI);
+    this.headingD = new LoggedTunableNumber("DrivePID/" + prefix + "/Heading/kD", headingD);
   }
 
   public void update() {

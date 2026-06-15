@@ -1,5 +1,9 @@
 package com.frc6324.robot2026.subsystems.drive;
 
+import static com.frc6324.robot2026.generated.TunerConstants.BackLeft;
+import static com.frc6324.robot2026.generated.TunerConstants.BackRight;
+import static com.frc6324.robot2026.generated.TunerConstants.FrontLeft;
+import static com.frc6324.robot2026.generated.TunerConstants.FrontRight;
 import static com.frc6324.robot2026.subsystems.drive.DriveConstants.*;
 
 import com.frc6324.robot2026.RobotState;
@@ -64,10 +68,10 @@ public class Drive extends SubsystemBase {
     this.gyro = gyro;
     this.odometryThread = odometryThread;
 
-    modules[0] = new Module(0, fl);
-    modules[1] = new Module(1, fr);
-    modules[2] = new Module(2, bl);
-    modules[3] = new Module(3, br);
+    modules[0] = new Module(fl, 0, FrontLeft);
+    modules[1] = new Module(fr, 1, FrontRight);
+    modules[2] = new Module(bl, 2, BackLeft);
+    modules[3] = new Module(br, 3, BackRight);
 
     odometryThread.start();
   }
@@ -75,7 +79,7 @@ public class Drive extends SubsystemBase {
   @AutoLogOutput(key = "Odometry/MeasuredModuleStates")
   public SwerveModuleState[] getMeasuredStates() {
     final SwerveModuleState[] states = new SwerveModuleState[4];
-    forEachModule((module, idx) -> states[idx] = module.getMeasuredState());
+    forEachModule((module, idx) -> states[idx] = module.getState());
     return states;
   }
 
@@ -140,7 +144,7 @@ public class Drive extends SubsystemBase {
   }
 
   public void runDriveCharacterization(Voltage voltage) {
-    forEachModule(m -> m.runDriveCharacterization(voltage));
+    forEachModule(m -> m.runCharacterization(voltage));
   }
 
   public void runFieldRelative(ChassisSpeeds speeds) {
@@ -152,7 +156,8 @@ public class Drive extends SubsystemBase {
 
   public void runRobotRelative(ChassisSpeeds speeds) {
     final ChassisSpeeds discretized = ChassisSpeeds.discretize(speeds, 0.02);
-    final SwerveModuleState[] moduleStates = kinematics.toSwerveModuleStates(speeds);
+    final SwerveModuleState[] moduleStates = kinematics.toSwerveModuleStates(discretized);
+    SwerveDriveKinematics.desaturateWheelSpeeds(moduleStates, MAX_LINEAR_SPEED);
 
     Logger.recordOutput("Swerve/Speeds/Commanded", speeds);
     Logger.recordOutput("Swerve/Speeds/Discretized", discretized);

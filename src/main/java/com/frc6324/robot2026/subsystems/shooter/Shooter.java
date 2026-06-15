@@ -1,14 +1,11 @@
 package com.frc6324.robot2026.subsystems.shooter;
 
-import static com.frc6324.lib.util.CommonUtils.NINETY_DEGREES;
 import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.*;
 import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.DrumConstants.*;
 import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.HoodConstants.*;
 import static edu.wpi.first.units.Units.*;
 
 import com.frc6324.lib.util.logging.LoggedTracer;
-import com.frc6324.robot2026.sim.MapleSimManager;
-import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
@@ -105,27 +102,6 @@ public final class Shooter extends SubsystemBase {
   private void setHoodAngle(Angle angle) {
     io.setHoodPosition(angle);
     hoodSetpoint = angle;
-  }
-
-  @Override
-  public void simulationPeriodic() {
-    final Angle shooterAngle = inputs.hoodPosition;
-    final double shooterAngleRads =
-        shooterAngle.div(HOOD_MAX_ANGLE).magnitude() * HOOD_SIM_MAX_ANGLE.in(Radians);
-
-    final Rotation3d rot = new Rotation3d(0, shooterAngleRads, 0);
-    final Translation3d translation = ROBOT_TO_HOOD_AXLE.plus(HOOD_AXLE_TO_HOOD.rotateBy(rot));
-
-    final Rotation3d flippedRot = new Rotation3d(0, -shooterAngleRads, 0);
-    final Pose3d hoodPose = new Pose3d(translation, flippedRot);
-
-    Logger.recordOutput("Shooter/HoodMechanismPosition", hoodPose);
-
-    MapleSimManager.getInstance()
-        .setShooterState(
-            translation.plus(HOOD_SIM_SHOOTING_OFFSET),
-            inputs.drumVelocity,
-            NINETY_DEGREES.minus(inputs.hoodPosition));
   }
 
   /**

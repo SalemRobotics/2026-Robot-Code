@@ -31,11 +31,7 @@ public interface ModuleIO extends IOLayer<ModuleIO.ModuleInputs> {
     public double[] odometryWheelPositions = new double[0];
   }
 
-  void setDriveCurrent(Current current);
-
   void setDriveVoltage(Voltage volts);
-
-  void setSteerCurrent(Current current);
 
   void setSteerVoltage(Voltage volts);
 
