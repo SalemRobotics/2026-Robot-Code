@@ -48,7 +48,6 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -193,44 +192,7 @@ public class RobotContainer {
         new Auto.Builder(robotState, drive, indexer, intake, rollers, shooter);
     NeutralZoneAutos.addToChooser(autoChooser, builder);
 
-    autoChooser.onChange(
-        auto -> {
-          if (auto == null) {
-            rawAutoPreviewPoses = new Pose2d[0];
-            field.getObject("Auto Start").setPoses(rawAutoPreviewPoses);
-            field.getObject("Auto Path").setPoses(rawAutoPreviewPoses);
-
-            cachedAutoCommand = null;
-            cachedAutoStartingPose = null;
-
-            return;
-          }
-
-          final Pose2d[] pathPoses = auto.previewPoses().toArray(Pose2d[]::new);
-          if (pathPoses.length == 0) {
-            rawAutoPreviewPoses = new Pose2d[0];
-            field.getObject("Auto Start").setPoses(rawAutoPreviewPoses);
-            field.getObject("Auto Path").setPoses(rawAutoPreviewPoses);
-            return;
-          }
-
-          pathPoses[0] = auto.startingPose();
-          rawAutoPreviewPoses = pathPoses;
-
-          // Apply alliance flip for initial preview
-          final Pose2d[] flippedPoses =
-              Arrays.stream(rawAutoPreviewPoses)
-                  .map(AllianceFlipUtil::apply)
-                  .toArray(Pose2d[]::new);
-
-          field.getObject("Auto Start").setPose(flippedPoses[0]);
-          field.getObject("Auto Path").setPoses(flippedPoses);
-
-          Logger.recordOutput("Auto/PathPoses", flippedPoses);
-
-          cachedAutoCommand = auto.command();
-          cachedAutoStartingPose = auto.startingPose();
-        });
+    autoChooser.onChange(this::rebuildAutoCache);
 
     SmartDashboard.putData("Auto Preview", field);
     LoggedTracer.record("Init/Auto chooser");
@@ -335,6 +297,46 @@ public class RobotContainer {
 
   public Pose2d getAutonomousStartingPose() {
     return cachedAutoStartingPose;
+  }
+
+  public void rebuildAutoCache(Auto auto) {
+    if (auto == null) {
+      rawAutoPreviewPoses = new Pose2d[0];
+      field.getObject("Auto Start").setPoses(rawAutoPreviewPoses);
+      field.getObject("Auto Path").setPoses(rawAutoPreviewPoses);
+
+      cachedAutoCommand = null;
+      cachedAutoStartingPose = null;
+
+      return;
+    }
+
+    final Pose2d[] pathPoses = auto.previewPoses().toArray(Pose2d[]::new);
+    if (pathPoses.length == 0) {
+      rawAutoPreviewPoses = new Pose2d[0];
+      field.getObject("Auto Start").setPoses(rawAutoPreviewPoses);
+      field.getObject("Auto Path").setPoses(rawAutoPreviewPoses);
+      return;
+    }
+
+    pathPoses[0] = auto.startingPose();
+    rawAutoPreviewPoses = pathPoses;
+
+    // Apply alliance flip for initial preview
+    final Pose2d[] flippedPoses =
+        Arrays.stream(rawAutoPreviewPoses).map(AllianceFlipUtil::apply).toArray(Pose2d[]::new);
+
+    field.getObject("Auto Start").setPose(flippedPoses[0]);
+    field.getObject("Auto Path").setPoses(flippedPoses);
+
+    Logger.recordOutput("Auto/PathPoses", flippedPoses);
+
+    cachedAutoCommand = auto.command();
+    cachedAutoStartingPose = auto.startingPose();
+  }
+
+  public void rebuildAutoCache() {
+    rebuildAutoCache(autoChooser.get());
   }
 
   /**
