@@ -40,7 +40,7 @@ public class AprilTagVision extends VirtualSubsystem {
     for (int i = 0; i < io.length; i++) {
       disconnectedAlerts[i] =
           new Alert(
-              "AprilTag camera '" + CAMERA_NAMES[i] + "' is disconnected.", AlertType.kWarning);
+              "AprilTag camera '" + CAMERAS[i].name() + "' is disconnected.", AlertType.kWarning);
       inputs[i] = new VisionInputsAutoLogged();
     }
 
@@ -63,7 +63,9 @@ public class AprilTagVision extends VirtualSubsystem {
       robotPosesAccepted.clear();
       robotPosesRejected.clear();
 
-      final String logKey = "Vision/AprilTag/" + CAMERA_NAMES[cameraIndex];
+      final CameraProps props = CAMERAS[cameraIndex];
+
+      final String logKey = "Vision/AprilTag/" + props.name();
       final VisionInputsAutoLogged currentInputs = inputs[cameraIndex];
 
       io[cameraIndex].updateInputs(currentInputs);
@@ -104,9 +106,9 @@ public class AprilTagVision extends VirtualSubsystem {
             Math.pow(estimation.averageTagDistance(), 2) / estimation.numTagsUsed();
 
         final double linearStddev =
-            LINEAR_STDDEV_BASELINE * stddevFactor * CAMERA_STDDEV_FACTORS[cameraIndex];
+            LINEAR_STDDEV_BASELINE * stddevFactor * props.standardDeviationFactor();
         final double angularStddev =
-            ANGULAR_STDDEV_BASELINE * stddevFactor * CAMERA_STDDEV_FACTORS[cameraIndex];
+            ANGULAR_STDDEV_BASELINE * stddevFactor * props.standardDeviationFactor();
 
         // Send the update to all consumers
         robotState.addVisionMeasurement(

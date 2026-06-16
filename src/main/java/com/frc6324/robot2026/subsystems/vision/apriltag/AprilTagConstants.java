@@ -1,6 +1,6 @@
 package com.frc6324.robot2026.subsystems.vision.apriltag;
 
-import static edu.wpi.first.units.Units.Hertz;
+import static edu.wpi.first.units.Units.*;
 
 import com.frc6324.lib.UninstantiableClass;
 import com.frc6324.lib.util.FieldConstants;
@@ -18,37 +18,55 @@ public final class AprilTagConstants {
   public static final AprilTagFieldLayout APRILTAG_LAYOUT =
       FieldConstants.DEFAULT_APRILTAG_TYPE.getLayout();
 
-  public static final String[] CAMERA_NAMES = {
-    "Right Drum Camera", "Left Drum Camera", "Left Aux Camera"
-  };
-  public static final double[] CAMERA_STDDEV_FACTORS = {1, 1, 1.1};
-  public static final Resolution[] CAMERA_RESOLUTIONS = {
-    new Resolution(1280, 800), new Resolution(1280, 800), new Resolution(1280, 800)
-  };
-  public static final double[] CAMERA_LATENCIES = {30, 30, 30};
-  public static final double[] CAMERA_FPS = {30, 30, 30};
-  public static final Rotation2d[] CAMERA_FOVS = {
-    Rotation2d.fromDegrees(110), Rotation2d.fromDegrees(110), Rotation2d.fromDegrees(80)
-  };
-  public static final Transform3d[] ROBOT_TO_CAMERAS = {
-    new Transform3d(
-        Units.inchesToMeters(-13.5),
-        Units.inchesToMeters(5.0),
-        Units.inchesToMeters(15.5),
-        new Rotation3d(0, Units.degreesToRadians(-15), Units.degreesToRadians(157.5))),
-    new Transform3d(
-        Units.inchesToMeters(-13.5),
-        Units.inchesToMeters(-5.0),
-        Units.inchesToMeters(15.5),
-        new Rotation3d(0, Units.degreesToRadians(-15), Units.degreesToRadians(-157.5))),
-    new Transform3d(
-        Units.inchesToMeters(3.75),
-        Units.inchesToMeters(12.5),
-        Units.inchesToMeters(8.75),
+  public static final CameraProps[] CAMERAS = {
+    new CameraProps(
+      "Right Drum Camera", 
+      1, 
+      new Resolution(1280, 800), 
+      30, 
+      40, 
+      Rotation2d.fromDegrees(110), 
+      new Transform3d(
+        Inches.of(-13.5),
+        Inches.of(5.0),
+        Inches.of(15.5),
         new Rotation3d(
-            Units.degreesToRadians(10), // uhhhh....
-            0,
-            Units.degreesToRadians(90)))
+          Degrees.zero(),
+          Degrees.of(-15),
+          Degrees.of(157.5))
+      )),
+    new CameraProps(
+      "Left Drum Camera", 
+      1, 
+      new Resolution(1280, 800), 
+      30, 
+      40, 
+      Rotation2d.fromDegrees(110), 
+      new Transform3d(
+        Inches.of(-13.5),
+        Inches.of(-5.0),
+        Inches.of(15.5),
+        new Rotation3d(
+          Degrees.zero(),
+          Degrees.of(-15),
+          Degrees.of(-157.5))
+      )),
+    new CameraProps(
+      "Left Aux Camera", 
+      1.125, 
+      new Resolution(1280, 800), 
+      30,
+      40, 
+      Rotation2d.fromDegrees(80), 
+      new Transform3d(
+        Inches.of(3.75),
+        Inches.of(12.5),
+        Inches.of(8.75),
+        new Rotation3d(
+            Degrees.of(10),
+            Degrees.zero(),
+            Degrees.of(90))
+      ))
   };
 
   public static final Frequency UPDATE_THREAD_FREQUENCY = Hertz.of(60);
@@ -61,6 +79,16 @@ public final class AprilTagConstants {
 
   public static final double MAX_LATENCY_SECS = 2;
   public static final double MAX_AMBIGUITY = 0.2;
+
+  public record CameraProps(
+    String name,
+    double standardDeviationFactor,
+    Resolution resolution,
+    double averageLatency,
+    double FPS,
+    Rotation2d horizontalFOV,
+    Transform3d robotToCameraLens) {
+  }
 
   public record Resolution(int width, int height) {}
 }

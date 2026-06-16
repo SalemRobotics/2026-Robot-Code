@@ -15,11 +15,11 @@ public final class AprilTagIOSim extends AprilTagIOPhoton {
           camera,
           new SimCameraProperties()
               .setCalibration(
-                  CAMERA_RESOLUTIONS[index].width(),
-                  CAMERA_RESOLUTIONS[index].height(),
-                  CAMERA_FOVS[index])
-              .setAvgLatencyMs(CAMERA_LATENCIES[index])
-              .setFPS(CAMERA_FPS[index])
+                  props.resolution().width(),
+                  props.resolution().height(),
+                  props.horizontalFOV())
+              .setAvgLatencyMs(props.averageLatency())
+              .setFPS(props.FPS())
               .setExposureTimeMs(10));
 
   public AprilTagIOSim() {
@@ -30,7 +30,7 @@ public final class AprilTagIOSim extends AprilTagIOPhoton {
       VisionUpdateThread.addCallback(() -> sim.update(RobotState.getInstance().getPose()));
     }
 
-    system.get().addCamera(cameraSim, ROBOT_TO_CAMERAS[index]);
+    system.get().addCamera(cameraSim, props.robotToCameraLens());
 
     // Disable camera streaming for performance
     cameraSim.enableDrawWireframe(false);
