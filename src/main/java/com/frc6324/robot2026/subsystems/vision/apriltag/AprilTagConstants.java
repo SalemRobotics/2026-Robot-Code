@@ -20,53 +20,41 @@ public final class AprilTagConstants {
 
   public static final CameraProps[] CAMERAS = {
     new CameraProps(
-      "Right Drum Camera", 
-      1, 
-      new Resolution(1280, 800), 
-      30, 
-      40, 
-      Rotation2d.fromDegrees(110), 
-      new Transform3d(
-        Inches.of(-13.5),
-        Inches.of(5.0),
-        Inches.of(15.5),
-        new Rotation3d(
-          Degrees.zero(),
-          Degrees.of(-15),
-          Degrees.of(157.5))
-      )),
+        "Right Drum Camera",
+        1,
+        new Resolution(1280, 800),
+        30,
+        40,
+        Rotation2d.fromDegrees(110),
+        new Transform3d(
+            Inches.of(-13.5),
+            Inches.of(5.0),
+            Inches.of(15.5),
+            new Rotation3d(Degrees.zero(), Degrees.of(-15), Degrees.of(157.5)))),
     new CameraProps(
-      "Left Drum Camera", 
-      1, 
-      new Resolution(1280, 800), 
-      30, 
-      40, 
-      Rotation2d.fromDegrees(110), 
-      new Transform3d(
-        Inches.of(-13.5),
-        Inches.of(-5.0),
-        Inches.of(15.5),
-        new Rotation3d(
-          Degrees.zero(),
-          Degrees.of(-15),
-          Degrees.of(-157.5))
-      )),
+        "Left Drum Camera",
+        1,
+        new Resolution(1280, 800),
+        30,
+        40,
+        Rotation2d.fromDegrees(110),
+        new Transform3d(
+            Inches.of(-13.5),
+            Inches.of(-5.0),
+            Inches.of(15.5),
+            new Rotation3d(Degrees.zero(), Degrees.of(-15), Degrees.of(-157.5)))),
     new CameraProps(
-      "Left Aux Camera", 
-      1.125, 
-      new Resolution(1280, 800), 
-      30,
-      40, 
-      Rotation2d.fromDegrees(80), 
-      new Transform3d(
-        Inches.of(3.75),
-        Inches.of(12.5),
-        Inches.of(8.75),
-        new Rotation3d(
-            Degrees.of(10),
-            Degrees.zero(),
-            Degrees.of(90))
-      ))
+        "Left Aux Camera",
+        1.125,
+        new Resolution(1280, 800),
+        30,
+        40,
+        Rotation2d.fromDegrees(80),
+        new Transform3d(
+            Inches.of(3.75),
+            Inches.of(12.5),
+            Inches.of(8.75),
+            new Rotation3d(Degrees.of(10), Degrees.zero(), Degrees.of(90))))
   };
 
   public static final Frequency UPDATE_THREAD_FREQUENCY = Hertz.of(60);
@@ -81,14 +69,13 @@ public final class AprilTagConstants {
   public static final double MAX_AMBIGUITY = 0.2;
 
   public record CameraProps(
-    String name,
-    double standardDeviationFactor,
-    Resolution resolution,
-    double averageLatency,
-    double FPS,
-    Rotation2d horizontalFOV,
-    Transform3d robotToCameraLens) {
-  }
+      String name,
+      double standardDeviationFactor,
+      Resolution resolution,
+      double averageLatency,
+      double FPS,
+      Rotation2d horizontalFOV,
+      Transform3d robotToCameraLens) {}
 
   public record Resolution(int width, int height) {}
 }

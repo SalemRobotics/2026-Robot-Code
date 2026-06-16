@@ -15,9 +15,7 @@ public final class AprilTagIOSim extends AprilTagIOPhoton {
           camera,
           new SimCameraProperties()
               .setCalibration(
-                  props.resolution().width(),
-                  props.resolution().height(),
-                  props.horizontalFOV())
+                  props.resolution().width(), props.resolution().height(), props.horizontalFOV())
               .setAvgLatencyMs(props.averageLatency())
               .setFPS(props.FPS())
               .setExposureTimeMs(10));

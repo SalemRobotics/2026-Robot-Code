@@ -6,7 +6,6 @@ import choreo.auto.AutoRoutine;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import com.frc6324.lib.util.AllianceSide;
-import com.frc6324.lib.util.FieldConstants;
 import com.frc6324.robot2026.RobotState;
 import com.frc6324.robot2026.commands.ShooterCommands.ShootIntoHubCommand;
 import com.frc6324.robot2026.generated.ChoreoTraj;
@@ -106,35 +105,7 @@ public record Auto(
         return trajectory;
       }
 
-      final List<SwerveSample> samples = trajectory.samples();
-      final List<SwerveSample> mirroredSamples = new ArrayList<>();
-
-      for (final SwerveSample sample : samples) {
-        final double[] forcesY = sample.moduleForcesY();
-        final double[] mirroredForcesY = new double[forcesY.length];
-
-        for (int i = 0; i < forcesY.length; i++) {
-          mirroredForcesY[i] = forcesY[i];
-        }
-
-        mirroredSamples.add(
-            new SwerveSample(
-                sample.t,
-                sample.x,
-                FieldConstants.FIELD_WIDTH - sample.y,
-                -sample.heading,
-                sample.vx,
-                -sample.vy,
-                -sample.omega,
-                sample.ax,
-                -sample.ay,
-                -sample.alpha,
-                sample.moduleForcesX(),
-                mirroredForcesY));
-      }
-
-      return new Trajectory<>(
-          trajectory.name(), mirroredSamples, trajectory.splits(), trajectory.events());
+      return trajectory.mirrorY();
     }
 
     public TrajectoryFollower follow(Trajectory<SwerveSample> trajectory) {
