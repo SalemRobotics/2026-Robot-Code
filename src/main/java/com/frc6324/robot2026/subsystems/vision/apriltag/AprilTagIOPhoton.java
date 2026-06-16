@@ -26,6 +26,8 @@ public class AprilTagIOPhoton implements AprilTagIO {
   private static int cameraIndex = 0;
 
   protected final int index = cameraIndex++;
+
+  protected final CameraProps props = CAMERAS[index];
   private final RobotState robotState = RobotState.getInstance();
 
   private final Lock updateLock = new ReentrantLock();
@@ -33,9 +35,9 @@ public class AprilTagIOPhoton implements AprilTagIO {
   private final AtomicReference<ArrayList<VisionEstimation>> estimations =
       new AtomicReference<>(new ArrayList<>());
 
-  protected final PhotonCamera camera = new PhotonCamera(CAMERA_NAMES[index]);
+  protected final PhotonCamera camera = new PhotonCamera(props.name());
   private final PhotonPoseEstimator poseEstimator =
-      new PhotonPoseEstimator(APRILTAG_LAYOUT, ROBOT_TO_CAMERAS[index]);
+      new PhotonPoseEstimator(APRILTAG_LAYOUT, props.robotToCameraLens());
 
   private Matrix<N3, N3> cameraMatrix = camera.getCameraMatrix().orElse(null);
   private Matrix<N8, N1> distortionCoefficients = camera.getDistCoeffs().orElse(null);
