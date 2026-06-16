@@ -36,6 +36,8 @@ public class Robot extends LoggedRobot {
   private static LoggedDashboardChooser<Alliance> autoWinnerOverride;
 
   private Command autonomousCommand = null;
+  private Alliance lastAlliance = null;
+
   private final RobotContainer robotContainer;
   private final Runtime runtime = Runtime.getRuntime();
 
@@ -201,6 +203,17 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void disabledPeriodic() {
+    Logger.runEveryN(
+        10,
+        () -> {
+          final Alliance currentAlliance = DriverStation.getAlliance().orElse(null);
+
+          if (currentAlliance != lastAlliance) {
+            robotContainer.rebuildAutoCache();
+            lastAlliance = currentAlliance;
+          }
+        });
+
     Logger.runEveryN(5, robotContainer::updateAutoChecks);
   }
 
