@@ -1,22 +1,20 @@
 package com.frc6324.robot2026.subsystems.drive.can;
 
-import com.ctre.phoenix6.CANBus;
-import com.ctre.phoenix6.CANBus.CANBusStatus;
-import lombok.RequiredArgsConstructor;
+import edu.wpi.first.hal.can.CANJNI;
+import edu.wpi.first.hal.can.CANStatus;
 
-@RequiredArgsConstructor
 public class CANBusIORIO implements CANBusIO {
-  private final CANBus bus;
+  private final CANStatus status = new CANStatus();
 
   @Override
   public void updateInputs(CANBusInputs inputs) {
-    final CANBusStatus status = bus.getStatus();
+    CANJNI.getCANStatus(status);
 
-    inputs.name = bus.getName();
-    inputs.busUtilization = status.BusUtilization;
-    inputs.busOffCount = status.BusOffCount;
-    inputs.txFullCount = status.TxFullCount;
-    inputs.receiveErrorCounter = status.REC;
-    inputs.transmitErrorCounter = status.TEC;
+    inputs.name = "rio";
+    inputs.busUtilization = status.percentBusUtilization;
+    inputs.busOffCount = status.busOffCount;
+    inputs.txFullCount = status.txFullCount;
+    inputs.receiveErrorCounter = status.receiveErrorCount;
+    inputs.transmitErrorCounter = status.transmitErrorCount;
   }
 }

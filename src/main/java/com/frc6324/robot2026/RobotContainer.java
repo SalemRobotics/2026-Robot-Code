@@ -88,7 +88,7 @@ public class RobotContainer {
   public RobotContainer() {
     pdh.setSwitchableChannel(true);
 
-    switch (Constants.CURRENT_MODE) {
+    switch (CURRENT_MODE) {
       case REAL -> {
         LoggedTracer.reset();
 
@@ -99,7 +99,7 @@ public class RobotContainer {
                 new ModuleIOTalonFX(odometryThread, FrontRight),
                 new ModuleIOTalonFX(odometryThread, BackLeft),
                 new ModuleIOTalonFX(odometryThread, BackRight),
-                new CANBusIOCANivore(),
+                new CANBusIOCANivore(CANIVORE),
                 new GyroIOPigeon2(odometryThread),
                 odometryThread);
 
