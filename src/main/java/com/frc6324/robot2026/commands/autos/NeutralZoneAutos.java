@@ -6,21 +6,17 @@ import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
-import com.frc6324.lib.UninstantiableClass;
 import com.frc6324.lib.util.AllianceSide;
 import com.frc6324.robot2026.commands.autos.Auto.LoadedTrajectories;
 import com.frc6324.robot2026.generated.ChoreoTraj;
 import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.List;
 import java.util.Optional;
+import lombok.experimental.UtilityClass;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
-@UninstantiableClass
+@UtilityClass
 public final class NeutralZoneAutos {
-  private NeutralZoneAutos() {
-    throw new IllegalAccessError();
-  }
-
   public static void addToChooser(LoggedDashboardChooser<Auto> chooser, Auto.Builder builder) {
     regularDoublePass(AllianceSide.Left, builder)
         .ifPresent(auto -> chooser.addOption("Left Double Pass", auto));

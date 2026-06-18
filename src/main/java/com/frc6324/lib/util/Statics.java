@@ -15,21 +15,15 @@
  */
 package com.frc6324.lib.util;
 
-import com.frc6324.lib.UninstantiableClass;
 import edu.wpi.first.wpilibj.DriverStation;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import org.jetbrains.annotations.Contract;
+import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 
 /** Helper functions for initializing static variables in a type-safe exception-safe way. */
-@UninstantiableClass
+@UtilityClass
 public final class Statics {
-  @Contract(" -> fail")
-  private Statics() {
-    throw new IllegalAccessError();
-  }
-
   /**
    * The default exception handler used by {@link Statics#initOrDefault(ThrowableSupplier,
    * Supplier)}. This reports the error to DriverStation with the error's filled-in stack trace.

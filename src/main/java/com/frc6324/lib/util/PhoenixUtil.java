@@ -22,22 +22,18 @@ import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignalCollection;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.hardware.ParentDevice;
-import com.frc6324.lib.UninstantiableClass;
 import com.frc6324.robot2026.Constants;
 import edu.wpi.first.units.measure.Frequency;
 import edu.wpi.first.wpilibj.DriverStation;
 import java.util.Collection;
 import java.util.function.Supplier;
+import lombok.experimental.UtilityClass;
 
 /** Utilities for working with the Phoenix 6 API. */
-@UninstantiableClass
+@UtilityClass
 public final class PhoenixUtil {
   private static final Frequency SIGNAL_FREQUENCY = Hertz.of(100);
   private static final Lazy<SignalCache> signalCache = new Lazy<>(SignalCache::new);
-
-  private PhoenixUtil() {
-    throw new IllegalAccessError();
-  }
 
   /**
    * Returns the average FPGA timestamp of the given signals.

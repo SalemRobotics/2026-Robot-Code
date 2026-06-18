@@ -90,12 +90,6 @@ tasks.register('replayWatch', JavaExec) {
 dependencies {
     compileOnly 'org.jetbrains:annotations:26.0.2-1'
 
-    annotationProcessor project(":processor")
-    annotationProcessor project(":annotations")
-
-    compileOnly project(":processor")
-    implementation project(":annotations")
-
     annotationProcessor wpi.java.deps.wpilibAnnotations()
     implementation wpi.java.deps.wpilib()
     implementation wpi.java.vendor.java()

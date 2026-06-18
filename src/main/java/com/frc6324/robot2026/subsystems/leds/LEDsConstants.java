@@ -2,12 +2,12 @@ package com.frc6324.robot2026.subsystems.leds;
 
 import static edu.wpi.first.units.Units.*;
 
-import com.frc6324.lib.UninstantiableClass;
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.LEDPattern.GradientType;
 import edu.wpi.first.wpilibj.util.Color;
+import lombok.experimental.UtilityClass;
 
-@UninstantiableClass
+@UtilityClass
 public final class LEDsConstants {
   public static final int LED_RIO_PWM_PORT = 0;
   public static final int LED_BUFFER_LENGTH = 15;
@@ -36,8 +36,4 @@ public final class LEDsConstants {
       LEDPattern.gradient(
               GradientType.kContinuous, Color.kBlueViolet, Color.kChartreuse, Color.kSilver)
           .scrollAtRelativeSpeed(Percent.per(Second).of(-50));
-
-  private LEDsConstants() {
-    throw new IllegalAccessError();
-  }
 }

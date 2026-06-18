@@ -3,7 +3,6 @@ package com.frc6324.robot2026.subsystems.drive;
 import static com.frc6324.robot2026.generated.TunerConstants.*;
 import static edu.wpi.first.units.Units.*;
 
-import com.frc6324.lib.UninstantiableClass;
 import com.frc6324.robot2026.generated.TunerConstants;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
@@ -11,8 +10,9 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.*;
+import lombok.experimental.UtilityClass;
 
-@UninstantiableClass
+@UtilityClass
 public final class DriveConstants {
   public static final Frequency ODOMETRY_FREQUENCY = Hertz.of(250);
 
@@ -58,8 +58,4 @@ public final class DriveConstants {
       RadiansPerSecond.of(MAX_LINEAR_SPEED_METERS_PER_SEC / DRIVE_BASE_RADIUS);
   public static final double MAX_ANGULAR_SPEED_RADS_PER_SEC =
       MAX_ANGULAR_SPEED.in(RadiansPerSecond);
-
-  private DriveConstants() {
-    throw new IllegalAccessError();
-  }
 }

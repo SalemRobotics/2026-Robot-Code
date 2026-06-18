@@ -2,7 +2,6 @@ package com.frc6324.robot2026.commands;
 
 import static edu.wpi.first.units.Units.Degrees;
 
-import com.frc6324.lib.UninstantiableClass;
 import com.frc6324.lib.util.AllianceFlipUtil;
 import com.frc6324.lib.util.PoseExtensions;
 import com.frc6324.lib.util.logging.LoggedTunableProfiledPID;
@@ -16,11 +15,11 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import lombok.experimental.ExtensionMethod;
-import org.jetbrains.annotations.Contract;
+import lombok.experimental.UtilityClass;
 import org.littletonrobotics.junction.Logger;
 
-@UninstantiableClass
 @ExtensionMethod(PoseExtensions.class)
+@UtilityClass
 public final class DriveCommands {
   public static final double ANGLE_TOLERANCE = 2.5;
   public static final double POSITION_TOLERANCE = Units.inchesToMeters(2);
@@ -36,11 +35,6 @@ public final class DriveCommands {
   public static final double POINTING_KI = 0;
   public static final double POINTING_KD = 0.02;
   public static final Angle POINTING_TOLERANCE = Degrees.of(1);
-
-  @Contract(value = "_ -> fail", pure = true)
-  private DriveCommands() {
-    throw new IllegalAccessError();
-  }
 
   /**
    * Calculates the linear velocity the drivetrain should follow given joystick values.

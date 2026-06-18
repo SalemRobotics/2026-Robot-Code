@@ -1,6 +1,5 @@
 package com.frc6324.robot2026.commands;
 
-import com.frc6324.lib.UninstantiableClass;
 import com.frc6324.lib.util.*;
 import com.frc6324.lib.util.FieldConstants.LinesVertical;
 import com.frc6324.lib.util.PoseExtensions.PoseSupplier;
@@ -29,15 +28,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
 import lombok.experimental.ExtensionMethod;
+import lombok.experimental.UtilityClass;
 import org.littletonrobotics.junction.Logger;
 
 @ExtensionMethod(PoseExtensions.class)
-@UninstantiableClass
+@UtilityClass
 public final class ShooterCommands {
-  private ShooterCommands() {
-    throw new IllegalAccessError();
-  }
-
   /**
    * Creates a command that manages the switch between passing and shooting at runtime, depending on
    * where the robot is.

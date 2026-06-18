@@ -15,8 +15,8 @@
  */
 package com.frc6324.lib.util;
 
-import com.frc6324.lib.UninstantiableClass;
 import edu.wpi.first.math.geometry.Pose2d;
+import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -24,14 +24,8 @@ import org.jetbrains.annotations.NotNull;
  * Extensions for the {@link Pose2d} class for use with {@link lombok.experimental.ExtensionMethod
  * ExtensionMethod}.
  */
-@UninstantiableClass
+@UtilityClass
 public final class PoseExtensions {
-  @Contract(" -> fail")
-  private PoseExtensions() {
-    // Throw an Error since this means a reflection attack took place.
-    throw new IllegalAccessError();
-  }
-
   public static double getNorm(Pose2d pose) {
     return pose.getTranslation().getNorm();
   }

@@ -7,7 +7,6 @@
 
 package com.frc6324.lib.util;
 
-import com.frc6324.lib.UninstantiableClass;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
@@ -18,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.UtilityClass;
 
 /**
  * Contains information for location of field element and other useful reference points.
@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
  * <p>NOTE: All constants are defined relative to the field coordinate system, and from the
  * perspective of the blue alliance station
  */
-@UninstantiableClass
+@UtilityClass
 public final class FieldConstants {
   public static final FieldType FIELD_TYPE = FieldType.WELDED;
 
@@ -39,13 +39,10 @@ public final class FieldConstants {
       AprilTagLayoutType.OFFICIAL.getLayout().getFieldLength();
   public static final double FIELD_WIDTH = AprilTagLayoutType.OFFICIAL.getLayout().getFieldWidth();
 
-  private FieldConstants() {
-    throw new IllegalAccessError();
-  }
-
   /**
    * Officially defined and relevant vertical lines found on the field (defined by X-axis offset)
    */
+  @UtilityClass
   public static class LinesVertical {
     public static final double CENTER = FIELD_LENGTH / 2.0;
     public static final double STARTING =
@@ -67,6 +64,7 @@ public final class FieldConstants {
    * <p>NOTE: The field element start and end are always left to right from the perspective of the
    * alliance station
    */
+  @UtilityClass
   public static class LinesHorizontal {
     public static final double CENTER = FIELD_WIDTH / 2.0;
 
@@ -85,6 +83,7 @@ public final class FieldConstants {
   }
 
   /** Hub related constants */
+  @UtilityClass
   public static class Hub {
     // Dimensions
     public static final double WIDTH = Units.inchesToMeters(47.0);
@@ -150,6 +149,7 @@ public final class FieldConstants {
   }
 
   /** Left Bump related constants */
+  @UtilityClass
   public static class LeftBump {
     // Dimensions
     public static final double WIDTH = Units.inchesToMeters(73.0);
@@ -174,6 +174,7 @@ public final class FieldConstants {
   }
 
   /** Right Bump related constants */
+  @UtilityClass
   public static class RightBump {
     // Dimensions
     public static final double WIDTH = Units.inchesToMeters(73.0);
@@ -198,6 +199,7 @@ public final class FieldConstants {
   }
 
   /** Left Trench related constants */
+  @UtilityClass
   public static class LeftTrench {
     // Dimensions
     public static final double WIDTH = Units.inchesToMeters(65.65);
@@ -220,6 +222,7 @@ public final class FieldConstants {
             LinesVertical.OPP_HUB_CENTER, FIELD_WIDTH - OPENING_WIDTH, OPENING_HEIGHT);
   }
 
+  @UtilityClass
   public static class RightTrench {
     // Dimensions
     public static final double WIDTH = Units.inchesToMeters(65.65);
@@ -242,6 +245,7 @@ public final class FieldConstants {
   }
 
   /** Tower related constants */
+  @UtilityClass
   public static class Tower {
     // Dimensions
     public static final double WIDTH = Units.inchesToMeters(49.25);
@@ -293,6 +297,7 @@ public final class FieldConstants {
                 - Units.inchesToMeters(0.75));
   }
 
+  @UtilityClass
   public static class Depot {
     // Dimensions
     public static final double WIDTH = Units.inchesToMeters(42.0);
@@ -309,6 +314,7 @@ public final class FieldConstants {
         new Translation3d(DEPTH, (FIELD_WIDTH / 2) + DISTANCE_FROM_CENTER_Y - (WIDTH / 2), HEIGHT);
   }
 
+  @UtilityClass
   public static class Outpost {
     // Dimensions
     public static final double WIDTH = Units.inchesToMeters(31.8);
