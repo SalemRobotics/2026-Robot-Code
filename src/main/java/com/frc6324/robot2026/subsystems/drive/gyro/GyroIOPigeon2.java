@@ -42,6 +42,8 @@ public class GyroIOPigeon2 implements GyroIO {
   public void updateInputs(GyroInputs inputs) {
     inputs.connected = signals.refreshAll().isOK();
 
+    inputs.rotation3d = pigeon.getRotation3d();
+
     inputs.yaw = new Rotation2d(yaw.getValue());
     inputs.yawVelocity = yawVelocity.getValue();
 

@@ -6,6 +6,7 @@ import static com.frc6324.robot2026.generated.TunerConstants.FrontLeft;
 import static com.frc6324.robot2026.generated.TunerConstants.FrontRight;
 import static com.frc6324.robot2026.subsystems.drive.DriveConstants.*;
 
+import com.frc6324.lib.odometry.GyroReadings;
 import com.frc6324.robot2026.RobotState;
 import com.frc6324.robot2026.subsystems.drive.can.*;
 import com.frc6324.robot2026.subsystems.drive.gyro.*;
@@ -134,6 +135,16 @@ public class Drive extends SubsystemBase {
       }
 
       robotState.addOdometryObservation(timestamps[sampleIdx], modulePositions, gyroAngle);
+
+      final Optional<GyroReadings> gyroReadings =
+          gyroInputs.connected
+              ? Optional.of(
+                  new GyroReadings(
+                      gyroInputs.rotation3d, gyroInputs.accelerationX, gyroInputs.accelerationY))
+              : Optional.empty();
+
+      robotState.addOdometryObservationExperimental(
+          timestamps[sampleIdx], gyroReadings, modulePositions);
     }
 
     robotState.addStateObservation(getMeasuredStates());

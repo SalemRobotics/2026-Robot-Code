@@ -41,21 +41,21 @@ public record ChoreoTraj(
     public static final ChoreoTraj HubShotNZPass = new ChoreoTraj(
         "HubShotNZPass",
         OptionalInt.empty(),
-        5.45817,
+        5.39896,
         new Pose2d(3, 5.5, Rotation2d.fromRadians(2.0944)),
         new Pose2d(3, 5.5, Rotation2d.fromRadians(2.0944))
     );
     public static final ChoreoTraj OutpostScore = new ChoreoTraj(
         "OutpostScore",
         OptionalInt.empty(),
-        1.27714,
+        1.27726,
         new Pose2d(0.6, 0.65, Rotation2d.fromRadians(3.14159)),
         new Pose2d(2.5, 4, Rotation2d.fromRadians(3.14159))
     );
     public static final ChoreoTraj TrenchStartPass = new ChoreoTraj(
         "TrenchStartPass",
         OptionalInt.empty(),
-        3.98806,
+        3.97995,
         new Pose2d(4, 7.4, Rotation2d.fromRadians(3.14159)),
         new Pose2d(3, 5.5, Rotation2d.fromRadians(2.0944))
     );

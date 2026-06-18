@@ -1,18 +1,27 @@
 package com.frc6324.robot2026;
 
 import static com.frc6324.robot2026.subsystems.drive.DriveConstants.MODULE_TRANSLATIONS;
+import static edu.wpi.first.units.Units.Microseconds;
+import static edu.wpi.first.units.Units.Milliseconds;
 
+import com.frc6324.lib.odometry.GyroReadings;
+import com.frc6324.lib.odometry.SwervePoseEstimator;
+import com.frc6324.lib.util.CommonUtils;
 import com.frc6324.lib.util.FieldConstants;
 import com.frc6324.lib.util.Lazy;
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.util.struct.StructSerializable;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.RobotController;
 import java.util.Optional;
 import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 public class RobotState {
   private static final Lazy<RobotState> INSTANCE = new Lazy<>(RobotState::new);
@@ -44,12 +53,20 @@ public class RobotState {
           // from a starting position on the blue or red alliance.
           STARTING_POSE);
 
-  private RobotState() {
-    // AutoLogOutputManager.addObject(this);
-  }
+  private final SwervePoseEstimator experimentalOdometry =
+      new SwervePoseEstimator(
+          kinematics,
+          rawGyroAngle,
+          lastModulePositions,
+          STARTING_POSE,
+          true,
+          VecBuilder.fill(0.1, 0.1, 0.1));
 
   public void addOdometryObservation(
       double timestamp, SwerveModulePosition[] modulePositions, Optional<Rotation2d> gyroAngle) {
+
+    final double start = RobotController.getFPGATime();
+
     final Rotation2d rotation =
         gyroAngle.orElseGet(
             () -> {
@@ -60,6 +77,34 @@ public class RobotState {
     rawGyroAngle = rotation;
     poseEstimator.updateWithTime(timestamp, rotation, modulePositions);
     lastModulePositions = modulePositions;
+
+    final double end = RobotController.getFPGATime();
+    Logger.recordOutput(
+        "Odometry/UpdateTime MS", Milliseconds.convertFrom(end - start, Microseconds));
+  }
+
+  public void addOdometryObservationExperimental(
+      double timestamp,
+      Optional<GyroReadings> gyroReading,
+      SwerveModulePosition[] modulePositions) {
+
+    final double start = RobotController.getFPGATime();
+
+    final GyroReadings reading =
+        gyroReading.orElseGet(
+            () ->
+                new GyroReadings(
+                    new Rotation3d(getRotation()),
+                    CommonUtils.MetersPerSecSquared.zero(),
+                    CommonUtils.MetersPerSecSquared.zero()));
+
+    Logger.recordOutput("ExperimentalOdometry/InputGyroReadings", (StructSerializable) reading);
+
+    experimentalOdometry.updateWithTime(timestamp, Optional.of(reading), modulePositions);
+
+    final double end = RobotController.getFPGATime();
+    Logger.recordOutput(
+        "ExperimentalOdometry/UpdateTime MS", Milliseconds.convertFrom(end - start, Microseconds));
   }
 
   public void addStateObservation(SwerveModuleState[] moduleStates) {
@@ -86,6 +131,11 @@ public class RobotState {
   @AutoLogOutput(key = "Odometry/Position")
   public Pose2d getPose() {
     return poseEstimator.getEstimatedPosition();
+  }
+
+  @AutoLogOutput(key = "ExperimentalOdometry/Position")
+  public Pose2d getPoseExperimental() {
+    return experimentalOdometry.getEstimatedPosition();
   }
 
   public Rotation2d getRotation() {
