@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.*;
 
 import com.frc6324.lib.util.logging.IOLayer;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.units.measure.*;
 import org.littletonrobotics.junction.AutoLog;
 
@@ -12,6 +13,8 @@ public interface GyroIO extends IOLayer<GyroIO.GyroInputs> {
   class GyroInputs {
     public boolean connected = false;
     public Rotation2d[] odometryYawPositions = new Rotation2d[0];
+
+    public Rotation3d rotation3d = Rotation3d.kZero;
 
     // Yaw (robot rotation)
     public Rotation2d yaw = Rotation2d.kZero;

@@ -403,9 +403,9 @@ public final class ShooterCommands {
 
   public static class PassToAllianceZoneCommand extends AbstractShootAtCommand {
     private static final Translation2d LEFT_DRUM_TRANSLATION =
-        new Translation2d(Units.inchesToMeters(-13.5), Units.inchesToMeters(10));
+        new Translation2d(Units.inchesToMeters(-13.5), Units.inchesToMeters(13.5));
     private static final Translation2d RIGHT_DRUM_TRANSLATION =
-        new Translation2d(Units.inchesToMeters(-13.5), Units.inchesToMeters(-10));
+        new Translation2d(Units.inchesToMeters(-13.5), Units.inchesToMeters(-13.5));
 
     private final XboxController controller;
     private Translation2d[] hubCorners;

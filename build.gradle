@@ -5,7 +5,7 @@ plugins {
     id "java"
     id "edu.wpi.first.GradleRIO" version "2026.2.1"
     id "com.peterabeles.gversion" version "1.10"
-    id "com.diffplug.spotless" version "8.1.0"
+    id "com.diffplug.spotless" version "8.2.1"
     id "io.freefair.lombok" version "8.4"
 }
 
@@ -214,6 +214,9 @@ spotless {
         }
         toggleOffOn()
         googleJavaFormat()
+//        palantirJavaFormat()
+//            .formatJavadoc(true)
+//        leadingTabsToSpaces(2)
         removeUnusedImports()
         trimTrailingWhitespace()
         endWithNewline()
@@ -223,7 +226,6 @@ spotless {
             include "**/*.gradle"
             exclude "**/build/**", "**/build-*/**"
         }
-        greclipse()
         leadingTabsToSpaces(4)
         trimTrailingWhitespace()
         endWithNewline()
