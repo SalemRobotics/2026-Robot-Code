@@ -6,15 +6,15 @@ import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.*;
 import com.ctre.phoenix6.signals.*;
 import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
-import com.frc6324.lib.UninstantiableClass;
 import com.frc6324.robot2026.Constants;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.interpolation.*;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.*;
+import lombok.experimental.UtilityClass;
 
-@UninstantiableClass
+@UtilityClass
 public final class ShooterConstants {
   public static final CANBus SHOOTER_CAN_BUS = Constants.CANIVORE;
 
@@ -48,11 +48,7 @@ public final class ShooterConstants {
     PASSING_VELOCITY_MAP.put(15.0, RotationsPerSecond.of(80));
   }
 
-  private ShooterConstants() {
-    throw new IllegalAccessError();
-  }
-
-  @UninstantiableClass
+  @UtilityClass
   public final class AcceleratorConstants {
     public static final int ACCELERATOR_MOTOR_ID = 40;
     public static final double ACCELERATOR_REDUCTION = 2.43;
@@ -85,13 +81,9 @@ public final class ShooterConstants {
     public static final DCMotor ACCELERATOR_GEARBOX = DCMotor.getKrakenX44Foc(1);
     public static final MotorType ACCELERATOR_MOTOR_TYPE = MotorType.KrakenX44;
     public static final double ACCELERATOR_MOI = 0.05;
-
-    private AcceleratorConstants() {
-      throw new IllegalAccessError();
-    }
   }
 
-  @UninstantiableClass
+  @UtilityClass
   public final class DrumConstants {
     public static final int DRUM_LEADER_ID = 41;
     public static final int[] DRUM_MOTOR_IDS = new int[] {42, 43, 44};
@@ -133,13 +125,9 @@ public final class ShooterConstants {
     public static final DCMotor DRUM_GEARBOX = DCMotor.getKrakenX60Foc(4);
     public static final MotorType DRUM_MOTOR_TYPE = MotorType.KrakenX60;
     public static final double DRUM_MOI = 0.0011705586;
-
-    private DrumConstants() {
-      throw new IllegalAccessError();
-    }
   }
 
-  @UninstantiableClass
+  @UtilityClass
   public final class HoodConstants {
     public static final int HOOD_MOTOR_ID = 45;
     public static final int HOOD_ENCODER_ID = 46;
@@ -200,10 +188,6 @@ public final class ShooterConstants {
     public static final DCMotor HOOD_GEARBOX = DCMotor.getKrakenX44Foc(1);
     public static final MotorType HOOD_MOTOR_TYPE = MotorType.KrakenX44;
     public static final double HOOD_MOI = 0.05;
-
-    private HoodConstants() {
-      throw new IllegalAccessError();
-    }
   }
 
   /**

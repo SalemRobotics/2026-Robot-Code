@@ -16,12 +16,12 @@
 package com.frc6324.robot2026;
 
 import com.ctre.phoenix6.CANBus;
-import com.frc6324.lib.UninstantiableClass;
 import com.frc6324.robot2026.generated.TunerConstants;
 import edu.wpi.first.wpilibj.RobotBase;
+import lombok.experimental.UtilityClass;
 
 /** Constants for the whole robot. */
-@UninstantiableClass
+@UtilityClass
 public final class Constants {
   public static final CANBus RIO_BUS = CANBus.roboRIO();
   public static final CANBus CANIVORE = TunerConstants.kCANBus;
@@ -35,10 +35,6 @@ public final class Constants {
 
   /** The current mode being run. */
   public static final Mode CURRENT_MODE = RobotBase.isReal() ? Mode.REAL : SIM_MODE;
-
-  private Constants() {
-    throw new IllegalAccessError();
-  }
 
   /** Represents a type of robot being run. */
   public static enum Mode {

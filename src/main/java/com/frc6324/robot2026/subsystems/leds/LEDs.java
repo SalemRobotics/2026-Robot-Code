@@ -2,12 +2,12 @@ package com.frc6324.robot2026.subsystems.leds;
 
 import static com.frc6324.robot2026.subsystems.leds.LEDsConstants.*;
 
-import com.frc6324.lib.UninstantiableClass;
 import com.frc6324.lib.util.VirtualSubsystem;
 import com.frc6324.lib.util.logging.LoggedTracer;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.wpilibj.*;
+import lombok.experimental.UtilityClass;
 
 public final class LEDs extends VirtualSubsystem {
   private final AddressableLED leds = new AddressableLED(LED_RIO_PWM_PORT);
@@ -62,16 +62,12 @@ public final class LEDs extends VirtualSubsystem {
     LoggedTracer.record("Periodic/LEDs periodic");
   }
 
-  @UninstantiableClass
+  @UtilityClass
   public static final class LEDState {
     public static boolean passing = false;
     public static boolean shooting = false;
     public static boolean closeShooting = false;
     public static boolean outtaking = false;
     public static boolean intaking = false;
-
-    private LEDState() {
-      throw new IllegalAccessError();
-    }
   }
 }

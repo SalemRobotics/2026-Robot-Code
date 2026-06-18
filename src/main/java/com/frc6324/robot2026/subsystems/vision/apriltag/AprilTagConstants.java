@@ -2,19 +2,15 @@ package com.frc6324.robot2026.subsystems.vision.apriltag;
 
 import static edu.wpi.first.units.Units.*;
 
-import com.frc6324.lib.UninstantiableClass;
 import com.frc6324.lib.util.FieldConstants;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Frequency;
+import lombok.experimental.UtilityClass;
 
-@UninstantiableClass
+@UtilityClass
 public final class AprilTagConstants {
-  private AprilTagConstants() {
-    throw new IllegalAccessError();
-  }
-
   public static final AprilTagFieldLayout APRILTAG_LAYOUT =
       FieldConstants.DEFAULT_APRILTAG_TYPE.getLayout();
 

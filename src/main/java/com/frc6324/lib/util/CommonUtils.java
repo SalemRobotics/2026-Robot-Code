@@ -17,15 +17,14 @@ package com.frc6324.lib.util;
 
 import static edu.wpi.first.units.Units.*;
 
-import com.frc6324.lib.UninstantiableClass;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.LinearAccelerationUnit;
 import edu.wpi.first.units.measure.*;
 import java.util.Collection;
 import java.util.function.ToDoubleFunction;
-import org.jetbrains.annotations.Contract;
+import lombok.experimental.UtilityClass;
 
-@UninstantiableClass
+@UtilityClass
 public final class CommonUtils {
   public static final LinearAccelerationUnit MetersPerSecSquared = MetersPerSecondPerSecond;
 
@@ -133,10 +132,5 @@ public final class CommonUtils {
     }
 
     return new double[] {min, max};
-  }
-
-  @Contract("-> fail")
-  private CommonUtils() {
-    throw new IllegalAccessError();
   }
 }

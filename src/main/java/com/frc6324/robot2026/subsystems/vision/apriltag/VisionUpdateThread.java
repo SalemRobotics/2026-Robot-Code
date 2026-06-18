@@ -2,16 +2,12 @@ package com.frc6324.robot2026.subsystems.vision.apriltag;
 
 import static com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagConstants.UPDATE_THREAD_FREQUENCY;
 
-import com.frc6324.lib.UninstantiableClass;
 import edu.wpi.first.wpilibj.Notifier;
 import java.util.ArrayList;
+import lombok.experimental.UtilityClass;
 
-@UninstantiableClass
+@UtilityClass
 public final class VisionUpdateThread {
-  private VisionUpdateThread() {
-    throw new IllegalAccessError();
-  }
-
   private static final ArrayList<Runnable> updateFunctions = new ArrayList<>();
   private static final Notifier updateThread =
       new Notifier(() -> updateFunctions.forEach(Runnable::run));

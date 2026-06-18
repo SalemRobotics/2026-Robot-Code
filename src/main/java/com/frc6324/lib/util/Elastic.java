@@ -8,15 +8,14 @@ package com.frc6324.lib.util;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.frc6324.lib.UninstantiableClass;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.networktables.*;
-import org.jetbrains.annotations.Contract;
+import lombok.experimental.UtilityClass;
 
 /** A utility class for interacting with the Elastic dashboard. */
-@UninstantiableClass
+@UtilityClass
 public final class Elastic {
   private static final StringTopic notificationTopic =
       NetworkTableInstance.getDefault().getStringTopic("/Elastic/RobotNotifications");
@@ -30,11 +29,6 @@ public final class Elastic {
 
   static {
     HAL.report(tResourceType.kResourceType_Dashboard, tInstances.kDashboard_Elastic);
-  }
-
-  @Contract(" -> fail")
-  private Elastic() {
-    throw new IllegalAccessError();
   }
 
   /**

@@ -15,22 +15,16 @@
  */
 package com.frc6324.lib.util;
 
-import com.frc6324.lib.UninstantiableClass;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 /** A utility class for flipping geometry onto the other side of the field. */
-@UninstantiableClass
+@UtilityClass
 public final class AllianceFlipUtil {
-  @Contract(" -> fail")
-  private AllianceFlipUtil() {
-    // Throw an Error since this means a reflection attack took place.
-    throw new IllegalAccessError();
-  }
-
   /**
    * Unconditionally flips the provided X coordinate to the other side of the field.
    *

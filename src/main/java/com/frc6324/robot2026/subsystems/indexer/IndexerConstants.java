@@ -6,12 +6,12 @@ import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.*;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
-import com.frc6324.lib.UninstantiableClass;
 import com.frc6324.robot2026.Constants;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.AngularVelocity;
+import lombok.experimental.UtilityClass;
 
-@UninstantiableClass
+@UtilityClass
 public final class IndexerConstants {
   public static final CANBus INDEXER_CAN_BUS = Constants.CANIVORE;
   public static final int INDEXER_BELT_MOTOR_ID = 30;
@@ -60,8 +60,4 @@ public final class IndexerConstants {
   public static final MotorType INDEXER_BELT_MOTOR_TYPE = MotorType.KrakenX60;
   public static final double INDEXER_BELT_REDUCTION = 9;
   public static final double INDEXER_BELT_MOI = 0.1;
-
-  private IndexerConstants() {
-    throw new IllegalAccessError();
-  }
 }

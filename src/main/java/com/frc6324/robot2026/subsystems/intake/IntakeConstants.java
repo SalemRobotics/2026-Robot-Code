@@ -6,13 +6,13 @@ import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.*;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
-import com.frc6324.lib.UninstantiableClass;
 import com.frc6324.robot2026.Constants;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.*;
+import lombok.experimental.UtilityClass;
 
-@UninstantiableClass
+@UtilityClass
 public final class IntakeConstants {
   public static final CANBus INTAKE_CAN_BUS = Constants.CANIVORE;
   public static final int INTAKE_MOTOR_ID = 20;
@@ -66,8 +66,4 @@ public final class IntakeConstants {
   public static final MotorType INTAKE_MOTOR_TYPE = MotorType.KrakenX60;
   public static final Rotation3d INTAKE_MECHANISM_ROTATION =
       new Rotation3d(Degrees.zero(), Degrees.of(18.5), Degrees.zero());
-
-  private IntakeConstants() {
-    throw new IllegalAccessError();
-  }
 }
