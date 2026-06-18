@@ -17,6 +17,7 @@ import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -75,6 +76,14 @@ public class Drive extends SubsystemBase {
     modules[3] = new Module(br, 3, BackRight);
 
     odometryThread.start();
+
+    SmartDashboard.putData("Drivetrain", new SwerveWidget(this));
+  }
+
+  public SwerveModulePosition[] getMeasuredPositions() {
+    final SwerveModulePosition[] positions = new SwerveModulePosition[4];
+    forEachModule((module, idx) -> positions[idx] = module.getPosition());
+    return positions;
   }
 
   @AutoLogOutput(key = "Odometry/MeasuredModuleStates")
