@@ -784,54 +784,17 @@ public class SwervePoseEstimator {
   /**
    * An immutable snapshot of a single vision correction.
    *
-   * <p>Stores:
-   *
-   * <ul>
-   *   <li>{@link #visionPose} — the Kalman-corrected fused pose at the capture timestamp.
-   *   <li>{@link #odometryPose} — the raw odometry pose at the capture timestamp (used by {@link
-   *       #compensate} to compute the delta when projecting the correction forward).
-   *   <li>{@link #rawVisionPose} — the original, unfiltered pose reported by the vision system.
-   *       Stored so that {@link SwervePoseEstimator#replayVisionUpdatesFrom} can re-apply the same
-   *       measurement to an updated fused history without needing to invert the Kalman step.
-   *   <li>{@link #kalmanGain} — the per-axis gain ({@code [kx, ky, kθ]}) that was used to compute
-   *       {@link #visionPose}. Preserved so that replay can re-apply the same weighting.
-   * </ul>
+   * @param visionPose — the Kalman-corrected fused pose at the capture timestamp.
+   * @param odometryPose — the raw odometry pose at the capture timestamp (used by {@link
+   *     #compensate} to compute the delta when projecting the correction forward).
+   * @param rawVisionPose — the original, unfiltered pose reported by the vision system. Stored so
+   *     that {@link SwervePoseEstimator#replayVisionUpdatesFrom} can re-apply the same measurement
+   *     to an updated fused history without needing to invert the Kalman step.
+   * @param kalmanGain — the per-axis gain ({@code [kx, ky, kθ]}) that was used to compute {@link
+   *     #visionPose}. Preserved so that replay can re-apply the same weighting.
    */
-  private static final class VisionUpdate {
-    /** The Kalman-corrected fused pose at the vision frame's capture timestamp. */
-    final Pose2d visionPose;
-
-    /** The raw odometry-only pose at the vision frame's capture timestamp. */
-    final Pose2d odometryPose;
-
-    /**
-     * The original, unfiltered vision measurement. Stored to enable numerically exact replay
-     * without having to invert the Kalman step.
-     */
-    final Pose2d rawVisionPose;
-
-    /**
-     * Per-axis Kalman gain {@code [kx, ky, kθ]} that was used when this entry was created. Re-used
-     * during replay to re-apply the same noise model to the updated fused history.
-     */
-    final double[] kalmanGain;
-
-    /**
-     * Constructs a {@code VisionUpdate} with a distinct raw vision pose (standard path).
-     *
-     * @param visionPose The corrected fused pose.
-     * @param odometryPose The odometry-only pose at capture time.
-     * @param rawVisionPose The original vision measurement.
-     * @param kalmanGain The per-axis Kalman gain used to compute {@code visionPose}.
-     */
-    VisionUpdate(
-        Pose2d visionPose, Pose2d odometryPose, Pose2d rawVisionPose, double[] kalmanGain) {
-      this.visionPose = visionPose;
-      this.odometryPose = odometryPose;
-      this.rawVisionPose = rawVisionPose;
-      this.kalmanGain = kalmanGain;
-    }
-
+  private record VisionUpdate(
+      Pose2d visionPose, Pose2d odometryPose, Pose2d rawVisionPose, double[] kalmanGain) {
     /**
      * Convenience constructor for cases where the raw vision pose and the corrected pose coincide
      * (i.e. {@link VisionTrustMode#FULL_TRUST} or {@link
