@@ -12,6 +12,7 @@ import edu.wpi.first.math.interpolation.*;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.*;
+import edu.wpi.first.wpilibj.RobotBase;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -124,7 +125,7 @@ public final class ShooterConstants {
 
     public static final DCMotor DRUM_GEARBOX = DCMotor.getKrakenX60Foc(4);
     public static final MotorType DRUM_MOTOR_TYPE = MotorType.KrakenX60;
-    public static final double DRUM_MOI = 0.0011705586;
+    public static final double DRUM_MOI = 0.05;
   }
 
   @UtilityClass
@@ -148,7 +149,10 @@ public final class ShooterConstants {
                     .withSupplyCurrentLimitEnable(true))
             .withFeedback(
                 new FeedbackConfigs()
-                    .withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder)
+                    .withFeedbackSensorSource(
+                        RobotBase.isSimulation()
+                            ? FeedbackSensorSourceValue.RotorSensor
+                            : FeedbackSensorSourceValue.FusedCANcoder)
                     .withFeedbackRemoteSensorID(HOOD_ENCODER_ID)
                     .withRotorToSensorRatio(HOOD_ROTOR_TO_ENCODER)
                     .withSensorToMechanismRatio(HOOD_ENCODER_TO_MECHANISM))
@@ -187,7 +191,7 @@ public final class ShooterConstants {
 
     public static final DCMotor HOOD_GEARBOX = DCMotor.getKrakenX44Foc(1);
     public static final MotorType HOOD_MOTOR_TYPE = MotorType.KrakenX44;
-    public static final double HOOD_MOI = 0.05;
+    public static final double HOOD_MOI = 1.5;
   }
 
   /**
