@@ -12,7 +12,6 @@ import com.frc6324.robot2026.subsystems.drive.can.*;
 import com.frc6324.robot2026.subsystems.drive.gyro.*;
 import com.frc6324.robot2026.subsystems.drive.module.*;
 import com.frc6324.robot2026.subsystems.drive.odometry.*;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.Alert;
@@ -135,16 +134,6 @@ public class Drive extends SubsystemBase {
     int sampleCount = timestamps.length;
 
     for (int sampleIdx = 0; sampleIdx < sampleCount; sampleIdx++) {
-      final Optional<Rotation2d> gyroAngle =
-          gyroInputs.connected ? Optional.of(gyroInputs.yaw) : Optional.empty();
-
-      final SwerveModulePosition[] modulePositions = new SwerveModulePosition[modules.length];
-      for (int moduleIdx = 0; moduleIdx < modules.length; moduleIdx++) {
-        modulePositions[moduleIdx] = modules[moduleIdx].getOdometryPositions()[sampleIdx];
-      }
-
-      robotState.addOdometryObservation(timestamps[sampleIdx], modulePositions, gyroAngle);
-
       final Optional<GyroReadings> gyroReadings =
           gyroInputs.connected
               ? Optional.of(
@@ -152,8 +141,12 @@ public class Drive extends SubsystemBase {
                       gyroInputs.rotation3d, gyroInputs.accelerationX, gyroInputs.accelerationY))
               : Optional.empty();
 
-      robotState.addOdometryObservationExperimental(
-          timestamps[sampleIdx], gyroReadings, modulePositions);
+      final SwerveModulePosition[] modulePositions = new SwerveModulePosition[modules.length];
+      for (int moduleIdx = 0; moduleIdx < modules.length; moduleIdx++) {
+        modulePositions[moduleIdx] = modules[moduleIdx].getOdometryPositions()[sampleIdx];
+      }
+
+      robotState.addOdometryObservation(timestamps[sampleIdx], modulePositions, gyroReadings);
     }
 
     robotState.addStateObservation(getMeasuredStates());
