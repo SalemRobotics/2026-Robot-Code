@@ -2,23 +2,17 @@ package com.frc6324.robot2026.subsystems.intake;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.frc6324.lib.io.IOLayer;
 import edu.wpi.first.units.measure.*;
 import org.littletonrobotics.junction.AutoLog;
 
 @FunctionalInterface
-public interface IntakeIO {
+public interface IntakeIO extends IOLayer<IntakeIO.IntakeInputs> {
   default void setPosition(Angle position, int slot) {}
 
   default void setPositionProfiled(Angle position, int slot) {}
 
   default void spring() {}
-
-  /**
-   * Updates a set of loggable inputs for the intake.
-   *
-   * @param inputs the inputs to modify.
-   */
-  void updateInputs(IntakeInputs inputs);
 
   @AutoLog
   class IntakeInputs {

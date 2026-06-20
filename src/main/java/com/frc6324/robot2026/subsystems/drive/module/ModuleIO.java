@@ -2,7 +2,7 @@ package com.frc6324.robot2026.subsystems.drive.module;
 
 import static edu.wpi.first.units.Units.*;
 
-import com.frc6324.lib.util.logging.IOLayer;
+import com.frc6324.lib.io.IOLayer;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.*;
 import org.littletonrobotics.junction.AutoLog;

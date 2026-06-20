@@ -1,8 +1,9 @@
 package com.frc6324.robot2026.subsystems.drive.can;
 
-import com.frc6324.lib.util.logging.IOLayer;
+import com.frc6324.lib.io.IOLayer;
 import org.littletonrobotics.junction.AutoLog;
 
+@FunctionalInterface
 public interface CANBusIO extends IOLayer<CANBusIO.CANBusInputs> {
   @AutoLog
   public class CANBusInputs {

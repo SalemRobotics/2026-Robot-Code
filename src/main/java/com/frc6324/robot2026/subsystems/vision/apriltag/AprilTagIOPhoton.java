@@ -154,7 +154,7 @@ public class AprilTagIOPhoton implements AprilTagIO {
   }
 
   @Override
-  public void updateInputs(VisionInputs inputs) {
+  public void updateInputs(AprilTagInputs inputs) {
     if (!camera.isConnected() || !enableSignal.getAsBoolean()) {
       inputs.connected = false;
       inputs.estimations = new VisionEstimation[0];

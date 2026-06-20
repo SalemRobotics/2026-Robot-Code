@@ -7,6 +7,8 @@ import static com.frc6324.robot2026.generated.TunerConstants.FrontRight;
 import static com.frc6324.robot2026.subsystems.drive.DriveConstants.*;
 
 import com.frc6324.lib.odometry.GyroReadings;
+import com.frc6324.lib.util.DrivePID;
+import com.frc6324.lib.util.Drivetrain;
 import com.frc6324.robot2026.RobotState;
 import com.frc6324.robot2026.subsystems.drive.can.*;
 import com.frc6324.robot2026.subsystems.drive.gyro.*;
@@ -24,10 +26,11 @@ import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
+import lombok.Getter;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-public class Drive extends SubsystemBase {
+public class Drive extends SubsystemBase implements Drivetrain {
   public static final Lock ODOMETRY_LOCK = new ReentrantLock(true);
 
   private final CANBusIO canBus;
@@ -49,7 +52,7 @@ public class Drive extends SubsystemBase {
   private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(MODULE_TRANSLATIONS);
   private final RobotState robotState = RobotState.getInstance();
 
-  public final DrivePID autoPID = new DrivePID("Auto", 5, 0, 0, 5, 0, 0);
+  @Getter public final DrivePID autoDrivePID = new DrivePID("Auto", 5, 0, 0, 5, 0, 0);
 
   public final SysIdRoutine sysId =
       new SysIdRoutine(

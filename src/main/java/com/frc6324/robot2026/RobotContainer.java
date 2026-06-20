@@ -22,11 +22,12 @@ import static com.frc6324.robot2026.generated.TunerConstants.FrontLeft;
 import static com.frc6324.robot2026.generated.TunerConstants.FrontRight;
 import static edu.wpi.first.units.Units.*;
 
-import com.frc6324.lib.util.AllianceFlipUtil;
+import com.frc6324.lib.auto.Auto;
+import com.frc6324.lib.auto.AutoBuilder;
+import com.frc6324.lib.io.IOLayer;
 import com.frc6324.lib.util.FieldConstants.LinesHorizontal;
 import com.frc6324.lib.util.FieldConstants.LinesVertical;
 import com.frc6324.lib.util.PoseExtensions;
-import com.frc6324.lib.util.logging.IOLayer;
 import com.frc6324.lib.util.logging.LoggedTracer;
 import com.frc6324.robot2026.commands.*;
 import com.frc6324.robot2026.commands.ShooterCommands.*;
@@ -53,7 +54,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import java.util.Arrays;
 import lombok.experimental.ExtensionMethod;
 import org.littletonrobotics.junction.LoggedPowerDistribution;
 import org.littletonrobotics.junction.Logger;
@@ -83,7 +83,7 @@ public class RobotContainer {
   public final Field2d field = new Field2d();
   private Command cachedAutoCommand = null;
   private Pose2d cachedAutoStartingPose = null;
-  private Pose2d[] rawAutoPreviewPoses = new Pose2d[] {};
+  private Pose2d[] rawAutoPreviewPoses = new Pose2d[0];
 
   public RobotContainer() {
     pdh.setSwitchableChannel(true);
@@ -186,10 +186,13 @@ public class RobotContainer {
     configureBindings();
     LoggedTracer.record("Init/Controller Bindings");
 
-    autoChooser.addDefaultOption("No Auto", Auto.doNothing());
+    autoChooser.addDefaultOption("No Auto", new Auto("Do Nothing", Commands::none));
 
-    final Auto.Builder builder =
-        new Auto.Builder(robotState, drive, indexer, intake, rollers, shooter);
+    final Superstructure superstructure =
+        new Superstructure(robotState, drive, indexer, intake, rollers, shooter);
+    final AutoBuilder<Superstructure> builder =
+        new AutoBuilder<>(robotState, drive, superstructure);
+
     NeutralZoneAutos.addToChooser(autoChooser, builder);
 
     autoChooser.onChange(this::rebuildAutoCache);
@@ -300,7 +303,7 @@ public class RobotContainer {
   }
 
   public void rebuildAutoCache(Auto auto) {
-    if (auto == null) {
+    if (auto == null || auto.previewInfo().isEmpty()) {
       rawAutoPreviewPoses = new Pose2d[0];
       field.getObject("Auto Start").setPoses(rawAutoPreviewPoses);
       field.getObject("Auto Path").setPoses(rawAutoPreviewPoses);
@@ -311,28 +314,20 @@ public class RobotContainer {
       return;
     }
 
-    final Pose2d[] pathPoses = auto.previewPoses().toArray(Pose2d[]::new);
-    if (pathPoses.length == 0) {
-      rawAutoPreviewPoses = new Pose2d[0];
-      field.getObject("Auto Start").setPoses(rawAutoPreviewPoses);
-      field.getObject("Auto Path").setPoses(rawAutoPreviewPoses);
-      return;
-    }
+    final Auto.TrajectoryInfo preview = auto.previewInfo().get();
 
-    pathPoses[0] = auto.startingPose();
-    rawAutoPreviewPoses = pathPoses;
+    rawAutoPreviewPoses = preview.blueTrajectoryPoses;
 
-    // Apply alliance flip for initial preview
-    final Pose2d[] flippedPoses =
-        Arrays.stream(rawAutoPreviewPoses).map(AllianceFlipUtil::apply).toArray(Pose2d[]::new);
+    field.getObject("Auto Start").setPose(preview.getStartingPose());
 
-    field.getObject("Auto Start").setPose(flippedPoses[0]);
-    field.getObject("Auto Path").setPoses(flippedPoses);
+    final Pose2d[] trajectoryPoses = preview.getTrajectoryPoses();
 
-    Logger.recordOutput("Auto/PathPoses", flippedPoses);
+    field.getObject("Auto Path").setPoses(trajectoryPoses);
+
+    Logger.recordOutput("Auto/PathPoses", trajectoryPoses);
 
     cachedAutoCommand = auto.command();
-    cachedAutoStartingPose = auto.startingPose();
+    cachedAutoStartingPose = preview.getStartingPose();
   }
 
   public void rebuildAutoCache() {

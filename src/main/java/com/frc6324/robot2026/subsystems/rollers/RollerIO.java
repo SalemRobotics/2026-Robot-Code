@@ -2,18 +2,17 @@ package com.frc6324.robot2026.subsystems.rollers;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.frc6324.lib.io.IOLayer;
 import edu.wpi.first.units.measure.*;
 import org.littletonrobotics.junction.AutoLog;
 
 @FunctionalInterface
-public interface RollerIO {
+public interface RollerIO extends IOLayer<RollerIO.RollerInputs> {
   default void start() {}
 
   default void stop() {}
 
   default void outtake() {}
-
-  void updateInputs(RollerInputs inputs);
 
   @AutoLog
   class RollerInputs {

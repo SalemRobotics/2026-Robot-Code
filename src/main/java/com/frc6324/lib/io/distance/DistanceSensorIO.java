@@ -2,16 +2,15 @@ package com.frc6324.lib.io.distance;
 
 import static edu.wpi.first.units.Units.Meters;
 
+import com.frc6324.lib.io.IOLayer;
 import edu.wpi.first.units.measure.Distance;
 import org.littletonrobotics.junction.AutoLog;
 
 @FunctionalInterface
-public interface DistanceSensorIO {
+public interface DistanceSensorIO extends IOLayer<DistanceSensorIO.DistanceSensorInputs> {
   default boolean isActive() {
     return false;
   }
-
-  void updateInputs(DistanceSensorInputs inputs);
 
   @AutoLog
   public class DistanceSensorInputs {

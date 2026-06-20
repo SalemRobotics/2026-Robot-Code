@@ -87,18 +87,12 @@ public final class ShooterConstants {
   @UtilityClass
   public final class DrumConstants {
     public static final int DRUM_LEADER_ID = 41;
-    public static final int[] DRUM_MOTOR_IDS = new int[] {42, 43, 44};
-    public static final InvertedValue[] DRUM_FOLLOWER_DIRECTIONS =
-        new InvertedValue[] {
-          InvertedValue.CounterClockwise_Positive,
-          InvertedValue.Clockwise_Positive,
-          InvertedValue.Clockwise_Positive
-        };
-    // Accounts for loss of speed due to compression, slip and others that we can't explicitly model
-    // in sim
-    public static final double DRUM_EFFICIENCY = 0.7;
-    public static final double DRUM_BACKSPIN_EFFICIENCY = 0.4;
-    public static final Distance DRUM_RADIUS = Inches.of(2);
+    public static final int[] DRUM_MOTOR_IDS = {42, 43, 44};
+    public static final InvertedValue[] DRUM_FOLLOWER_DIRECTIONS = {
+      InvertedValue.CounterClockwise_Positive,
+      InvertedValue.Clockwise_Positive,
+      InvertedValue.Clockwise_Positive
+    };
 
     public static final AngularVelocity DRUM_IDLE_SPEED = RPM.of(2000);
     public static final AngularVelocity DRUM_CLOSE_HUB_SHOT_SPEED = RPM.of(2100);
@@ -171,23 +165,6 @@ public final class ShooterConstants {
                     .withKG(0.45)
                     .withGravityType(GravityTypeValue.Arm_Cosine)
                     .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign));
-
-    /** The translation from the robot's center to the axle the hood is mounted on. */
-    public static final Translation3d ROBOT_TO_HOOD_AXLE =
-        new Translation3d(Inches.of(-1.75), Inches.of(0.75), Inches.of(17.5));
-
-    /** The translation from the axle the hood is mounted on to the hood itself. */
-    public static final Translation3d HOOD_AXLE_TO_HOOD =
-        new Translation3d(-0.110334, 0, -0.0609053);
-
-    /**
-     * The offset from the {@link #HOOD_AXLE_TO_HOOD} translation that gets the center point of the
-     * hood.
-     */
-    public static final Translation3d HOOD_SIM_SHOOTING_OFFSET =
-        new Translation3d(0, -0.0224069, 0);
-
-    public static final Angle HOOD_SIM_MAX_ANGLE = Degrees.of(45);
 
     public static final DCMotor HOOD_GEARBOX = DCMotor.getKrakenX44Foc(1);
     public static final MotorType HOOD_MOTOR_TYPE = MotorType.KrakenX44;

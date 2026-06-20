@@ -1,10 +1,11 @@
 package com.frc6324.robot2026.subsystems.vision.objdetect;
 
+import com.frc6324.lib.io.IOLayer;
 import edu.wpi.first.math.geometry.Transform3d;
 import org.littletonrobotics.junction.AutoLog;
 
 @FunctionalInterface
-public interface ObjDetectIO {
+public interface ObjDetectIO extends IOLayer<ObjDetectIO.ObjDetectInputs> {
   /**
    * Updates this camera's
    *

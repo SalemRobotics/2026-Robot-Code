@@ -115,6 +115,25 @@ public final class AllianceFlipUtil {
     return shouldFlip() ? applyUnchecked(pose) : pose;
   }
 
+  public static Pose2d[] applyUnchecked(Pose2d... poses) {
+    int size = poses.length;
+    final Pose2d[] flipped = new Pose2d[size];
+
+    for (int i = 0; i < size; i++) {
+      flipped[i] = applyUnchecked(poses[i]);
+    }
+
+    return flipped;
+  }
+
+  /**
+   * @param poses
+   * @return
+   */
+  public static Pose2d[] apply(Pose2d... poses) {
+    return shouldFlip() ? applyUnchecked(poses) : poses;
+  }
+
   /**
    * Unconditionally flips a 2 dimensional transform to the other side of the field.
    *

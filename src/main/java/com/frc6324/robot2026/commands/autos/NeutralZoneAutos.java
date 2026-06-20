@@ -6,8 +6,10 @@ import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
+import com.frc6324.lib.auto.Auto;
+import com.frc6324.lib.auto.AutoBuilder;
+import com.frc6324.lib.auto.TrajectoryFollower;
 import com.frc6324.lib.util.AllianceSide;
-import com.frc6324.robot2026.commands.autos.Auto.LoadedTrajectories;
 import com.frc6324.robot2026.generated.ChoreoTraj;
 import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.List;
@@ -17,7 +19,8 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 @UtilityClass
 public final class NeutralZoneAutos {
-  public static void addToChooser(LoggedDashboardChooser<Auto> chooser, Auto.Builder builder) {
+  public static void addToChooser(
+      LoggedDashboardChooser<Auto> chooser, AutoBuilder<Superstructure> builder) {
     regularDoublePass(AllianceSide.Left, builder)
         .ifPresent(auto -> chooser.addOption("Left Double Pass", auto));
 
@@ -33,26 +36,25 @@ public final class NeutralZoneAutos {
    * @param builder The auto builder to use.
    * @return The double pass auto if it loaded successfully.
    */
-  public static Optional<Auto> regularDoublePass(AllianceSide side, Auto.Builder builder) {
+  public static Optional<Auto> regularDoublePass(
+      AllianceSide side, AutoBuilder<Superstructure> builder) {
     final String name = side + "DoublePass";
     final ChoreoTraj[] trajectories = {TrenchStartPass, HubShotNZPass};
 
-    final LoadedTrajectories loaded = builder.load(side, trajectories);
-    if (loaded.missing() > 0) {
-      // If the missing trajectory count is greater than 0, the errors have already
-      // been reported,
-      // so return an empty optional
+    final Optional<List<Trajectory<SwerveSample>>> loaded = builder.load(side, trajectories);
+    if (loaded.isEmpty()) {
       return Optional.empty();
     }
 
-    final List<Trajectory<SwerveSample>> loadedTrajectories = loaded.trajectories();
+    final List<Trajectory<SwerveSample>> loadedTrajectories = loaded.get();
 
     return Optional.of(
-        Auto.followTrajectory(
+        new Auto(
             name,
             loadedTrajectories,
             () -> {
-              final AutoRoutine routine = builder.factory.newRoutine(name);
+              final AutoRoutine routine = builder.getFactory().newRoutine(name);
+              final Superstructure superstructure = builder.getSuperstructure();
 
               final AutoTrajectory first = routine.trajectory(loadedTrajectories.get(0));
 
@@ -63,8 +65,8 @@ public final class NeutralZoneAutos {
 
               routine
                   .observe(firstPass.done())
-                  .onTrue(Commands.sequence(builder.shootCommand(3), secondPass.asProxy()));
-              routine.observe(secondPass.done()).onTrue(builder.shootCommand(5).asProxy());
+                  .onTrue(Commands.sequence(superstructure.shootCommand(3), secondPass.asProxy()));
+              routine.observe(secondPass.done()).onTrue(superstructure.shootCommand(5).asProxy());
 
               return routine;
             }));

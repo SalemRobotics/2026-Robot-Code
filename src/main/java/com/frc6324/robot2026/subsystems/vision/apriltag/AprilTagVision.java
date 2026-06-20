@@ -19,7 +19,7 @@ import org.littletonrobotics.junction.Logger;
 
 public class AprilTagVision extends VirtualSubsystem {
   private final AprilTagIO[] io;
-  private final VisionInputsAutoLogged[] inputs;
+  private final AprilTagInputsAutoLogged[] inputs;
   private final Alert[] disconnectedAlerts;
   private final RobotState robotState = RobotState.getInstance();
 
@@ -35,13 +35,13 @@ public class AprilTagVision extends VirtualSubsystem {
     this.io = io;
 
     disconnectedAlerts = new Alert[io.length];
-    inputs = new VisionInputsAutoLogged[io.length];
+    inputs = new AprilTagInputsAutoLogged[io.length];
 
     for (int i = 0; i < io.length; i++) {
       disconnectedAlerts[i] =
           new Alert(
               "AprilTag camera '" + CAMERAS[i].name() + "' is disconnected.", AlertType.kWarning);
-      inputs[i] = new VisionInputsAutoLogged();
+      inputs[i] = new AprilTagInputsAutoLogged();
     }
 
     final Pose3d[] allTagPoses =
@@ -66,7 +66,7 @@ public class AprilTagVision extends VirtualSubsystem {
       final CameraProps props = CAMERAS[cameraIndex];
 
       final String logKey = "Vision/AprilTag/" + props.name();
-      final VisionInputsAutoLogged currentInputs = inputs[cameraIndex];
+      final AprilTagInputsAutoLogged currentInputs = inputs[cameraIndex];
 
       io[cameraIndex].updateInputs(currentInputs);
       Logger.processInputs(logKey, currentInputs);
