@@ -1,0 +1,26 @@
+{
+  "name": "Osiris",
+  "isFTC": false,
+  "disableSimplification": false,
+  "rotations": [
+    {
+      "axis": "x",
+      "degrees": 180.0
+    },
+    {
+      "axis": "y",
+      "degrees": 0.0
+    },
+    {
+      "axis": "z",
+      "degrees": 0.0
+    }
+  ],
+  "position": [
+    0,
+    0,
+    0.20955
+  ],
+  "cameras": [],
+  "components": []
+}
