@@ -1,5 +1,6 @@
 package com.frc6324.lib.io.beambreak;
 
+import com.frc6324.lib.io.IOLayer;
 import org.littletonrobotics.junction.AutoLog;
 
 /**
@@ -11,14 +12,8 @@ import org.littletonrobotics.junction.AutoLog;
  * <p>This I/O layer also works for digital Time of Flight (ToF) sensors that report if the detected
  * time of flight is below a certain threshold.
  */
-public interface BeamBreakIO {
-  /**
-   * Updates a set of loggable inputs for this beam break.
-   *
-   * @param inputs The inputs to modifiy.
-   */
-  void updateInputs(BeamBreakInputs inputs);
-
+@FunctionalInterface
+public interface BeamBreakIO extends IOLayer<BeamBreakIO.BeamBreakInputs> {
   /** Inputs for a beam break sensor. */
   @AutoLog
   class BeamBreakInputs {

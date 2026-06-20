@@ -2,11 +2,12 @@ package com.frc6324.robot2026.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.frc6324.lib.io.IOLayer;
 import edu.wpi.first.units.measure.*;
 import org.littletonrobotics.junction.AutoLog;
 
 @FunctionalInterface
-public interface ShooterIO {
+public interface ShooterIO extends IOLayer<ShooterIO.ShooterInputs> {
   default void coastDrum() {}
 
   default void setAcceleratorVelocity(AngularVelocity velocity) {}
@@ -17,13 +18,11 @@ public interface ShooterIO {
 
   default void stopAcceleratorMotor() {}
 
-  void updateInputs(ShooterInputs inputs);
-
   @AutoLog
   public class ShooterInputs {
     public boolean hoodConnected = false;
     public boolean acceleratorConnected = false;
-    public boolean[] drumMotorsConnected = new boolean[] {false, false, false, false};
+    public boolean[] drumMotorsConnected = {false, false, false, false};
 
     public Angle hoodPosition = Rotations.zero();
     public Voltage hoodMotorVoltage = Volts.zero();
@@ -34,7 +33,7 @@ public interface ShooterIO {
     public Current acceleratorStatorCurrent = Amps.zero();
 
     public AngularVelocity drumVelocity = RPM.zero();
-    public double[] drumMotorVoltages = new double[] {0, 0, 0, 0};
-    public double[] drumStatorCurrents = new double[] {0, 0, 0, 0};
+    public double[] drumMotorVoltages = {0, 0, 0, 0};
+    public double[] drumStatorCurrents = {0, 0, 0, 0};
   }
 }

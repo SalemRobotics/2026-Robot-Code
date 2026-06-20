@@ -1,13 +1,13 @@
-package com.frc6324.robot2026.commands.autos;
+package com.frc6324.lib.auto;
 
 import choreo.trajectory.EventMarker;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import com.frc6324.lib.util.AllianceFlipUtil;
+import com.frc6324.lib.util.Drivetrain;
 import com.frc6324.lib.util.logging.LoggedTrigger;
 import com.frc6324.lib.util.logging.LoggedTunableNumber;
 import com.frc6324.robot2026.RobotState;
-import com.frc6324.robot2026.subsystems.drive.Drive;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.Debouncer;
@@ -39,7 +39,7 @@ public final class TrajectoryFollower extends Command {
   private final PIDController yController;
   private final PIDController headingController;
 
-  private final Drive drive;
+  private final Drivetrain drive;
   private final RobotState robotState = RobotState.getInstance();
   private final Map<String, Command> eventCommands;
   private final Trajectory<SwerveSample> trajectory;
@@ -61,7 +61,7 @@ public final class TrajectoryFollower extends Command {
       PIDController yController,
       PIDController headingController,
       Trajectory<SwerveSample> trajectory,
-      Drive drive,
+      Drivetrain drive,
       Map<String, Command> eventCommands) {
     this.xController = xController;
     this.yController = yController;

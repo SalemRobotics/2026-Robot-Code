@@ -13,7 +13,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-package com.frc6324.lib.util.logging;
+package com.frc6324.lib.io;
 
 import org.jetbrains.annotations.Contract;
 
@@ -21,6 +21,7 @@ import org.jetbrains.annotations.Contract;
  * A utility class for interacting with I/O interfaces that are annotated with {@link
  * java.lang.FunctionalInterface FunctionalInterface}.
  */
+@FunctionalInterface
 public interface IOLayer<Inputs> {
   void updateInputs(Inputs inputs);
 

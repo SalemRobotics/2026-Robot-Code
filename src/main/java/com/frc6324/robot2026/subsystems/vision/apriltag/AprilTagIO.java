@@ -1,13 +1,13 @@
 package com.frc6324.robot2026.subsystems.vision.apriltag;
 
+import com.frc6324.lib.io.IOLayer;
 import edu.wpi.first.math.geometry.Pose3d;
 import org.littletonrobotics.junction.AutoLog;
 
-public interface AprilTagIO {
-  void updateInputs(VisionInputs inputs);
-
+@FunctionalInterface
+public interface AprilTagIO extends IOLayer<AprilTagIO.AprilTagInputs> {
   @AutoLog
-  class VisionInputs {
+  class AprilTagInputs {
     public boolean connected = false;
     public VisionEstimation[] estimations = new VisionEstimation[0];
     public int[] tagsSeen = new int[0];
