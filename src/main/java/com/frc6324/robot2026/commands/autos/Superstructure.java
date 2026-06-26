@@ -9,6 +9,7 @@ import com.frc6324.robot2026.subsystems.intake.Intake;
 import com.frc6324.robot2026.subsystems.rollers.Rollers;
 import com.frc6324.robot2026.subsystems.shooter.Shooter;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.Map;
 
 public class Superstructure implements SuperstructureBase {
@@ -43,6 +44,7 @@ public class Superstructure implements SuperstructureBase {
   }
 
   public Command shootCommand(double timeout) {
-    return shootCommand().withTimeout(timeout);
+    return shootCommand()
+        .raceWith(Commands.waitUntil(() -> !shooter.hasSeenFuel()), Commands.waitSeconds(timeout));
   }
 }

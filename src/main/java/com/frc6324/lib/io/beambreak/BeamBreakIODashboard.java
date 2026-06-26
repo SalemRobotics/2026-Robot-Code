@@ -20,10 +20,8 @@ public final class BeamBreakIODashboard implements BeamBreakIO {
    * @param defaultValue The default value put onto the network.
    */
   public BeamBreakIODashboard(String key, boolean defaultValue) {
-    final BooleanTopic topic = NetworkTableInstance
-      .getDefault()
-      .getBooleanTopic(key);
-    
+    final BooleanTopic topic = NetworkTableInstance.getDefault().getBooleanTopic(key);
+
     this.subscriber = topic.subscribe(defaultValue);
   }
 

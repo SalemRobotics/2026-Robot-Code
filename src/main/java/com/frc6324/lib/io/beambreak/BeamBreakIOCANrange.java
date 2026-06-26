@@ -8,28 +8,28 @@ import com.ctre.phoenix6.configs.CANrangeConfiguration;
 import com.ctre.phoenix6.hardware.CANrange;
 
 public class BeamBreakIOCANrange implements BeamBreakIO {
-    private final CANrange canrange;
+  private final CANrange canrange;
 
-    private final StatusSignal<Boolean> detection;
+  private final StatusSignal<Boolean> detection;
 
-    public BeamBreakIOCANrange(int id, CANBus canBus, String name, CANrangeConfiguration config) {
-        canrange = new CANrange(id, canBus);
+  public BeamBreakIOCANrange(int id, CANBus canBus, String name, CANrangeConfiguration config) {
+    canrange = new CANrange(id, canBus);
 
-        tryUntilOk(5, () -> canrange.getConfigurator().apply(config));
+    tryUntilOk(5, () -> canrange.getConfigurator().apply(config));
 
-        detection = canrange.getIsDetected();
-        detection.setUpdateFrequency(100);
-        canrange.optimizeBusUtilization();
-    }
+    detection = canrange.getIsDetected();
+    detection.setUpdateFrequency(100);
+    canrange.optimizeBusUtilization();
+  }
 
-    public BeamBreakIOCANrange(int id, CANBus canBus, CANrangeConfiguration config) {
-        this(id, canBus, "CANrange [id " + id + " on bus " + canBus.getName() + "]", config);
-    }
+  public BeamBreakIOCANrange(int id, CANBus canBus, CANrangeConfiguration config) {
+    this(id, canBus, "CANrange [id " + id + " on bus " + canBus.getName() + "]", config);
+  }
 
-    @Override
-    public void updateInputs(BeamBreakInputs inputs) {
-        inputs.connected = canrange.isConnected() && detection.refresh().getStatus().isOK();
+  @Override
+  public void updateInputs(BeamBreakInputs inputs) {
+    inputs.connected = canrange.isConnected() && detection.refresh().getStatus().isOK();
 
-        inputs.broken = detection.getValue();
-    }
+    inputs.broken = detection.getValue();
+  }
 }

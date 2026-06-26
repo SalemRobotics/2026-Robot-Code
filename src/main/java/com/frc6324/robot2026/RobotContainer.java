@@ -25,6 +25,8 @@ import static edu.wpi.first.units.Units.*;
 import com.frc6324.lib.auto.Auto;
 import com.frc6324.lib.auto.AutoBuilder;
 import com.frc6324.lib.io.IOLayer;
+import com.frc6324.lib.io.beambreak.BeamBreakIOCANrange;
+import com.frc6324.lib.io.beambreak.BeamBreakIOSupplier;
 import com.frc6324.lib.util.FieldConstants.LinesHorizontal;
 import com.frc6324.lib.util.FieldConstants.LinesVertical;
 import com.frc6324.lib.util.PoseExtensions;
@@ -32,6 +34,7 @@ import com.frc6324.lib.util.logging.LoggedTracer;
 import com.frc6324.robot2026.commands.*;
 import com.frc6324.robot2026.commands.ShooterCommands.*;
 import com.frc6324.robot2026.commands.autos.*;
+import com.frc6324.robot2026.sim.FuelSimulator;
 import com.frc6324.robot2026.subsystems.drive.Drive;
 import com.frc6324.robot2026.subsystems.drive.can.CANBusIOCANivore;
 import com.frc6324.robot2026.subsystems.drive.gyro.*;
@@ -127,7 +130,15 @@ public class RobotContainer {
         rollers = new Rollers(new RollerIOTalonFX());
         LoggedTracer.record("Init/Rollers init");
 
-        shooter = new Shooter(new ShooterIOTalonFX());
+        shooter =
+            new Shooter(
+                new ShooterIOTalonFX(),
+                new BeamBreakIOCANrange(
+                    ShooterConstants.FUEL_CANRANGE_ID,
+                    ShooterConstants.SHOOTER_CAN_BUS,
+                    "Shooter CANrange",
+                    ShooterConstants.FUEL_CANRANGE_CONFIG));
+
         LoggedTracer.record("Init/Shooter init");
       }
       case SIM -> {
@@ -135,10 +146,10 @@ public class RobotContainer {
 
         drive =
             new Drive(
+                new ModuleIOSim(FrontLeft),
                 new ModuleIOSim(FrontRight),
-                new ModuleIOSim(FrontRight),
-                new ModuleIOSim(FrontRight),
-                new ModuleIOSim(FrontRight),
+                new ModuleIOSim(BackLeft),
+                new ModuleIOSim(BackRight),
                 IOLayer::replay,
                 IOLayer::replay,
                 new OdometryThreadSim());
@@ -166,7 +177,10 @@ public class RobotContainer {
         rollers = new Rollers(new RollerIOSim());
         LoggedTracer.record("Init/Rollers init");
 
-        shooter = new Shooter(new ShooterIOSim());
+        shooter =
+            new Shooter(
+                new ShooterIOSim(),
+                new BeamBreakIOSupplier(() -> FuelSimulator.getInstance().heldFuelCount() > 0));
         LoggedTracer.record("Init/Shooter init");
       }
       default -> {
@@ -204,7 +218,7 @@ public class RobotContainer {
         rollers = new Rollers(IOLayer::replay);
         LoggedTracer.record("Init/Rollers init");
 
-        shooter = new Shooter(IOLayer::replay);
+        shooter = new Shooter(IOLayer::replay, IOLayer::replay);
         LoggedTracer.record("Init/Shooter init");
       }
     }

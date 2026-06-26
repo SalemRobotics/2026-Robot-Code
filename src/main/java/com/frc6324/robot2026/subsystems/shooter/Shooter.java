@@ -5,14 +5,21 @@ import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.DrumCons
 import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.HoodConstants.*;
 import static edu.wpi.first.units.Units.*;
 
+import com.frc6324.lib.io.beambreak.BeamBreakIO;
+import com.frc6324.lib.io.beambreak.BeamBreakInputsAutoLogged;
 import com.frc6324.lib.util.logging.LoggedTracer;
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
 public final class Shooter extends SubsystemBase {
-  private final ShooterIO io;
-  private final ShooterInputsAutoLogged inputs = new ShooterInputsAutoLogged();
+  private final ShooterIO shooterIO;
+  private final ShooterInputsAutoLogged shooterInputs = new ShooterInputsAutoLogged();
+
+  private final BeamBreakIO beamBreakIO;
+  private final BeamBreakInputsAutoLogged beamBreakInputs = new BeamBreakInputsAutoLogged();
 
   private Angle hoodSetpoint = Rotations.zero();
   private boolean hoodAtSetpoint = false;
@@ -21,13 +28,18 @@ public final class Shooter extends SubsystemBase {
 
   private AngularVelocity velocityOffset = RotationsPerSecond.zero();
 
+  private final Debouncer fuelDebouncer = new Debouncer(FUEL_DEBOUNCE_TIME, DebounceType.kFalling);
+  private boolean fuelSeen = false;
+
   /**
    * Creates a new shooter subsystem.
    *
-   * @param io The implementation of the shooter's I/O to use.
+   * @param shooter The implementation of the shooter's I/O to use.
+   * @param beamBreak The implementation of the shooter's beam break I/O to use.
    */
-  public Shooter(ShooterIO io) {
-    this.io = io;
+  public Shooter(ShooterIO shooter, BeamBreakIO beamBreak) {
+    this.shooterIO = shooter;
+    this.beamBreakIO = beamBreak;
   }
 
   public boolean atTargetHoodAngle() {
@@ -46,9 +58,8 @@ public final class Shooter extends SubsystemBase {
     velocityOffset = velocityOffset.plus(DRUM_OFFSET_STEP);
   }
 
-  public boolean noFuelSeen() {
-    // TODO: update this when the beam break is added
-    return false;
+  public boolean hasSeenFuel() {
+    return fuelSeen;
   }
 
   /**
@@ -59,18 +70,22 @@ public final class Shooter extends SubsystemBase {
   public void pass(double distanceToZone) {
     setHoodAngle(HOOD_MAX_ANGLE);
 
-    AngularVelocity targetVelocity = PASSING_VELOCITY_MAP.get(distanceToZone);
+    final AngularVelocity targetVelocity = PASSING_VELOCITY_MAP.get(distanceToZone);
     setDrumVelocity(targetVelocity, DRUM_SHOOTING_SLOT);
   }
 
   @Override
   public void periodic() {
     // Update the shooter inputs and log them
-    io.updateInputs(inputs);
-    Logger.processInputs("Shooter", inputs);
+    shooterIO.updateInputs(shooterInputs);
+    beamBreakIO.updateInputs(beamBreakInputs);
 
-    hoodAtSetpoint = inputs.hoodPosition.isNear(hoodSetpoint, HOOD_POSITION_TOLERANCE);
-    drumAtSetpoint = inputs.drumVelocity.isNear(drumSetpoint, DRUM_VELOCITY_TOLERANCE);
+    Logger.processInputs("Shooter/Shooter", shooterInputs);
+    Logger.processInputs("Shooter/Beam Break", beamBreakInputs);
+
+    hoodAtSetpoint = shooterInputs.hoodPosition.isNear(hoodSetpoint, HOOD_POSITION_TOLERANCE);
+    drumAtSetpoint = shooterInputs.drumVelocity.isNear(drumSetpoint, DRUM_VELOCITY_TOLERANCE);
+    fuelSeen = fuelDebouncer.calculate(beamBreakInputs.broken);
 
     Logger.recordOutput("Shooter/Hood Setpoint", hoodSetpoint);
     Logger.recordOutput("Shooter/Flywheel Setpoint", drumSetpoint);
@@ -89,8 +104,8 @@ public final class Shooter extends SubsystemBase {
    * @param velocity The velocity setpoint.
    */
   private void setDrumVelocity(AngularVelocity velocity, int slot) {
-    io.setDrumVelocity(velocity.plus(velocityOffset), slot);
-    io.setAcceleratorVelocity(velocity);
+    shooterIO.setDrumVelocity(velocity.plus(velocityOffset), slot);
+    shooterIO.setAcceleratorVelocity(velocity);
     drumSetpoint = velocity;
   }
 
@@ -100,7 +115,7 @@ public final class Shooter extends SubsystemBase {
    * @param angle The hood setpoint.
    */
   private void setHoodAngle(Angle angle) {
-    io.setHoodPosition(angle);
+    shooterIO.setHoodPosition(angle);
     hoodSetpoint = angle;
   }
 
@@ -136,12 +151,12 @@ public final class Shooter extends SubsystemBase {
   }
 
   public void stopAccelerators() {
-    io.stopAcceleratorMotor();
+    shooterIO.stopAcceleratorMotor();
   }
 
   /** Commands the drum to coast out to conserve battery voltage. */
   public void stopDrum() {
-    io.coastDrum();
+    shooterIO.coastDrum();
   }
 
   /** Commands the hood to stow when it isn't being used. */
