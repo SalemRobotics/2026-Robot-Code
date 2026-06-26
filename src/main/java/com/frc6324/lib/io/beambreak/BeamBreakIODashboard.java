@@ -1,35 +1,15 @@
 package com.frc6324.lib.io.beambreak;
 
-import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
+import edu.wpi.first.networktables.BooleanSubscriber;
+import edu.wpi.first.networktables.BooleanTopic;
+import edu.wpi.first.networktables.NetworkTableInstance;
 
 /**
  * A beam break sensor that uses a NetworkTables entry to determine the value reported by the sensor
  * according to a user.
  */
 public final class BeamBreakIODashboard implements BeamBreakIO {
-  private final LoggedNetworkBoolean networkBoolean;
-
-  /**
-   * Creates a new beam break sensor with a backing NetworkTables boolean value.
-   *
-   * <p>This implementation is meant to be used during non-replay simulation.
-   *
-   * @param networkBoolean The {@link LoggedNetworkBoolean} that represents the sensor value.
-   */
-  public BeamBreakIODashboard(LoggedNetworkBoolean networkBoolean) {
-    this.networkBoolean = networkBoolean;
-  }
-
-  /**
-   * Creates a new beam break sensor with a backing NetworkTables boolean value.
-   *
-   * <p>This implementation is meant to be used during non-replay simulation.
-   *
-   * @param key The path to the boolean value in NetworkTables.
-   */
-  public BeamBreakIODashboard(String key) {
-    this(new LoggedNetworkBoolean(key));
-  }
+  private final BooleanSubscriber subscriber;
 
   /**
    * Creates a new beam break sensor with a backing NetworkTables boolean value.
@@ -40,12 +20,17 @@ public final class BeamBreakIODashboard implements BeamBreakIO {
    * @param defaultValue The default value put onto the network.
    */
   public BeamBreakIODashboard(String key, boolean defaultValue) {
-    this(new LoggedNetworkBoolean(key, defaultValue));
+    final BooleanTopic topic = NetworkTableInstance
+      .getDefault()
+      .getBooleanTopic(key);
+    
+    this.subscriber = topic.subscribe(defaultValue);
   }
 
   @Override
   public void updateInputs(BeamBreakInputs inputs) {
     inputs.connected = true;
-    inputs.broken = networkBoolean.get();
+
+    inputs.broken = subscriber.get();
   }
 }
