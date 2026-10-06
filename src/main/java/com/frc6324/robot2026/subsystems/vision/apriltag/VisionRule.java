@@ -1,14 +1,12 @@
 package com.frc6324.robot2026.subsystems.vision.apriltag;
 
 import com.frc6324.lib.util.FieldConstants;
-import com.frc6324.lib.util.PoseExtensions.PoseSupplier;
+import com.frc6324.robot2026.RobotState;
 import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagIO.VisionEstimation;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
-import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 /** Represents a rule that evaluates vision observations. */
@@ -37,8 +35,6 @@ public abstract class VisionRule {
   }
 
   public abstract boolean shouldPermit(VisionEstimation estimation);
-
-  public void update() {}
 
   /** Checks if the vision measurement has an acceptable ambiguity, given the number of tags. */
   public static class AmbiguityFilter extends VisionRule {
@@ -71,24 +67,13 @@ public abstract class VisionRule {
   public static class AngularVelocityFilter extends VisionRule {
     private static final double ANGULAR_VELOCITY_LIMIT = 1.5;
 
-    private final Supplier<ChassisSpeeds> robotSpeedsSupplier;
-    private ChassisSpeeds speeds = new ChassisSpeeds();
-
-    public AngularVelocityFilter(Supplier<ChassisSpeeds> robotSpeedsSupplier) {
-      this.robotSpeedsSupplier = robotSpeedsSupplier;
-
+    public AngularVelocityFilter() {
       Logger.recordOutput(logKey() + "/AngularVelocityLimit", ANGULAR_VELOCITY_LIMIT);
     }
 
     @Override
-    public void update() {
-      super.update();
-
-      speeds = robotSpeedsSupplier.get();
-    }
-
-    @Override
     public boolean shouldPermit(VisionEstimation estimation) {
+      final ChassisSpeeds speeds = RobotState.getInstance().getSpeeds();
       return speeds.omegaRadiansPerSecond < ANGULAR_VELOCITY_LIMIT;
     }
   }
@@ -98,26 +83,15 @@ public abstract class VisionRule {
     // A single
     private static final double DISTANCE_THRESHOLD = 3;
 
-    private final PoseSupplier robotPoseSupplier;
-    private Pose2d robotPose = new Pose2d();
-
-    public DistanceFilter(PoseSupplier robotPoseSupplier) {
-      this.robotPoseSupplier = robotPoseSupplier;
-
+    public DistanceFilter() {
       Logger.recordOutput(logKey() + "/MaxDistance", DISTANCE_THRESHOLD);
-    }
-
-    @Override
-    public void update() {
-      super.update();
-
-      robotPose = robotPoseSupplier.getPose();
     }
 
     @Override
     public boolean shouldPermit(VisionEstimation estimation) {
       if (estimation.numTagsUsed() == 1) {
-        return robotPose
+        return RobotState.getInstance()
+                .getPose()
                 .getTranslation()
                 .getDistance(estimation.robotPose().getTranslation().toTranslation2d())
             < DISTANCE_THRESHOLD;

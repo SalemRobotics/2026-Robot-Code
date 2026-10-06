@@ -21,6 +21,8 @@ public class AprilTagVision extends VirtualSubsystem {
   private final AprilTagIO[] io;
   private final AprilTagInputsAutoLogged[] inputs;
   private final Alert[] disconnectedAlerts;
+
+  private final VisionRule[] rules;
   private final RobotState robotState = RobotState.getInstance();
 
   private final ArrayList<Pose2d> allRobotPoses = new ArrayList<>();
@@ -79,8 +81,6 @@ public class AprilTagVision extends VirtualSubsystem {
           if (!rule.shouldPermit(estimation)) {
             rule.reject(estimation); // Logs this pose as rejected by the specific rule
             rejected = true;
-            // Skip the rest of the rules
-            break;
           }
         }
 
@@ -122,6 +122,10 @@ public class AprilTagVision extends VirtualSubsystem {
       allRobotPoses.addAll(robotPoses);
       allRobotPosesAccepted.addAll(robotPosesAccepted);
       allRobotPosesRejected.addAll(robotPosesRejected);
+    }
+
+    for (final VisionRule rule : rules) {
+      rule.logRejected();
     }
 
     LoggedTracer.record("Periodic/AprilTag periodic");

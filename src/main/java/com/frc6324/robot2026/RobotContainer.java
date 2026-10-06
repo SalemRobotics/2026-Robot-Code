@@ -111,14 +111,17 @@ public class RobotContainer {
         VisionRule[] visionRules = {
           // Vision rules in order of diagnostic usefulness.
           new VisionRule.WithinFieldBoundsFilter(),
-          new VisionRule.AngularVelocityFilter(() -> drive.getChassisSpeeds()),
+          new VisionRule.AngularVelocityFilter(),
           new VisionRule.AmbiguityFilter(),
-          new VisionRule.DistanceFilter(() -> drive.getPose()),
+          new VisionRule.DistanceFilter(),
         };
 
         apriltag =
             new AprilTagVision(
-                new AprilTagIOPhoton(), new AprilTagIOPhoton(), new AprilTagIOPhoton());
+                visionRules,
+                new AprilTagIOPhoton(),
+                new AprilTagIOPhoton(),
+                new AprilTagIOPhoton());
         LoggedTracer.record("Init/AprilTag init");
 
         indexer = new Indexer(new IndexerIOTalonFX());
@@ -159,13 +162,14 @@ public class RobotContainer {
         final VisionRule[] visionRules = {
           // Vision rules in order of diagnostic usefulness.
           new VisionRule.WithinFieldBoundsFilter(),
-          new VisionRule.AngularVelocityFilter(drive::getChassisSpeeds),
+          new VisionRule.AngularVelocityFilter(),
           new VisionRule.AmbiguityFilter(),
-          new VisionRule.DistanceFilter(drive::getPose),
+          new VisionRule.DistanceFilter(),
         };
 
         apriltag =
-            new AprilTagVision(new AprilTagIOSim(), new AprilTagIOSim(), new AprilTagIOSim());
+            new AprilTagVision(
+                visionRules, new AprilTagIOSim(), new AprilTagIOSim(), new AprilTagIOSim());
         LoggedTracer.record("Init/AprilTag init");
 
         indexer = new Indexer(new IndexerIOSim());
@@ -200,9 +204,9 @@ public class RobotContainer {
         final VisionRule[] visionRules = {
           // Vision rules in order of diagnostic usefulness.
           new VisionRule.WithinFieldBoundsFilter(),
-          new VisionRule.AngularVelocityFilter(drive::getChassisSpeeds),
+          new VisionRule.AngularVelocityFilter(),
           new VisionRule.AmbiguityFilter(),
-          new VisionRule.DistanceFilter(drive::getPose),
+          new VisionRule.DistanceFilter(),
         };
 
         apriltag =
