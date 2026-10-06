@@ -21,6 +21,7 @@ public class AprilTagVision extends VirtualSubsystem {
   private final VisionInputsAutoLogged[] inputs;
   private final Alert[] disconnectedAlerts;
   private final ArrayList<VisionConsumer> consumers = new ArrayList<>();
+  private final VisionRule[] rules;
 
   private final ArrayList<Pose2d> allRobotPoses = new ArrayList<>();
   private final ArrayList<Pose2d> allRobotPosesAccepted = new ArrayList<>();
@@ -30,7 +31,8 @@ public class AprilTagVision extends VirtualSubsystem {
   private final ArrayList<Pose2d> robotPosesAccepted = new ArrayList<>();
   private final ArrayList<Pose2d> robotPosesRejected = new ArrayList<>();
 
-  public AprilTagVision(AprilTagIO... io) {
+  public AprilTagVision(VisionRule[] visionRules, AprilTagIO... io) {
+    this.rules = visionRules;
     this.io = io;
 
     disconnectedAlerts = new Alert[io.length];
@@ -67,37 +69,30 @@ public class AprilTagVision extends VirtualSubsystem {
 
       io[cameraIndex].updateInputs(currentInputs);
       Logger.processInputs(logKey, currentInputs);
-
       Logger.recordOutput(logKey + "/Visible Tag IDs", currentInputs.tagsSeen);
 
       for (final VisionEstimation estimation : currentInputs.estimations) {
-        final int numTagsUsed = estimation.numTagsUsed();
+        boolean rejected = false;
+        for (final VisionRule rule : rules) {
+          if (!rule.shouldPermit(estimation)) {
+            rule.reject(estimation); // Logs this pose as rejected by the specific rule
+            rejected = true;
+            // Skip the rest of the rules
+            break;
+          }
+        }
+
         final Pose2d robotPose = estimation.robotPose().toPose2d();
-
-        // Determine whether to reject pose if:
-        // 1. The update (somehow) uses 0 tags (should be impossible)
-        // 2. The update has too high of an ambiguity and is single-tag
-        // 3. The pose is outside of the field border
-        final boolean rejectPose =
-            numTagsUsed == 0
-                || (numTagsUsed == 1 && estimation.ambiguity() > MAX_AMBIGUITY)
-                || robotPose.getX() < 0
-                || robotPose.getX() > APRILTAG_LAYOUT.getFieldLength()
-                || robotPose.getY() < 0
-                || robotPose.getY() > APRILTAG_LAYOUT.getFieldWidth();
-
-        // Add the robot pose to the "all poses" cache
         robotPoses.add(robotPose);
 
-        // Add the pose to its respective cache
-        if (rejectPose) {
-          robotPosesRejected.add(robotPose);
-
-          // Skip stddev calculations
+        if (rejected) {
           continue;
         } else {
           robotPosesAccepted.add(robotPose);
         }
+
+        // Add the robot pose to the "all poses" cache
+        robotPoses.add(robotPose);
 
         final double stddevFactor =
             Math.pow(estimation.averageTagDistance(), 2) / estimation.numTagsUsed();

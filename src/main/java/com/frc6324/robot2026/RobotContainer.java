@@ -76,10 +76,17 @@ public class RobotContainer {
         drive = new SwerveDrive(driveIO);
         LoggedTracer.record("Init/Drive init");
 
-        intake = new Intake(new IntakeIOTalonFX());
-        LoggedTracer.record("Init/Intake init");
+        VisionRule[] visionRules = {
+          // Vision rules in order of diagnostic usefulness.
+          new VisionRule.WithinFieldBoundsFilter(),
+          new VisionRule.AngularVelocityFilter(() -> drive.getChassisSpeeds()),
+          new VisionRule.AmbiguityFilter(),
+          new VisionRule.DistanceFilter(() -> drive.getPose()),
+        };
+
         apriltag =
             new AprilTagVision(
+                    visionRules,
                     new AprilTagIOPhoton(driveIO),
                     new AprilTagIOPhoton(driveIO),
                     new AprilTagIOPhoton(driveIO))
@@ -88,6 +95,9 @@ public class RobotContainer {
 
         indexer = new Indexer(new IndexerIOTalonFX());
         LoggedTracer.record("Init/Indexer init");
+
+        intake = new Intake(new IntakeIOTalonFX());
+        LoggedTracer.record("Init/Intake init");
 
         rollers = new Rollers(new RollerIOTalonFX());
         LoggedTracer.record("Init/Rollers init");
@@ -101,8 +111,17 @@ public class RobotContainer {
         drive = new SwerveDrive(driveIO);
         LoggedTracer.record("Init/Drive init");
 
+        final VisionRule[] visionRules = {
+          // Vision rules in order of diagnostic usefulness.
+          new VisionRule.WithinFieldBoundsFilter(),
+          new VisionRule.AngularVelocityFilter(drive::getChassisSpeeds),
+          new VisionRule.AmbiguityFilter(),
+          new VisionRule.DistanceFilter(drive::getPose),
+        };
+
         apriltag =
             new AprilTagVision(
+                visionRules,
                 new AprilTagIOSim(driveIO, drive),
                 new AprilTagIOSim(driveIO, drive),
                 new AprilTagIOSim(driveIO, drive));
@@ -125,7 +144,16 @@ public class RobotContainer {
         drive = new SwerveDrive(new DriveIOReplay());
         LoggedTracer.record("Init/Drive init");
 
-        apriltag = new AprilTagVision(IOLayer::replay, IOLayer::replay, IOLayer::replay);
+        final VisionRule[] visionRules = {
+          // Vision rules in order of diagnostic usefulness.
+          new VisionRule.WithinFieldBoundsFilter(),
+          new VisionRule.AngularVelocityFilter(drive::getChassisSpeeds),
+          new VisionRule.AmbiguityFilter(),
+          new VisionRule.DistanceFilter(drive::getPose),
+        };
+
+        apriltag =
+            new AprilTagVision(visionRules, IOLayer::replay, IOLayer::replay, IOLayer::replay);
         LoggedTracer.record("Init/AprilTag init");
 
         indexer = new Indexer(IOLayer::replay);
