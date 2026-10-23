@@ -124,6 +124,10 @@ public class AprilTagVision extends VirtualSubsystem {
       allRobotPosesRejected.addAll(robotPosesRejected);
     }
 
+    for (final VisionRule rule : rules) {
+      rule.logRejected();
+    }
+
     LoggedTracer.record("Periodic/AprilTag periodic");
   }
 

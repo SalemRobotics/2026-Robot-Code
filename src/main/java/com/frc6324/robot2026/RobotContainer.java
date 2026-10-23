@@ -76,12 +76,12 @@ public class RobotContainer {
         drive = new SwerveDrive(driveIO);
         LoggedTracer.record("Init/Drive init");
 
-        VisionRule[] visionRules = {
+        final VisionRule[] visionRules = {
           // Vision rules in order of diagnostic usefulness.
           new VisionRule.WithinFieldBoundsFilter(),
-          new VisionRule.AngularVelocityFilter(() -> drive.getChassisSpeeds()),
+          new VisionRule.AngularVelocityFilter(drive::getChassisSpeeds),
           new VisionRule.AmbiguityFilter(),
-          new VisionRule.DistanceFilter(() -> drive.getPose()),
+          new VisionRule.DistanceFilter(),
         };
 
         apriltag =
@@ -116,7 +116,7 @@ public class RobotContainer {
           new VisionRule.WithinFieldBoundsFilter(),
           new VisionRule.AngularVelocityFilter(drive::getChassisSpeeds),
           new VisionRule.AmbiguityFilter(),
-          new VisionRule.DistanceFilter(drive::getPose),
+          new VisionRule.DistanceFilter(),
         };
 
         apriltag =
@@ -149,7 +149,7 @@ public class RobotContainer {
           new VisionRule.WithinFieldBoundsFilter(),
           new VisionRule.AngularVelocityFilter(drive::getChassisSpeeds),
           new VisionRule.AmbiguityFilter(),
-          new VisionRule.DistanceFilter(drive::getPose),
+          new VisionRule.DistanceFilter(),
         };
 
         apriltag =

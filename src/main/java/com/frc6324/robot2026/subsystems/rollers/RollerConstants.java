@@ -24,7 +24,7 @@ public final class RollerConstants {
       new TalonFXConfiguration()
           .withCurrentLimits(
               new CurrentLimitsConfigs()
-                  .withSupplyCurrentLimit(Amps.of(50))
+                  .withSupplyCurrentLimit(Amps.of(45))
                   .withSupplyCurrentLimitEnable(true))
           .withSlot0(new Slot0Configs().withKP(5).withKD(0.001).withKS(1).withKV(1));
   public static final MotorAlignmentValue ROLLER_ALIGNMENT = MotorAlignmentValue.Opposed;

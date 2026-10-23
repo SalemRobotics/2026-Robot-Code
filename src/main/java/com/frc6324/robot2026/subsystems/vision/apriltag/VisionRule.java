@@ -1,12 +1,9 @@
 package com.frc6324.robot2026.subsystems.vision.apriltag;
 
 import com.frc6324.lib.util.FieldConstants;
-import com.frc6324.lib.util.PoseExtensions.PoseSupplier;
 import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagIO.VisionEstimation;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
@@ -29,6 +26,8 @@ public abstract class VisionRule {
   public void logRejected() {
     Logger.recordOutput(
         logKey() + "/Rejected", estimationsRejected.toArray(VisionEstimation[]::new));
+
+    Logger.recordOutput(logKey() + "/RejectedAny", estimationsRejected.size() > 0);
     estimationsRejected.clear();
   }
 
@@ -98,29 +97,14 @@ public abstract class VisionRule {
     // A single
     private static final double DISTANCE_THRESHOLD = 3;
 
-    private final PoseSupplier robotPoseSupplier;
-    private Pose2d robotPose = new Pose2d();
-
-    public DistanceFilter(PoseSupplier robotPoseSupplier) {
-      this.robotPoseSupplier = robotPoseSupplier;
-
+    public DistanceFilter() {
       Logger.recordOutput(logKey() + "/MaxDistance", DISTANCE_THRESHOLD);
-    }
-
-    @Override
-    public void update() {
-      super.update();
-
-      robotPose = robotPoseSupplier.getPose();
     }
 
     @Override
     public boolean shouldPermit(VisionEstimation estimation) {
       if (estimation.numTagsUsed() == 1) {
-        return robotPose
-                .getTranslation()
-                .getDistance(estimation.robotPose().getTranslation().toTranslation2d())
-            < DISTANCE_THRESHOLD;
+        return estimation.averageTagDistance() < DISTANCE_THRESHOLD;
       } else {
         // TODO: determine if we want to filter distance
       }
@@ -142,8 +126,7 @@ public abstract class VisionRule {
           (poseTranslation.getX() > 0) && (poseTranslation.getX() < FieldConstants.FIELD_LENGTH);
       final boolean poseWithinY =
           (poseTranslation.getY() > 0) && (poseTranslation.getY() < FieldConstants.FIELD_WIDTH);
-      final boolean poseOnGround =
-          (poseTranslation.getZ() > 0) && (poseTranslation.getZ() < Units.feetToMeters(1));
+      final boolean poseOnGround = poseTranslation.getZ() < 0.4;
 
       return poseWithinX && poseWithinY && poseOnGround;
     }
