@@ -19,13 +19,6 @@ import lombok.experimental.UtilityClass;
 public final class ShooterConstants {
   public static final CANBus SHOOTER_CAN_BUS = Constants.CANIVORE;
 
-  public static final int FUEL_CANRANGE_ID = 47;
-  public static final CANrangeConfiguration FUEL_CANRANGE_CONFIG =
-      new CANrangeConfiguration()
-          .withToFParams(new ToFParamsConfigs().withUpdateMode(UpdateModeValue.ShortRange100Hz))
-          .withProximityParams(
-              new ProximityParamsConfigs().withMinSignalStrengthForValidMeasurement(2500));
-
   public static final InterpolatingTreeMap<Double, HubShotParams> HUB_SHOT_MAP =
       new InterpolatingTreeMap<>(InverseInterpolator.forDouble(), HubShotParams::interpolate);
   public static final InterpolatingTreeMap<Double, AngularVelocity> PASSING_VELOCITY_MAP =

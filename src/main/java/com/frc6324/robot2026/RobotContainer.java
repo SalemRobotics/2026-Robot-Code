@@ -134,14 +134,7 @@ public class RobotContainer {
         rollers = new Rollers(new RollerIOTalonFX());
         LoggedTracer.record("Init/Rollers init");
 
-        shooter =
-            new Shooter(
-                new ShooterIOTalonFX(),
-                new BeamBreakIOCANrange(
-                    ShooterConstants.FUEL_CANRANGE_ID,
-                    ShooterConstants.SHOOTER_CAN_BUS,
-                    "Shooter CANrange",
-                    ShooterConstants.FUEL_CANRANGE_CONFIG));
+        shooter = new Shooter(new ShooterIOTalonFX());
 
         LoggedTracer.record("Init/Shooter init");
       }
@@ -185,10 +178,7 @@ public class RobotContainer {
         rollers = new Rollers(new RollerIOSim());
         LoggedTracer.record("Init/Rollers init");
 
-        shooter =
-            new Shooter(
-                new ShooterIOSim(),
-                new BeamBreakIOSupplier(() -> FuelSimulator.getInstance().heldFuelCount() > 0));
+        shooter = new Shooter(new ShooterIOSim());
         LoggedTracer.record("Init/Shooter init");
       }
       default -> {
@@ -226,7 +216,7 @@ public class RobotContainer {
         rollers = new Rollers(IOLayer::replay);
         LoggedTracer.record("Init/Rollers init");
 
-        shooter = new Shooter(IOLayer::replay, IOLayer::replay);
+        shooter = new Shooter(IOLayer::replay);
         LoggedTracer.record("Init/Shooter init");
       }
     }

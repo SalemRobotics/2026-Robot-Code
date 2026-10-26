@@ -5,11 +5,7 @@ import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.DrumCons
 import static com.frc6324.robot2026.subsystems.shooter.ShooterConstants.HoodConstants.*;
 import static edu.wpi.first.units.Units.*;
 
-import com.frc6324.lib.io.beambreak.BeamBreakIO;
-import com.frc6324.lib.io.beambreak.BeamBreakInputsAutoLogged;
 import com.frc6324.lib.util.logging.LoggedTracer;
-import edu.wpi.first.math.filter.Debouncer;
-import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
@@ -18,9 +14,6 @@ public final class Shooter extends SubsystemBase {
   private final ShooterIO shooterIO;
   private final ShooterInputsAutoLogged shooterInputs = new ShooterInputsAutoLogged();
 
-  private final BeamBreakIO beamBreakIO;
-  private final BeamBreakInputsAutoLogged beamBreakInputs = new BeamBreakInputsAutoLogged();
-
   private Angle hoodSetpoint = Rotations.zero();
   private boolean hoodAtSetpoint = false;
   private AngularVelocity drumSetpoint = RadiansPerSecond.zero();
@@ -28,18 +21,13 @@ public final class Shooter extends SubsystemBase {
 
   private AngularVelocity velocityOffset = RotationsPerSecond.zero();
 
-  private final Debouncer fuelDebouncer = new Debouncer(FUEL_DEBOUNCE_TIME, DebounceType.kFalling);
-  private boolean fuelSeen = false;
-
   /**
    * Creates a new shooter subsystem.
    *
    * @param shooter The implementation of the shooter's I/O to use.
-   * @param beamBreak The implementation of the shooter's beam break I/O to use.
    */
-  public Shooter(ShooterIO shooter, BeamBreakIO beamBreak) {
+  public Shooter(ShooterIO shooter) {
     this.shooterIO = shooter;
-    this.beamBreakIO = beamBreak;
   }
 
   public boolean atTargetHoodAngle() {
@@ -58,10 +46,6 @@ public final class Shooter extends SubsystemBase {
     velocityOffset = velocityOffset.plus(DRUM_OFFSET_STEP);
   }
 
-  public boolean hasSeenFuel() {
-    return fuelSeen;
-  }
-
   /**
    * Commands the shooter to pass into this robot's alliance zone.
    *
@@ -78,14 +62,11 @@ public final class Shooter extends SubsystemBase {
   public void periodic() {
     // Update the shooter inputs and log them
     shooterIO.updateInputs(shooterInputs);
-    beamBreakIO.updateInputs(beamBreakInputs);
 
     Logger.processInputs("Shooter/Shooter", shooterInputs);
-    Logger.processInputs("Shooter/Beam Break", beamBreakInputs);
 
     hoodAtSetpoint = shooterInputs.hoodPosition.isNear(hoodSetpoint, HOOD_POSITION_TOLERANCE);
     drumAtSetpoint = shooterInputs.drumVelocity.isNear(drumSetpoint, DRUM_VELOCITY_TOLERANCE);
-    fuelSeen = fuelDebouncer.calculate(beamBreakInputs.broken);
 
     Logger.recordOutput("Shooter/Hood Setpoint", hoodSetpoint);
     Logger.recordOutput("Shooter/Flywheel Setpoint", drumSetpoint);
