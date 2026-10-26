@@ -344,7 +344,7 @@ public final class FieldConstants {
       topLeft,
       topLeft.rotateAround(baseHub, Rotation2d.kCW_90deg),
       topLeft.rotateAround(baseHub, Rotation2d.k180deg),
-      topLeft.rotateAround(baseHub, Rotation2d.kCW_90deg)
+      topLeft.rotateAround(baseHub, Rotation2d.kCCW_90deg)
     };
   }
 

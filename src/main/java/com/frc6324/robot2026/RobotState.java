@@ -6,13 +6,14 @@ import com.frc6324.lib.odometry.GyroReadings;
 import com.frc6324.lib.odometry.SwervePoseEstimator;
 import com.frc6324.lib.util.FieldConstants;
 import com.frc6324.lib.util.Lazy;
+import com.frc6324.robot2026.Constants.Mode;
+
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.wpilibj.RobotBase;
 import java.util.Optional;
 import org.littletonrobotics.junction.AutoLogOutput;
 
@@ -45,7 +46,7 @@ public class RobotState {
           Rotation2d.kZero,
           lastModulePositions,
           STARTING_POSE,
-          RobotBase.isSimulation(),
+          Constants.CURRENT_MODE == Mode.SIM,
           VecBuilder.fill(0.1, 0.1, 0.1));
 
   public void addOdometryObservation(
@@ -65,7 +66,7 @@ public class RobotState {
   }
 
   public void addVisionMeasurement(Pose2d pose, double timestamp, Matrix<N3, N1> stddevs) {
-    if (!RobotBase.isReal()) {
+    if (Constants.CURRENT_MODE == Mode.SIM) {
       return;
     }
 

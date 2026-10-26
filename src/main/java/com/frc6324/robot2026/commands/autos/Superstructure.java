@@ -1,7 +1,9 @@
 package com.frc6324.robot2026.commands.autos;
 
 import com.frc6324.lib.auto.AutoBuilder.SuperstructureBase;
+import com.frc6324.robot2026.Constants;
 import com.frc6324.robot2026.RobotState;
+import com.frc6324.robot2026.Constants.Mode;
 import com.frc6324.robot2026.commands.ShooterCommands.ShootIntoHubCommand;
 import com.frc6324.robot2026.subsystems.drive.Drive;
 import com.frc6324.robot2026.subsystems.indexer.Indexer;
@@ -38,6 +40,30 @@ public class Superstructure implements SuperstructureBase {
   @Override
   public void registerEventBindings(Map<String, Command> bindings) {}
 
+  /**
+   * Blocks auto until the intake is safe to go under the trench.
+   *
+   * @return
+   */
+  public Command initialIntakeDeploy() {
+    final Command deadline = Constants.CURRENT_MODE == Mode.REAL
+      ? Commands.waitUntil(intake::isSafeToTrench)
+      : Commands.waitSeconds(0.4);
+
+    return Commands.deadline(deadline, intake.run(() -> intake.deploy(false)));
+  }
+
+  public Command passiveIntake() {
+    return Commands.runEnd(
+        () -> {
+          intake.deploy(true);
+          rollers.spinRollers();
+        },
+        () -> rollers.stopRollers(),
+        intake,
+        rollers);
+  }
+
   public Command shootCommand() {
     return new ShootIntoHubCommand(
         robotState, drive, indexer, intake, rollers, shooter, "AutoShootIntoHub");
@@ -45,6 +71,8 @@ public class Superstructure implements SuperstructureBase {
 
   public Command shootCommand(double timeout) {
     return shootCommand()
-        .raceWith(Commands.waitUntil(() -> !shooter.hasSeenFuel()), Commands.waitSeconds(timeout));
+        .raceWith(
+            Commands.waitSeconds(0.25).andThen(Commands.waitUntil(() -> !shooter.hasSeenFuel())),
+            Commands.waitSeconds(timeout));
   }
 }

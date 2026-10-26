@@ -16,41 +16,41 @@ public final class AprilTagConstants {
 
   public static final CameraProps[] CAMERAS = {
     new CameraProps(
-        "Right Drum Camera",
+        "Bottom Right USB",
         1,
         new Resolution(1280, 800),
-        30,
-        40,
-        Rotation2d.fromDegrees(110),
+        20,
+        120,
+        Rotation2d.fromDegrees(93),
         new Transform3d(
-            Inches.of(-13.5),
-            Inches.of(5.0),
-            Inches.of(15.5),
-            new Rotation3d(Degrees.zero(), Degrees.of(-15), Degrees.of(157.5)))),
+            Units.inchesToMeters(-13.875),
+            Units.inchesToMeters(5.25),
+            Units.inchesToMeters(15.5),
+            new Rotation3d(0, Units.degreesToRadians(-15), Units.degreesToRadians(-157.5)))),
     new CameraProps(
-        "Left Drum Camera",
+        "Bottom Left USB",
         1,
         new Resolution(1280, 800),
-        30,
-        40,
-        Rotation2d.fromDegrees(110),
+        20,
+        120,
+        Rotation2d.fromDegrees(93),
         new Transform3d(
-            Inches.of(-13.5),
-            Inches.of(-5.0),
-            Inches.of(15.5),
-            new Rotation3d(Degrees.zero(), Degrees.of(-15), Degrees.of(-157.5)))),
+            Units.inchesToMeters(-13.875),
+            Units.inchesToMeters(-5.25),
+            Units.inchesToMeters(15.5),
+            new Rotation3d(0, Units.degreesToRadians(-15), Units.degreesToRadians(157.5)))),
     new CameraProps(
-        "Left Aux Camera",
-        1.125,
+        "Top Right USB",
+        1,
         new Resolution(1280, 800),
-        30,
-        40,
+        20,
+        120,
         Rotation2d.fromDegrees(80),
         new Transform3d(
-            Inches.of(3.75),
-            Inches.of(12.5),
-            Inches.of(8.75),
-            new Rotation3d(Degrees.of(10), Degrees.zero(), Degrees.of(90))))
+            Units.inchesToMeters(3.75),
+            Units.inchesToMeters(12.5),
+            Units.inchesToMeters(8.75),
+            new Rotation3d(Units.degreesToRadians(10), 0, Units.degreesToRadians(90))))
   };
 
   public static final Frequency UPDATE_THREAD_FREQUENCY = Hertz.of(60);

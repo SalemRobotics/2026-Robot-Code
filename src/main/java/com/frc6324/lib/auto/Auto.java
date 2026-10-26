@@ -1,20 +1,18 @@
 package com.frc6324.lib.auto;
 
-import choreo.auto.AutoRoutine;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import com.frc6324.lib.util.AllianceFlipUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.*;
 import java.util.function.Supplier;
 
 /**
  * A record containing all necessary information about an auto.
  *
- * <p>See {@link #Auto(String, Command)} or {@link #Auto(String, List, Supplier) Auto(String,
- * List<Trajectory<SwerveSample>>, Supplier)} for more specific constructors.
+ * <p>See {@link #Auto(String, Supplier)} or {@link #Auto(String, List, Supplier)} for more specific
+ * constructors.
  *
  * @param name The name of the auto.
  * @param previewInfo Optional information about the auto path, if it is a trajectory-based auto.
@@ -35,22 +33,18 @@ public record Auto(
   /**
    * Creates a trajectory-based auto.
    *
+   * <p>The command supplier should return a single command tree containing every command the auto
+   * runs. Cancelling that root command then cancels all of the auto's child commands.
+   *
    * @param name The name of this auto.
    * @param trajectories The trajectories this path uses.
-   * @param routineSupplier A function that creates the auto routine that contains the actual auto
-   *     logic.
+   * @param commandSupplier A function that creates the auto's command tree.
    */
   public Auto(
       final String name,
       final List<Trajectory<SwerveSample>> trajectories,
-      final Supplier<AutoRoutine> routineSupplier) {
-    this(
-        name,
-        Optional.of(new TrajectoryInfo(trajectories)),
-        () -> {
-          final AutoRoutine routine = routineSupplier.get();
-          return routine.cmd().andThen(Commands.runOnce(routine::kill));
-        });
+      final Supplier<Command> commandSupplier) {
+    this(name, Optional.of(new TrajectoryInfo(trajectories)), commandSupplier);
   }
 
   /**

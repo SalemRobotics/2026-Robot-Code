@@ -61,14 +61,16 @@ public final class NeutralZoneAutos {
               final TrajectoryFollower firstPass = builder.follow(loadedTrajectories.get(0));
               final TrajectoryFollower secondPass = builder.follow(loadedTrajectories.get(1));
 
-              routine.active().onTrue(Commands.sequence(first.resetOdometry(), firstPass));
-
-              routine
-                  .observe(firstPass.done())
-                  .onTrue(Commands.sequence(superstructure.shootCommand(3), secondPass.asProxy()));
-              routine.observe(secondPass.done()).onTrue(superstructure.shootCommand(5).asProxy());
-
-              return routine;
+              // Keep every step inside one command tree so cancelling the auto (for example, at
+              // the start of teleop) also cancels every command that it started.
+              return Commands.sequence(
+                      first.resetOdometry(),
+                      superstructure.initialIntakeDeploy(),
+                      firstPass.raceWith(superstructure.passiveIntake()),
+                      superstructure.shootCommand(3),
+                      secondPass.raceWith(superstructure.passiveIntake()),
+                      superstructure.shootCommand(5))
+                  .withName(name);
             }));
   }
 }

@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import org.littletonrobotics.junction.Logger;
 
 public class AprilTagVision extends VirtualSubsystem {
+  private static final String aprilTagBaseKey = "Vision/AprilTag/";
+
   private final AprilTagIO[] io;
   private final AprilTagInputsAutoLogged[] inputs;
   private final Alert[] disconnectedAlerts;
@@ -68,7 +70,7 @@ public class AprilTagVision extends VirtualSubsystem {
 
       final CameraProps props = CAMERAS[cameraIndex];
 
-      final String logKey = "Vision/AprilTag/" + props.name();
+      final String logKey = aprilTagBaseKey + props.name();
       final AprilTagInputsAutoLogged currentInputs = inputs[cameraIndex];
 
       io[cameraIndex].updateInputs(currentInputs);
@@ -88,6 +90,7 @@ public class AprilTagVision extends VirtualSubsystem {
         robotPoses.add(robotPose);
 
         if (rejected) {
+          robotPosesRejected.add(robotPose);
           continue;
         } else {
           robotPosesAccepted.add(robotPose);
@@ -127,6 +130,13 @@ public class AprilTagVision extends VirtualSubsystem {
     for (final VisionRule rule : rules) {
       rule.logRejected();
     }
+
+    Logger.recordOutput(
+        aprilTagBaseKey + "Summary/RobotPoses", allRobotPoses.toArray(Pose2d[]::new));
+    Logger.recordOutput(
+        aprilTagBaseKey + "Summary/PosesAccepted", allRobotPosesAccepted.toArray(Pose2d[]::new));
+    Logger.recordOutput(
+        aprilTagBaseKey + "Summary/PosesRejected", allRobotPosesRejected.toArray(Pose2d[]::new));
 
     LoggedTracer.record("Periodic/AprilTag periodic");
   }

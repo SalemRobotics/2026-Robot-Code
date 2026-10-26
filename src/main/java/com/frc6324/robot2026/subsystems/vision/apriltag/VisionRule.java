@@ -6,6 +6,11 @@ import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagIO.VisionEstimat
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.AngularVelocity;
+
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
 import java.util.ArrayList;
 import org.littletonrobotics.junction.Logger;
 
@@ -65,7 +70,7 @@ public abstract class VisionRule {
    * the point of ruining accuracy.
    */
   public static class AngularVelocityFilter extends VisionRule {
-    private static final double ANGULAR_VELOCITY_LIMIT = 1.5;
+    private static final AngularVelocity ANGULAR_VELOCITY_LIMIT = RotationsPerSecond.of(1.5);
 
     public AngularVelocityFilter() {
       Logger.recordOutput(logKey() + "/AngularVelocityLimit", ANGULAR_VELOCITY_LIMIT);
@@ -74,14 +79,14 @@ public abstract class VisionRule {
     @Override
     public boolean shouldPermit(VisionEstimation estimation) {
       final ChassisSpeeds speeds = RobotState.getInstance().getSpeeds();
-      return speeds.omegaRadiansPerSecond < ANGULAR_VELOCITY_LIMIT;
+      return Math.abs(speeds.omegaRadiansPerSecond) < ANGULAR_VELOCITY_LIMIT.in(RadiansPerSecond);
     }
   }
 
   /** Checks if the measurement is within an acceptable distance from the robot. */
   public static class DistanceFilter extends VisionRule {
     // A single
-    private static final double DISTANCE_THRESHOLD = 3;
+    private static final double DISTANCE_THRESHOLD = 8;
 
     public DistanceFilter() {
       Logger.recordOutput(logKey() + "/MaxDistance", DISTANCE_THRESHOLD);
@@ -90,11 +95,7 @@ public abstract class VisionRule {
     @Override
     public boolean shouldPermit(VisionEstimation estimation) {
       if (estimation.numTagsUsed() == 1) {
-        return RobotState.getInstance()
-                .getPose()
-                .getTranslation()
-                .getDistance(estimation.robotPose().getTranslation().toTranslation2d())
-            < DISTANCE_THRESHOLD;
+        return estimation.averageTagDistance() < DISTANCE_THRESHOLD;
       } else {
         // TODO: determine if we want to filter distance
       }
