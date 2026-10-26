@@ -8,25 +8,27 @@ import org.photonvision.simulation.*;
 
 public final class AprilTagIOSim extends AprilTagIOPhoton {
   private static final Lazy<VisionSystemSim> system =
-      new Lazy<>(() -> new VisionSystemSim("apriltag"));
+      new Lazy<>(
+          () -> {
+            final VisionSystemSim sim = new VisionSystemSim("apriltag");
+            sim.addAprilTags(APRILTAG_LAYOUT);
 
-  private final PhotonCameraSim cameraSim =
-      new PhotonCameraSim(
-          camera,
-          new SimCameraProperties()
-              .setCalibration(
-                  props.resolution().width(), props.resolution().height(), props.horizontalFOV())
-              .setAvgLatencyMs(props.averageLatency())
-              .setFPS(props.FPS())
-              .setExposureTimeMs(10));
+            VisionUpdateThread.addCallback(() -> sim.update(RobotState.getInstance().getPose()));
+            return sim;
+          });
 
-  public AprilTagIOSim() {
-    if (!system.isInitialized()) {
-      VisionSystemSim sim = system.get();
+  public AprilTagIOSim(CameraProps props) {
+    super(props, system.get());
 
-      sim.addAprilTags(APRILTAG_LAYOUT);
-      VisionUpdateThread.addCallback(() -> sim.update(RobotState.getInstance().getPose()));
-    }
+    final PhotonCameraSim cameraSim =
+        new PhotonCameraSim(
+            camera,
+            new SimCameraProperties()
+                .setCalibration(
+                    props.resolution().width(), props.resolution().height(), props.horizontalFOV())
+                .setAvgLatencyMs(props.averageLatency())
+                .setFPS(props.FPS())
+                .setExposureTimeMs(10));
 
     system.get().addCamera(cameraSim, props.robotToCameraLens());
 

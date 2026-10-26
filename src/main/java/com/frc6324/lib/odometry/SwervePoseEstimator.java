@@ -22,11 +22,14 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Timer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NavigableMap;
 import java.util.Optional;
 import java.util.TreeMap;
@@ -79,6 +82,13 @@ import java.util.TreeMap;
  * call computes its own Kalman gain from the supplied standard deviations and stores it inside the
  * {@link VisionUpdate} record, so different cameras or varying-quality detections are each weighted
  * independently without mutating any shared state.
+ *
+ * <h2>Thread safety</h2>
+ *
+ * <p>Odometry updates, vision fusion, pose resets, and historical sampling are all synchronized on
+ * this instance. This allows a background vision thread to safely call {@link #sampleAt(double)}
+ * (for constrained PnP) or {@link #sampleSpeedsAt(double)} while the main robot loop is integrating
+ * new odometry and applying vision measurements.
  */
 public class SwervePoseEstimator {
 
@@ -163,6 +173,20 @@ public class SwervePoseEstimator {
       TimeInterpolatableBuffer.createBuffer(BUFFER_DURATION);
 
   /**
+   * Ring buffer of odometry-derived chassis speeds keyed by the same timestamps as {@link
+   * #odometryPoseBuffer}. Allows consumers (e.g. vision rules) to ask what the robot was doing when
+   * a camera frame was captured, rather than at the time the frame happened to be processed.
+   */
+  private final TimeInterpolatableBuffer<ChassisSpeeds> odometrySpeedsBuffer =
+      TimeInterpolatableBuffer.createBuffer(
+          (start, end, t) ->
+              new ChassisSpeeds(
+                  MathUtil.interpolate(start.vxMetersPerSecond, end.vxMetersPerSecond, t),
+                  MathUtil.interpolate(start.vyMetersPerSecond, end.vyMetersPerSecond, t),
+                  MathUtil.interpolate(start.omegaRadiansPerSecond, end.omegaRadiansPerSecond, t)),
+          BUFFER_DURATION);
+
+  /**
    * Ordered map of vision corrections keyed by the timestamp at which the vision frame was
    * captured. Each entry carries its own Kalman gain so that per-measurement standard deviations
    * are preserved across the map's lifetime.
@@ -227,7 +251,7 @@ public class SwervePoseEstimator {
    * @param mode The {@link VisionTrustMode} to use for subsequent {@link #addVisionMeasurement}
    *     calls.
    */
-  public void setVisionTrustMode(VisionTrustMode mode) {
+  public synchronized void setVisionTrustMode(VisionTrustMode mode) {
     this.visionTrustMode = mode;
   }
 
@@ -236,7 +260,7 @@ public class SwervePoseEstimator {
    *
    * @return The active {@link VisionTrustMode}.
    */
-  public VisionTrustMode getVisionTrustMode() {
+  public synchronized VisionTrustMode getVisionTrustMode() {
     return visionTrustMode;
   }
 
@@ -253,7 +277,7 @@ public class SwervePoseEstimator {
    *     measurement and the current fused estimate. Must be positive.
    * @throws IllegalArgumentException if {@code radiusMeters} is not positive.
    */
-  public void setOutlierRejectionRadius(double radiusMeters) {
+  public synchronized void setOutlierRejectionRadius(double radiusMeters) {
     if (radiusMeters <= 0.0) {
       throw new IllegalArgumentException(
           "outlierRejectionRadiusMeters must be positive, got: " + radiusMeters);
@@ -266,7 +290,7 @@ public class SwervePoseEstimator {
    *
    * @return The radius in meters.
    */
-  public double getOutlierRejectionRadius() {
+  public synchronized double getOutlierRejectionRadius() {
     return outlierRejectionRadiusMeters;
   }
 
@@ -279,7 +303,7 @@ public class SwervePoseEstimator {
    *
    * @return The estimated pose of the robot in meters.
    */
-  public Pose2d getEstimatedPosition() {
+  public synchronized Pose2d getEstimatedPosition() {
     return poseEstimate;
   }
 
@@ -292,7 +316,7 @@ public class SwervePoseEstimator {
    *
    * @return The odometry-only pose estimate in meters.
    */
-  public Pose2d getOdometryPosition() {
+  public synchronized Pose2d getOdometryPosition() {
     return odometry.getEstimatedPosition();
   }
 
@@ -308,7 +332,7 @@ public class SwervePoseEstimator {
    * @return The fused pose at the given timestamp, or {@link Optional#empty()} if the buffer does
    *     not contain data for that time.
    */
-  public Optional<Pose2d> sampleAt(double timestamp) {
+  public synchronized Optional<Pose2d> sampleAt(double timestamp) {
     if (odometryPoseBuffer.getInternalBuffer().isEmpty()) {
       return Optional.empty();
     }
@@ -329,6 +353,30 @@ public class SwervePoseEstimator {
     return odometryPoseBuffer.getSample(clampedTimestamp).map(visionUpdate::compensate);
   }
 
+  /**
+   * Returns the robot's chassis speeds at a historical timestamp, as derived from odometry.
+   *
+   * <p>This is primarily useful for evaluating time-sensitive vision rules (for example, rejecting
+   * frames captured while the robot was spinning too quickly for a sharp image) using the speeds at
+   * the moment the frame was captured rather than the speeds when the frame was finally processed.
+   *
+   * <p>Queries outside the buffered time range are clamped to the oldest or newest sample.
+   *
+   * @param timestamp The wall-clock timestamp in seconds (same epoch as {@link
+   *     Timer#getFPGATimestamp()}).
+   * @return The chassis speeds at the given timestamp, or {@link Optional#empty()} if no odometry
+   *     speed data is buffered.
+   */
+  public synchronized Optional<ChassisSpeeds> sampleSpeedsAt(double timestamp) {
+    if (odometrySpeedsBuffer.getInternalBuffer().isEmpty()) {
+      return Optional.empty();
+    }
+
+    final double oldest = odometrySpeedsBuffer.getInternalBuffer().firstKey();
+    final double newest = odometrySpeedsBuffer.getInternalBuffer().lastKey();
+    return odometrySpeedsBuffer.getSample(MathUtil.clamp(timestamp, oldest, newest));
+  }
+
   // ---------------------------------------------------------------------------
   // Reset methods
   // ---------------------------------------------------------------------------
@@ -343,7 +391,7 @@ public class SwervePoseEstimator {
    * @param modulePositions The current encoder readings from each swerve module.
    * @param pose The position on the field that your robot is at.
    */
-  public void resetPosition(
+  public synchronized void resetPosition(
       Rotation2d gyroAngle, SwerveModulePosition[] modulePositions, Pose2d pose) {
     odometry.resetPosition(gyroAngle, modulePositions, pose);
     clearVisionState();
@@ -355,7 +403,7 @@ public class SwervePoseEstimator {
    *
    * @param pose The pose to reset to.
    */
-  public void resetPose(Pose2d pose) {
+  public synchronized void resetPose(Pose2d pose) {
     odometry.resetPose(pose);
     clearVisionState();
     poseEstimate = odometry.getEstimatedPosition();
@@ -370,7 +418,7 @@ public class SwervePoseEstimator {
    *
    * @param translation The translation to reset to.
    */
-  public void resetTranslation(Translation2d translation) {
+  public synchronized void resetTranslation(Translation2d translation) {
     odometry.resetTranslation(translation);
 
     final var latestEntry = visionUpdates.lastEntry();
@@ -400,7 +448,7 @@ public class SwervePoseEstimator {
    *
    * @param rotation The rotation to reset to.
    */
-  public void resetRotation(Rotation2d rotation) {
+  public synchronized void resetRotation(Rotation2d rotation) {
     odometry.resetRotation(rotation);
 
     final var latestEntry = visionUpdates.lastEntry();
@@ -446,7 +494,7 @@ public class SwervePoseEstimator {
    *
    * @param visionPose The pose to unconditionally adopt as the new fused estimate.
    */
-  public void overridePoseWithVision(Pose2d visionPose) {
+  public synchronized void overridePoseWithVision(Pose2d visionPose) {
     // Determine what odometry thinks the pose is right now so we can record the
     // anchor for future compensate() calls.
     final Pose2d odometryNow = odometry.getEstimatedPosition();
@@ -514,7 +562,7 @@ public class SwervePoseEstimator {
    * @param visionMeasurementStdDevs Standard deviations of this specific vision measurement ({@code
    *     [x (m), y (m), θ (rad)]ᵀ}). Increase these values to trust this measurement less.
    */
-  public void addVisionMeasurement(
+  public synchronized void addVisionMeasurement(
       Pose2d visionRobotPose, double timestamp, Matrix<N3, N1> visionMeasurementStdDevs) {
 
     // ------------------------------------------------------------------
@@ -644,7 +692,8 @@ public class SwervePoseEstimator {
    * @param wheelPositions The current encoder readings from each swerve module.
    * @return The new fused pose estimate in meters.
    */
-  public Pose2d update(Optional<GyroReadings> gyroReadings, SwerveModulePosition[] wheelPositions) {
+  public synchronized Pose2d update(
+      Optional<GyroReadings> gyroReadings, SwerveModulePosition[] wheelPositions) {
     return updateWithTime(Timer.getTimestamp(), gyroReadings, wheelPositions);
   }
 
@@ -659,13 +708,14 @@ public class SwervePoseEstimator {
    * @param wheelPositions The current encoder readings from each swerve module.
    * @return The new fused pose estimate in meters.
    */
-  public Pose2d updateWithTime(
+  public synchronized Pose2d updateWithTime(
       double currentTime,
       Optional<GyroReadings> gyroReadings,
       SwerveModulePosition[] wheelPositions) {
 
     final Pose2d odometryEstimate = odometry.update(currentTime, gyroReadings, wheelPositions);
     odometryPoseBuffer.addSample(currentTime, odometryEstimate);
+    odometrySpeedsBuffer.addSample(currentTime, odometry.getChassisSpeeds());
 
     if (visionUpdates.isEmpty()) {
       poseEstimate = odometryEstimate;
@@ -739,18 +789,16 @@ public class SwervePoseEstimator {
    *     keys strictly greater than this value are replayed.
    */
   private void replayVisionUpdatesFrom(double anchorTimestamp) {
-    // Collect the timestamps of entries that need replaying, in ascending order.
-    final NavigableMap<Double, VisionUpdate> toReplay =
-        visionUpdates.tailMap(anchorTimestamp, false);
+    // Collect the timestamps of entries that need replaying, in ascending order. We copy the keys
+    // because each entry is temporarily removed from the map while it is recomputed.
+    final List<Double> timestamps =
+        new ArrayList<>(visionUpdates.tailMap(anchorTimestamp, false).keySet());
 
-    if (toReplay.isEmpty()) {
-      return;
-    }
-
-    for (final var entry : toReplay.entrySet()) {
-      final double ts = entry.getKey();
-      final VisionUpdate old = entry.getValue();
-      final double[] k = old.kalmanGain;
+    for (final double ts : timestamps) {
+      final VisionUpdate old = visionUpdates.get(ts);
+      if (old == null) {
+        continue;
+      }
 
       // Retrieve the odometry-only pose at this entry's capture timestamp.
       // If the buffer no longer has it (very old measurement), skip.
@@ -760,10 +808,16 @@ public class SwervePoseEstimator {
       }
       final Pose2d odometrySample = odometrySampleOpt.get();
 
-      // sampleAt(ts) now reflects all anchors up to the one just inserted at anchorTimestamp,
-      // giving the revised fused pose at this entry's timestamp.
+      // Remove this entry before sampling: otherwise sampleAt(ts) would resolve its floor key to
+      // the entry's own stale value and replay would be a no-op.
+      visionUpdates.remove(ts);
+
+      // sampleAt(ts) now reflects all anchors before this entry, including the newly inserted
+      // anchor at anchorTimestamp and any entries already replayed in this pass.
       final Optional<Pose2d> newFusedAtTs = sampleAt(ts);
       if (newFusedAtTs.isEmpty()) {
+        // Restore the original entry if it cannot be recomputed.
+        visionUpdates.put(ts, old);
         continue;
       }
       final Pose2d newFused = newFusedAtTs.get();
@@ -771,6 +825,7 @@ public class SwervePoseEstimator {
       // Re-apply the original raw vision measurement with the stored gain to the revised
       // fused history. rawVisionPose is stored in each VisionUpdate so we never need to
       // invert the Kalman step to recover the original measurement.
+      final double[] k = old.kalmanGain;
       final Transform2d rawTransform = old.rawVisionPose.minus(newFused);
       final Transform2d scaledTransform =
           new Transform2d(
@@ -779,7 +834,8 @@ public class SwervePoseEstimator {
               Rotation2d.fromRadians(k[2] * rawTransform.getRotation().getRadians()));
 
       final Pose2d updatedVisionPose = newFused.plus(scaledTransform);
-      entry.setValue(new VisionUpdate(updatedVisionPose, odometrySample, old.rawVisionPose, k));
+      visionUpdates.put(
+          ts, new VisionUpdate(updatedVisionPose, odometrySample, old.rawVisionPose, k));
     }
   }
 
@@ -789,6 +845,7 @@ public class SwervePoseEstimator {
    */
   private void clearVisionState() {
     odometryPoseBuffer.clear();
+    odometrySpeedsBuffer.clear();
     visionUpdates.clear();
   }
 

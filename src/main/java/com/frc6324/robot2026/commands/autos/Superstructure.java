@@ -2,8 +2,8 @@ package com.frc6324.robot2026.commands.autos;
 
 import com.frc6324.lib.auto.AutoBuilder.SuperstructureBase;
 import com.frc6324.robot2026.Constants;
-import com.frc6324.robot2026.RobotState;
 import com.frc6324.robot2026.Constants.Mode;
+import com.frc6324.robot2026.RobotState;
 import com.frc6324.robot2026.commands.ShooterCommands.ShootIntoHubCommand;
 import com.frc6324.robot2026.subsystems.drive.Drive;
 import com.frc6324.robot2026.subsystems.indexer.Indexer;
@@ -46,9 +46,10 @@ public class Superstructure implements SuperstructureBase {
    * @return
    */
   public Command initialIntakeDeploy() {
-    final Command deadline = Constants.CURRENT_MODE == Mode.REAL
-      ? Commands.waitUntil(intake::isSafeToTrench)
-      : Commands.waitSeconds(0.4);
+    final Command deadline =
+        Constants.CURRENT_MODE == Mode.REAL
+            ? Commands.waitUntil(intake::isSafeToTrench)
+            : Commands.waitSeconds(0.4);
 
     return Commands.deadline(deadline, intake.run(() -> intake.deploy(false)));
   }

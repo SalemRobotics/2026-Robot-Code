@@ -1,16 +1,14 @@
 package com.frc6324.robot2026.subsystems.vision.apriltag;
 
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
 import com.frc6324.lib.util.FieldConstants;
 import com.frc6324.robot2026.RobotState;
 import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagIO.VisionEstimation;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
-
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-
 import java.util.ArrayList;
 import org.littletonrobotics.junction.Logger;
 
@@ -78,7 +76,10 @@ public abstract class VisionRule {
 
     @Override
     public boolean shouldPermit(VisionEstimation estimation) {
-      final ChassisSpeeds speeds = RobotState.getInstance().getSpeeds();
+      final RobotState robotState = RobotState.getInstance();
+      final ChassisSpeeds speeds =
+          robotState.sampleSpeedsAt(estimation.timestamp()).orElseGet(robotState::getSpeeds);
+
       return Math.abs(speeds.omegaRadiansPerSecond) < ANGULAR_VELOCITY_LIMIT.in(RadiansPerSecond);
     }
   }
@@ -118,7 +119,7 @@ public abstract class VisionRule {
       final boolean poseWithinY =
           (poseTranslation.getY() > 0) && (poseTranslation.getY() < FieldConstants.FIELD_WIDTH);
       final boolean poseOnGround =
-          (poseTranslation.getZ() > 0) && (poseTranslation.getZ() < Units.feetToMeters(1));
+          (poseTranslation.getZ() > -0.2) && (poseTranslation.getZ() < 0.4);
 
       return poseWithinX && poseWithinY && poseOnGround;
     }

@@ -20,6 +20,7 @@ import static com.frc6324.robot2026.generated.TunerConstants.BackLeft;
 import static com.frc6324.robot2026.generated.TunerConstants.BackRight;
 import static com.frc6324.robot2026.generated.TunerConstants.FrontLeft;
 import static com.frc6324.robot2026.generated.TunerConstants.FrontRight;
+import static com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagConstants.CAMERAS;
 import static edu.wpi.first.units.Units.*;
 
 import com.frc6324.lib.auto.Auto;
@@ -119,9 +120,9 @@ public class RobotContainer {
         apriltag =
             new AprilTagVision(
                 visionRules,
-                new AprilTagIOPhoton(),
-                new AprilTagIOPhoton(),
-                new AprilTagIOPhoton());
+                new AprilTagIOPhoton(CAMERAS[0]),
+                new AprilTagIOPhoton(CAMERAS[1]),
+                new AprilTagIOPhoton(CAMERAS[2]));
         LoggedTracer.record("Init/AprilTag init");
 
         indexer = new Indexer(new IndexerIOTalonFX());
@@ -169,7 +170,10 @@ public class RobotContainer {
 
         apriltag =
             new AprilTagVision(
-                visionRules, new AprilTagIOSim(), new AprilTagIOSim(), new AprilTagIOSim());
+                visionRules,
+                new AprilTagIOSim(CAMERAS[0]),
+                new AprilTagIOSim(CAMERAS[1]),
+                new AprilTagIOSim(CAMERAS[2]));
         LoggedTracer.record("Init/AprilTag init");
 
         indexer = new Indexer(new IndexerIOSim());

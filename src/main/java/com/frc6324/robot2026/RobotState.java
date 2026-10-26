@@ -7,7 +7,6 @@ import com.frc6324.lib.odometry.SwervePoseEstimator;
 import com.frc6324.lib.util.FieldConstants;
 import com.frc6324.lib.util.Lazy;
 import com.frc6324.robot2026.Constants.Mode;
-
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.*;
@@ -66,6 +65,8 @@ public class RobotState {
   }
 
   public void addVisionMeasurement(Pose2d pose, double timestamp, Matrix<N3, N1> stddevs) {
+    // Simulated cameras derive their measurements from this estimator's own pose, so fusing them
+    // would feed the estimate back into itself. Replay still applies the logged measurements.
     if (Constants.CURRENT_MODE == Mode.SIM) {
       return;
     }
@@ -108,6 +109,21 @@ public class RobotState {
    */
   public Optional<Pose2d> samplePoseAt(double timestamp) {
     return poseEstimator.sampleAt(timestamp);
+  }
+
+  /**
+   * Gets the robot's chassis speeds at a historical timestamp.
+   *
+   * <p>Vision rules should use this instead of {@link #getSpeeds()} so that they evaluate the
+   * robot's motion at the instant a frame was captured, rather than at the time the frame was
+   * processed.
+   *
+   * @param timestamp The timestamp at which to get the speeds.
+   * @return The chassis speeds at the given timestamp, or {@link Optional#empty()} if no speed data
+   *     is available at the timestamp.
+   */
+  public Optional<ChassisSpeeds> sampleSpeedsAt(double timestamp) {
+    return poseEstimator.sampleSpeedsAt(timestamp);
   }
 
   public void setPose(Pose2d pose) {

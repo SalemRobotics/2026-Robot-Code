@@ -12,45 +12,60 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BooleanSupplier;
+import lombok.Getter;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class AprilTagIOPhoton implements AprilTagIO {
-  private static int cameraIndex = 0;
-
-  protected final int index = cameraIndex++;
-
-  protected final CameraProps props = CAMERAS[index];
+  @Getter private final CameraProps props;
   private final RobotState robotState = RobotState.getInstance();
 
-  private final Lock updateLock = new ReentrantLock();
-  private final AtomicReference<HashSet<Integer>> tagsSeen = new AtomicReference<>(new HashSet<>());
-  private final AtomicReference<ArrayList<VisionEstimation>> estimations =
-      new AtomicReference<>(new ArrayList<>());
+  private final Lock cameraLock = new ReentrantLock();
+  private final Lock observationLock = new ReentrantLock();
 
-  protected final PhotonCamera camera = new PhotonCamera(props.name());
-  private final PhotonPoseEstimator poseEstimator =
-      new PhotonPoseEstimator(APRILTAG_LAYOUT, props.robotToCameraLens());
+  private final HashSet<Integer> tagsSeen = new HashSet<>();
+  private final ArrayList<VisionEstimation> estimations = new ArrayList<>();
 
-  private Matrix<N3, N3> cameraMatrix = camera.getCameraMatrix().orElse(null);
-  private Matrix<N8, N1> distortionCoefficients = camera.getDistCoeffs().orElse(null);
+  protected final PhotonCamera camera;
+  private final PhotonPoseEstimator poseEstimator;
+
+  private Matrix<N3, N3> cameraMatrix;
+  private Matrix<N8, N1> distortionCoefficients;
   private final BooleanSupplier enableSignal;
 
-  public AprilTagIOPhoton(BooleanSupplier enableSignal) {
+  /**
+   * Cached state of {@link #enableSignal}, updated on the main thread so that the asynchronous
+   * vision thread does not have to call potentially non-thread-safe supplier code.
+   */
+  private volatile boolean enabled = true;
+
+  public AprilTagIOPhoton(CameraProps props, BooleanSupplier enableSignal) {
+    this.props = props;
     this.enableSignal = enableSignal;
+
+    this.camera = new PhotonCamera(props.name());
+    this.poseEstimator = new PhotonPoseEstimator(APRILTAG_LAYOUT, props.robotToCameraLens());
+
+    this.cameraMatrix = camera.getCameraMatrix().orElse(null);
+    this.distortionCoefficients = camera.getDistCoeffs().orElse(null);
 
     VisionUpdateThread.addCallback(this::updateOdometry);
   }
 
-  public AprilTagIOPhoton() {
-    this(() -> true);
+  /** Helper constructor for sim to force the system to be initialized before the first camera */
+  protected AprilTagIOPhoton(CameraProps props, VisionSystemSim sim) {
+    this(props);
+  }
+
+  public AprilTagIOPhoton(CameraProps props) {
+    this(props, () -> true);
   }
 
   /**
@@ -59,6 +74,14 @@ public class AprilTagIOPhoton implements AprilTagIO {
    * @implNote This method should be called asynchronously.
    */
   private void updateOdometry() {
+    // Avoid doing (and accumulating) work while this camera is disabled. Any observations that
+    // were queued before the camera was disabled are dropped so that they cannot be delivered as
+    // stale measurements once it is re-enabled.
+    if (!enabled) {
+      clearObservations();
+      return;
+    }
+
     final List<PhotonPipelineResult> allResults;
     final Matrix<N3, N3> cameraMatrix;
     final Matrix<N8, N1> distCoeffs;
@@ -66,7 +89,7 @@ public class AprilTagIOPhoton implements AprilTagIO {
     final ArrayList<VisionEstimation> estimations = new ArrayList<>();
     final HashSet<Integer> tagsSeen = new HashSet<>();
 
-    updateLock.lock();
+    cameraLock.lock();
     try {
       allResults = camera.getAllUnreadResults();
 
@@ -74,7 +97,7 @@ public class AprilTagIOPhoton implements AprilTagIO {
       cameraMatrix = this.cameraMatrix;
       distCoeffs = distortionCoefficients;
     } finally {
-      updateLock.unlock();
+      cameraLock.unlock();
     }
 
     for (final PhotonPipelineResult result : allResults) {
@@ -127,6 +150,11 @@ public class AprilTagIOPhoton implements AprilTagIO {
       final List<PhotonTrackedTarget> targetsUsed = estimatedPose.targetsUsed;
       final int numTags = targetsUsed.size();
 
+      // Defensive guard: an estimation with no targets would make the averages below NaN.
+      if (numTags == 0) {
+        continue;
+      }
+
       double totalAmbiguity = 0;
       double totalDistance = 0;
 
@@ -149,21 +177,32 @@ public class AprilTagIOPhoton implements AprilTagIO {
               strategy));
     }
 
-    this.tagsSeen.set(tagsSeen);
-    this.estimations.set(estimations);
+    observationLock.lock();
+    try {
+      this.tagsSeen.addAll(tagsSeen);
+      this.estimations.addAll(estimations);
+    } finally {
+      observationLock.unlock();
+    }
   }
 
   @Override
   public void updateInputs(AprilTagInputs inputs) {
-    if (!camera.isConnected() || !enableSignal.getAsBoolean()) {
+    enabled = enableSignal.getAsBoolean();
+
+    if (!camera.isConnected() || !enabled) {
       inputs.connected = false;
       inputs.estimations = new VisionEstimation[0];
       inputs.tagsSeen = new int[0];
 
+      // Discard observations gathered before the camera disconnected or was disabled instead of
+      // holding them until it comes back and delivering them as stale measurements.
+      clearObservations();
+
       return;
     }
 
-    updateLock.lock();
+    cameraLock.lock();
     try {
       if (cameraMatrix == null) {
         cameraMatrix = camera.getCameraMatrix().orElse(null);
@@ -173,11 +212,32 @@ public class AprilTagIOPhoton implements AprilTagIO {
         distortionCoefficients = camera.getDistCoeffs().orElse(null);
       }
 
-      inputs.connected = true;
-      inputs.estimations = estimations.get().toArray(VisionEstimation[]::new);
-      inputs.tagsSeen = tagsSeen.get().stream().mapToInt(i -> i).toArray();
     } finally {
-      updateLock.unlock();
+      cameraLock.unlock();
+    }
+
+    inputs.connected = true;
+
+    observationLock.lock();
+    try {
+      inputs.estimations = estimations.toArray(VisionEstimation[]::new);
+      inputs.tagsSeen = tagsSeen.stream().mapToInt(Integer::intValue).toArray();
+
+      estimations.clear();
+      tagsSeen.clear();
+    } finally {
+      observationLock.unlock();
+    }
+  }
+
+  /** Clears any observations that have not yet been delivered to the main thread. */
+  private void clearObservations() {
+    observationLock.lock();
+    try {
+      estimations.clear();
+      tagsSeen.clear();
+    } finally {
+      observationLock.unlock();
     }
   }
 

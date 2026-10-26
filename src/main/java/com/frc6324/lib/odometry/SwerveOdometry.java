@@ -22,6 +22,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.units.Units;
@@ -117,6 +118,13 @@ public class SwerveOdometry {
   private double previousVyMetersPerSecond = 0.0;
 
   /**
+   * Chassis-frame speeds derived from the most recent {@link #update} call. Translational
+   * components come from the integrated (slip-attenuated and tilt-corrected) wheel deltas; the
+   * angular component comes from the same heading delta used to advance the pose.
+   */
+  private ChassisSpeeds currentChassisSpeeds = new ChassisSpeeds();
+
+  /**
    * Timestamp (seconds) of the last {@link #update} call. {@code Double.NaN} until first update.
    */
   private double previousTimestampSeconds = Double.NaN;
@@ -176,6 +184,23 @@ public class SwerveOdometry {
   }
 
   /**
+   * Returns the chassis-frame speeds derived from the most recent {@link #update} call.
+   *
+   * <p>The returned speeds are {@link ChassisSpeeds#vxMetersPerSecond forward}, {@link
+   * ChassisSpeeds#vyMetersPerSecond lateral}, and {@link ChassisSpeeds#omegaRadiansPerSecond
+   * angular} velocities. They are all zero before the first update (or when the elapsed time
+   * between updates is not positive).
+   *
+   * @return The latest chassis speeds.
+   */
+  public ChassisSpeeds getChassisSpeeds() {
+    return new ChassisSpeeds(
+        currentChassisSpeeds.vxMetersPerSecond,
+        currentChassisSpeeds.vyMetersPerSecond,
+        currentChassisSpeeds.omegaRadiansPerSecond);
+  }
+
+  /**
    * Resets the robot's position on the field.
    *
    * <p>The gyroscope angle does not need to be reset in user code; the library automatically
@@ -194,6 +219,7 @@ public class SwerveOdometry {
     previousVxMetersPerSecond = 0.0;
     previousVyMetersPerSecond = 0.0;
     previousTimestampSeconds = Double.NaN;
+    currentChassisSpeeds = new ChassisSpeeds();
   }
 
   /**
@@ -345,12 +371,23 @@ public class SwerveOdometry {
     twist.dy *= cosRoll;
 
     // ------------------------------------------------------------------
-    // 7. Integrate the twist into the current pose.
+    // 7. Record the chassis speeds implied by this update. Vision rules use
+    //    these timestamped values to evaluate the robot's motion at the
+    //    moment a camera frame was captured.
+    // ------------------------------------------------------------------
+    if (!Double.isNaN(dt) && dt > 0.0) {
+      currentChassisSpeeds = new ChassisSpeeds(twist.dx / dt, twist.dy / dt, twist.dtheta / dt);
+    } else {
+      currentChassisSpeeds = new ChassisSpeeds();
+    }
+
+    // ------------------------------------------------------------------
+    // 8. Integrate the twist into the current pose.
     // ------------------------------------------------------------------
     currentPose = currentPose.exp(twist);
 
     // ------------------------------------------------------------------
-    // 8. Bookkeeping.
+    // 9. Bookkeeping.
     //
     //    Velocity history uses rawTwist (pre-tilt, pre-attenuation) so
     //    that the next cycle's slip detector compares like-for-like with
@@ -398,12 +435,27 @@ public class SwerveOdometry {
     final Rotation2d finalAngle = previousAngle.plus(Rotation2d.fromRadians(twist.dtheta));
 
     // ------------------------------------------------------------------
-    // 3. Integrate the twist into the current pose.
+    // 3. Record the chassis speeds implied by this update for timestamped
+    //    speed sampling.
+    // ------------------------------------------------------------------
+    final double dt =
+        Double.isNaN(previousTimestampSeconds)
+            ? Double.NaN
+            : timestampSeconds - previousTimestampSeconds;
+
+    if (!Double.isNaN(dt) && dt > 0.0) {
+      currentChassisSpeeds = new ChassisSpeeds(twist.dx / dt, twist.dy / dt, twist.dtheta / dt);
+    } else {
+      currentChassisSpeeds = new ChassisSpeeds();
+    }
+
+    // ------------------------------------------------------------------
+    // 4. Integrate the twist into the current pose.
     // ------------------------------------------------------------------
     currentPose = currentPose.exp(twist);
 
     // ------------------------------------------------------------------
-    // 4. Bookkeeping.
+    // 5. Bookkeeping.
     // ------------------------------------------------------------------
     previousAngle = finalAngle;
     kinematics.copyInto(wheelPositions, previousWheelPositions);

@@ -24,6 +24,8 @@ public final class ObjDetectIOPhoton implements ObjDetectIO {
 
     inputs.connected = camera.isConnected();
     if (!inputs.connected) {
+      // Do not leave the previous frame's game pieces in the inputs while disconnected.
+      inputs.visiblePieces = new VisibleGamePiece[0];
       return;
     }
 

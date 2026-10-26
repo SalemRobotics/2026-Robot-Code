@@ -75,6 +75,7 @@ public class AprilTagVision extends VirtualSubsystem {
 
       io[cameraIndex].updateInputs(currentInputs);
       Logger.processInputs(logKey, currentInputs);
+      disconnectedAlerts[cameraIndex].set(!currentInputs.connected);
       Logger.recordOutput(logKey + "/Visible Tag IDs", currentInputs.tagsSeen);
 
       for (final VisionEstimation estimation : currentInputs.estimations) {
@@ -89,15 +90,14 @@ public class AprilTagVision extends VirtualSubsystem {
         final Pose2d robotPose = estimation.robotPose().toPose2d();
         robotPoses.add(robotPose);
 
-        if (rejected) {
+        // Estimations with no tags should never be produced, but guard against them so that the
+        // standard-deviation calculation below can never divide by zero.
+        if (rejected || estimation.numTagsUsed() <= 0) {
           robotPosesRejected.add(robotPose);
           continue;
-        } else {
-          robotPosesAccepted.add(robotPose);
         }
 
-        // Add the robot pose to the "all poses" cache
-        robotPoses.add(robotPose);
+        robotPosesAccepted.add(robotPose);
 
         final double stddevFactor =
             Math.pow(estimation.averageTagDistance(), 2) / estimation.numTagsUsed();

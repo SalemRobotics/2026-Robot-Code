@@ -90,8 +90,8 @@ public final class DriveCommands {
           omega *= DriveConstants.MAX_ANGULAR_SPEED_RADS_PER_SEC;
 
           // Log the controller values
-          Logger.recordOutput("DriveCommands/JoystickDrive/TranslationVector", linearVelocity);
-          Logger.recordOutput("DriveCommands/JoystickDrive/RotationalRate", omega);
+          Logger.recordOutput("Commands/JoystickDrive/TranslationVector", linearVelocity);
+          Logger.recordOutput("Commands/JoystickDrive/RotationalRate", omega);
 
           // Send the request to the drivetrain
           drive.runFieldRelative(
