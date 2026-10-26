@@ -31,7 +31,7 @@ public final class IntakeConstants {
   public static final Angle INTAKE_VISION_THRESHOLD = Rotations.of(2);
   public static final Angle INTAKE_DEPLOY_TOLERANCE = Degrees.of(60);
   public static final Angle INTAKE_RETRACTED_POSITION = Rotations.of(1.3);
-  public static final Angle INTAKE_TRENCH_SAFE_POSITION = Rotations.of(2.8);
+  public static final Angle INTAKE_TRENCH_SAFE_POSITION = Rotations.of(3);
   public static final Angle INTAKE_STOWED_POSITION = Rotations.of(0);
 
   public static final TalonFXConfiguration INTAKE_MOTOR_CONFIG =

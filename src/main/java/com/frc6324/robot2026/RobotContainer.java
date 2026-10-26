@@ -301,7 +301,7 @@ public class RobotContainer {
                 () -> LEDState.intaking = false,
                 intake,
                 rollers))
-        .onFalse(rollers.run(rollers::stopRollers));
+        .onFalse(rollers.runOnce(rollers::stopRollers));
 
     controller.a().whileTrue(intake.run(intake::retract));
     controller.b().whileTrue(new ShootUpAgainstHubCommand(indexer, intake, rollers, shooter));

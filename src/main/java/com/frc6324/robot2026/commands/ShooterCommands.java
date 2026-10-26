@@ -313,7 +313,7 @@ public final class ShooterCommands {
   }
 
   public static class ShootIntoHubCommand extends AbstractShootAtCommand {
-    private static final double CLOSE_ANGLE_TOLERANCE = Units.degreesToRadians(7.5);
+    private static final double CLOSE_ANGLE_TOLERANCE = Units.degreesToRadians(20);
     private static final double TOLERANCE_DECAY_PER_METER = Units.degreesToRadians(-1);
 
     private final Debouncer debouncer = new Debouncer(0.25);
@@ -358,7 +358,7 @@ public final class ShooterCommands {
     @Override
     boolean shouldIndex(Rotation2d targetFacing, double distanceToTarget) {
       final double tolerance =
-          Math.max(0.25, CLOSE_ANGLE_TOLERANCE + TOLERANCE_DECAY_PER_METER * distanceToTarget);
+          Math.max(Units.degreesToRadians(12.5), CLOSE_ANGLE_TOLERANCE + TOLERANCE_DECAY_PER_METER * distanceToTarget);
 
       final Rotation2d robotYaw = robotState.getPose().getRotation();
       final boolean atRobotAngle =

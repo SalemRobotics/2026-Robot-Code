@@ -30,6 +30,8 @@ public abstract class VisionRule {
   public void logRejected() {
     Logger.recordOutput(
         logKey() + "/Rejected", estimationsRejected.toArray(VisionEstimation[]::new));
+
+    Logger.recordOutput(logKey() + "/RejectedAny", estimationsRejected.size() > 0);
     estimationsRejected.clear();
   }
 

@@ -11,6 +11,7 @@ import com.frc6324.lib.util.CommonUtils;
 import com.frc6324.lib.util.PhoenixUtil;
 import com.frc6324.robot2026.subsystems.drive.DriveConstants;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.Notifier;
@@ -75,12 +76,22 @@ public class OdometryThreadReal implements OdometryThreadIO {
   }
 
   public class Gyro implements Odometry {
-    private final BlockingDeque<Rotation2d> yawPositions = new LinkedBlockingDeque<>(25);
+    private final BlockingDeque<Rotation3d> rotations = new LinkedBlockingDeque<>(25);
 
+    private final StatusSignal<Angle> roll;
+    private final StatusSignal<AngularVelocity> rollVelocity;
+    private final StatusSignal<Angle> pitch;
+    private final StatusSignal<AngularVelocity> pitchVelocity;    
     private final StatusSignal<Angle> yaw;
-    private final StatusSignal<AngularVelocity> yawVelocity;
+    private final StatusSignal<AngularVelocity> yawVelocity;    
 
     public Gyro(Pigeon2 pigeon) {
+      roll = pigeon.getRoll();
+      rollVelocity = pigeon.getAngularVelocityXWorld();
+
+      pitch = pigeon.getPitch();
+      pitchVelocity = pigeon.getAngularVelocityYWorld();
+
       yaw = pigeon.getYaw();
       yawVelocity = pigeon.getAngularVelocityZWorld();
 
@@ -88,20 +99,22 @@ public class OdometryThreadReal implements OdometryThreadIO {
       addSignals(yaw, yawVelocity);
     }
 
-    public Rotation2d[] getYawPositions() {
-      final Rotation2d[] positions = yawPositions.toArray(Rotation2d[]::new);
-      yawPositions.clear();
+    public Rotation3d[] getYawPositions() {
+      final Rotation3d[] positions = rotations.toArray(Rotation3d[]::new);
+      rotations.clear();
       return positions;
     }
 
     @Override
     public void updateOdometry() {
-      if (yawPositions.remainingCapacity() == 0) {
-        yawPositions.removeFirst();
+      if (rotations.remainingCapacity() == 0) {
+        rotations.removeFirst();
       }
 
+      final Angle rollAngle = BaseStatusSignal.getLatencyCompensatedValue(roll, rollVelocity);
+      final Angle pitchAngle = BaseStatusSignal.getLatencyCompensatedValue(pitch, pitchVelocity);
       final Angle yawAngle = BaseStatusSignal.getLatencyCompensatedValue(yaw, yawVelocity);
-      yawPositions.addLast(new Rotation2d(yawAngle));
+      rotations.addLast(new Rotation3d(rollAngle, pitchAngle, yawAngle));
     }
   }
 

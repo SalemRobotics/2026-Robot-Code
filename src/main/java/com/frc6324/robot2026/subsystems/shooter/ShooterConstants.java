@@ -102,9 +102,9 @@ public final class ShooterConstants {
       InvertedValue.Clockwise_Positive
     };
 
-    public static final AngularVelocity DRUM_IDLE_SPEED = RPM.of(2000);
+    public static final AngularVelocity DRUM_IDLE_SPEED = RPM.of(3000);
     public static final AngularVelocity DRUM_CLOSE_HUB_SHOT_SPEED = RPM.of(2100);
-    public static final AngularVelocity DRUM_VELOCITY_TOLERANCE = RotationsPerSecond.of(10);
+    public static final AngularVelocity DRUM_VELOCITY_TOLERANCE = RotationsPerSecond.of(7.5);
     public static final AngularVelocity DRUM_OFFSET_STEP = RotationsPerSecond.of(0.25);
 
     public static final TalonFXConfiguration DRUM_MOTOR_CONFIG =

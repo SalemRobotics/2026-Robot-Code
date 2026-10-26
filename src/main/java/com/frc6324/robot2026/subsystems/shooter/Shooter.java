@@ -104,9 +104,11 @@ public final class Shooter extends SubsystemBase {
    * @param velocity The velocity setpoint.
    */
   private void setDrumVelocity(AngularVelocity velocity, int slot) {
-    shooterIO.setDrumVelocity(velocity.plus(velocityOffset), slot);
+    final AngularVelocity offset = velocity.plus(velocityOffset);
+
+    shooterIO.setDrumVelocity(offset, slot);
     shooterIO.setAcceleratorVelocity(velocity);
-    drumSetpoint = velocity;
+    drumSetpoint = offset;
   }
 
   /**
@@ -146,8 +148,12 @@ public final class Shooter extends SubsystemBase {
       return;
     }
 
+    final AngularVelocity target = params.drumVelocity().gt(DRUM_IDLE_SPEED)
+      ? DRUM_IDLE_SPEED
+      : params.drumVelocity();
+
     stowHood();
-    setDrumVelocity(DRUM_IDLE_SPEED, DRUM_SPINUP_SLOT);
+    setDrumVelocity(target, DRUM_SPINUP_SLOT);
   }
 
   public void stopAccelerators() {

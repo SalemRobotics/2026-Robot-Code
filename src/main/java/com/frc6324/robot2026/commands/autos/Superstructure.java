@@ -71,9 +71,6 @@ public class Superstructure implements SuperstructureBase {
   }
 
   public Command shootCommand(double timeout) {
-    return shootCommand()
-        .raceWith(
-            Commands.waitSeconds(0.25).andThen(Commands.waitUntil(() -> !shooter.hasSeenFuel())),
-            Commands.waitSeconds(timeout));
+    return shootCommand().withTimeout(timeout);
   }
 }
