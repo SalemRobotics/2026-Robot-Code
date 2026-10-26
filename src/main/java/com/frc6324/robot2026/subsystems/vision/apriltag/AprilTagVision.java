@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import org.littletonrobotics.junction.Logger;
 
 public class AprilTagVision extends VirtualSubsystem {
+  private static final String visionBaseKey = "Vision/AprilTag/";
+
   private final AprilTagIO[] io;
   private final VisionInputsAutoLogged[] inputs;
   private final Alert[] disconnectedAlerts;
@@ -64,7 +66,7 @@ public class AprilTagVision extends VirtualSubsystem {
       robotPosesAccepted.clear();
       robotPosesRejected.clear();
 
-      final String logKey = "Vision/AprilTag/" + CAMERA_NAMES[cameraIndex];
+      final String logKey = visionBaseKey + CAMERA_NAMES[cameraIndex];
       final VisionInputsAutoLogged currentInputs = inputs[cameraIndex];
 
       io[cameraIndex].updateInputs(currentInputs);
@@ -86,6 +88,7 @@ public class AprilTagVision extends VirtualSubsystem {
         robotPoses.add(robotPose);
 
         if (rejected) {
+          robotPosesRejected.add(robotPose);
           continue;
         } else {
           robotPosesAccepted.add(robotPose);
@@ -123,6 +126,12 @@ public class AprilTagVision extends VirtualSubsystem {
       allRobotPosesAccepted.addAll(robotPosesAccepted);
       allRobotPosesRejected.addAll(robotPosesRejected);
     }
+
+    Logger.recordOutput(visionBaseKey + "Summary/AllPoses", allRobotPoses.toArray(Pose2d[]::new));
+    Logger.recordOutput(
+        visionBaseKey + "Summary/AllPosesAccepted", allRobotPosesAccepted.toArray(Pose2d[]::new));
+    Logger.recordOutput(
+        visionBaseKey + "Summary/AllPosesRejected", allRobotPosesRejected.toArray(Pose2d[]::new));
 
     for (final VisionRule rule : rules) {
       rule.logRejected();

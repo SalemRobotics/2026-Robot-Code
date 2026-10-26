@@ -95,7 +95,7 @@ public abstract class VisionRule {
   /** Checks if the measurement is within an acceptable distance from the robot. */
   public static class DistanceFilter extends VisionRule {
     // A single
-    private static final double DISTANCE_THRESHOLD = 3;
+    private static final double DISTANCE_THRESHOLD = 8;
 
     public DistanceFilter() {
       Logger.recordOutput(logKey() + "/MaxDistance", DISTANCE_THRESHOLD);
@@ -106,7 +106,7 @@ public abstract class VisionRule {
       if (estimation.numTagsUsed() == 1) {
         return estimation.averageTagDistance() < DISTANCE_THRESHOLD;
       } else {
-        // TODO: determine if we want to filter distance
+        // TODO: determine if we want to filter distance for multitag
       }
 
       return true;
