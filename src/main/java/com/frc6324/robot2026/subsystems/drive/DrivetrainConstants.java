@@ -26,8 +26,11 @@ public final class DrivetrainConstants {
   public static final int SIMULATION_TICKS_PER_LOOP = (int) (ODOMETRY_UPDATE_FREQUENCY / 50);
   public static final Time ODOMETRY_PERIOD = Hertz.of(ODOMETRY_UPDATE_FREQUENCY).asPeriod();
 
+  public static final Distance LINEAR_STDDEV = Centimeters.of(5);
+  public static final Angle ROTATION_STDDEV = Degrees.of(1);
+  
   public static final Vector<N3> ODOMETRY_STDDEVS =
-      VecBuilder.fill(0.002, 0.002, Units.degreesToRadians(0.25));
+      VecBuilder.fill(LINEAR_STDDEV.in(Meters), LINEAR_STDDEV.in(Meters), ROTATION_STDDEV.in(Radians));
   public static final Vector<N3> DEFAULT_VISION_STDDEVS =
       VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(5));
   public static final String[] MODULE_NAMES = {"FrontLeft", "FrontRight", "BackLeft", "BackRight"};
