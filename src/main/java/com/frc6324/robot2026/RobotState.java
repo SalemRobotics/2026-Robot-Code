@@ -20,6 +20,10 @@ public class RobotState {
   private static final Lazy<RobotState> INSTANCE = new Lazy<>(RobotState::new);
   private static final Pose2d STARTING_POSE =
       new Pose2d(FieldConstants.FIELD_LENGTH / 2, FieldConstants.FIELD_WIDTH / 2, Rotation2d.kZero);
+  private static final double ODOMETRY_STDDEV = 0.1;
+  private static final double DRIFT_PER_METER = 0.05;
+
+  private double driftStddev = 0;
 
   private SwerveModulePosition[] lastModulePositions = {
     new SwerveModulePosition(),
@@ -46,12 +50,15 @@ public class RobotState {
           lastModulePositions,
           STARTING_POSE,
           Constants.CURRENT_MODE == Mode.SIM,
-          VecBuilder.fill(0.1, 0.1, 0.1));
+          VecBuilder.fill(ODOMETRY_STDDEV, ODOMETRY_STDDEV, 0.1));
 
   public void addOdometryObservation(
       double timestamp,
       SwerveModulePosition[] modulePositions,
       Optional<GyroReadings> gyroReadings) {
+    final Twist2d twist = kinematics.toTwist2d(lastModulePositions, modulePositions);
+    driftStddev += DRIFT_PER_METER * Math.hypot(twist.dx, twist.dy);
+
     poseEstimator.updateWithTime(timestamp, gyroReadings, modulePositions);
     lastModulePositions = modulePositions;
     lastGyroAngle =
@@ -71,7 +78,23 @@ public class RobotState {
       return;
     }
 
-    poseEstimator.addVisionMeasurement(pose, timestamp, stddevs);
+    final double odometryStddev = ODOMETRY_STDDEV + driftStddev;
+    final double visionStddev = stddevs.get(0, 0);
+    final double trust = ODOMETRY_STDDEV / odometryStddev;
+
+    driftStddev =
+        Math.max(
+            0, odometryStddev * visionStddev / (odometryStddev + visionStddev) - ODOMETRY_STDDEV);
+
+    poseEstimator.addVisionMeasurement(
+        pose,
+        timestamp,
+        VecBuilder.fill(visionStddev * trust, stddevs.get(1, 0) * trust, stddevs.get(2, 0)));
+  }
+
+  @AutoLogOutput(key = "Odometry/DriftStddev")
+  public double getDriftStddev() {
+    return driftStddev;
   }
 
   @AutoLogOutput(key = "Odometry/Speeds")
@@ -128,5 +151,6 @@ public class RobotState {
 
   public void setPose(Pose2d pose) {
     poseEstimator.resetPosition(lastGyroAngle, lastModulePositions, pose);
+    driftStddev = 0;
   }
 }
