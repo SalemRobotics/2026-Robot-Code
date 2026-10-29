@@ -139,7 +139,11 @@ public class Drive extends SubsystemBase implements Drivetrain {
     for (int sampleIdx = 0; sampleIdx < sampleCount; sampleIdx++) {
       final Optional<GyroReadings> gyroReadings =
           gyroInputs.connected
-              ? Optional.of(new GyroReadings(gyroInputs.odometryYawPositions[sampleIdx], gyroInputs.accelerationX, gyroInputs.accelerationY))
+              ? Optional.of(
+                  new GyroReadings(
+                      gyroInputs.odometryYawPositions[sampleIdx],
+                      gyroInputs.accelerationX,
+                      gyroInputs.accelerationY))
               : Optional.empty();
 
       final SwerveModulePosition[] modulePositions = new SwerveModulePosition[modules.length];

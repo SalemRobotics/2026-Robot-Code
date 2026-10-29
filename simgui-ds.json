@@ -91,9 +91,8 @@
   ],
   "robotJoysticks": [
     {
-      "guid": "78696e70757401000000000000000000",
-      "name": "Driver Controller",
-      "useGamepad": true
+      "guid": "030000005e0400008e02000014010000",
+      "name": "Driver Controller"
     }
   ]
 }

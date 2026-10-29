@@ -22,8 +22,16 @@ public interface AprilTagIO extends IOLayer<AprilTagIO.AprilTagInputs> {
       EstimationStrategy strategy) {}
 
   public enum EstimationStrategy {
-    ConstrainedSolvePNP,
+    ConstrainedSolvePNP_MultiTag,
+    ConstrainedSolvePNP_SingleTag,
     Multitag,
-    Singletag,
+    Singletag;
+
+    public EstimationStrategy constrainedSolveEquivalent() {
+      return switch (this) {
+        case ConstrainedSolvePNP_MultiTag, Multitag -> ConstrainedSolvePNP_MultiTag;
+        case ConstrainedSolvePNP_SingleTag, Singletag -> ConstrainedSolvePNP_SingleTag;
+      };
+    }
   }
 }

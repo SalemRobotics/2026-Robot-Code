@@ -5,7 +5,6 @@ import static com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagConstants
 import com.frc6324.robot2026.RobotState;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.numbers.*;
 import edu.wpi.first.wpilibj.Timer;
 import java.util.ArrayList;
@@ -110,10 +109,6 @@ public class AprilTagIOPhoton implements AprilTagIO {
         continue;
       }
 
-      // Estimation attempt order:
-      // 1. Multitag on the coprocessor
-      // 2. Constrained SolvePNP using robot pose estimation
-      // 3. Average of targets using ambiguity as weight
       final Optional<EstimatedRobotPose> multitagOpt =
           poseEstimator.estimateCoprocMultiTagPose(result);
 
@@ -121,33 +116,48 @@ public class AprilTagIOPhoton implements AprilTagIO {
         estimatedPose = multitagOpt.get();
         strategy = EstimationStrategy.Multitag;
       } else {
-        final Optional<Pose2d> odomPoseOpt = robotState.samplePoseAt(timestamp);
-        Optional<EstimatedRobotPose> constrainedSolvePNPOpt = Optional.empty();
+        // It is safe to call `.get` here since we already know that the result has targets
+        final Optional<EstimatedRobotPose> lowestAmbiguityPose =
+            poseEstimator.estimateLowestAmbiguityPose(result);
 
-        if (cameraMatrix != null && distCoeffs != null && odomPoseOpt.isPresent()) {
-          final Pose2d odomPose = odomPoseOpt.get();
-
-          constrainedSolvePNPOpt =
-              poseEstimator.estimateConstrainedSolvepnpPose(
-                  result,
-                  cameraMatrix,
-                  distCoeffs,
-                  new Pose3d(odomPose),
-                  HEADING_FREE,
-                  HEADING_FACTOR);
+        if (lowestAmbiguityPose.isEmpty()) {
+          // There are zero AprilTags seen in the frame if this is empty, so skip the rest
+          continue;
         }
 
-        if (constrainedSolvePNPOpt.isPresent()) {
-          estimatedPose = constrainedSolvePNPOpt.get();
-          strategy = EstimationStrategy.ConstrainedSolvePNP;
-        } else {
-          // It is safe to call `.get` here since we already know that the result has targets
-          estimatedPose = poseEstimator.estimateAverageBestTargetsPose(result).get();
-          strategy = EstimationStrategy.Singletag;
-        }
+        estimatedPose = lowestAmbiguityPose.get();
+        strategy = EstimationStrategy.Singletag;
       }
 
-      final List<PhotonTrackedTarget> targetsUsed = estimatedPose.targetsUsed;
+      final EstimatedRobotPose finalPose;
+      final EstimationStrategy finalStrategy;
+      final Optional<Pose2d> robotPoseAtObservation = robotState.samplePoseAt(timestamp);
+
+      if (cameraMatrix != null && distCoeffs != null && robotPoseAtObservation.isPresent()) {
+        poseEstimator.addHeadingData(timestamp, robotPoseAtObservation.get().getRotation());
+
+        final Optional<EstimatedRobotPose> constrainedPose =
+            poseEstimator.estimateConstrainedSolvepnpPose(
+                result,
+                cameraMatrix,
+                distCoeffs,
+                estimatedPose.estimatedPose,
+                HEADING_FREE,
+                HEADING_FACTOR);
+
+        if (constrainedPose.isPresent()) {
+          finalPose = constrainedPose.get();
+          finalStrategy = strategy.constrainedSolveEquivalent();
+        } else {
+          finalPose = estimatedPose;
+          finalStrategy = strategy;
+        }
+      } else {
+        finalPose = estimatedPose;
+        finalStrategy = strategy;
+      }
+
+      final List<PhotonTrackedTarget> targetsUsed = finalPose.targetsUsed;
       final int numTags = targetsUsed.size();
 
       // Defensive guard: an estimation with no targets would make the averages below NaN.
@@ -169,12 +179,12 @@ public class AprilTagIOPhoton implements AprilTagIO {
 
       estimations.add(
           new VisionEstimation(
-              estimatedPose.estimatedPose,
+              finalPose.estimatedPose,
               timestamp,
               totalAmbiguity / numTags,
               totalDistance / numTags,
               numTags,
-              strategy));
+              finalStrategy));
     }
 
     observationLock.lock();
