@@ -15,6 +15,7 @@ import com.frc6324.robot2026.subsystems.drive.odometry.OdometryThreadReal;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.*;
+import org.littletonrobotics.junction.Logger;
 
 public class ModuleIOTalonFX implements ModuleIO {
   private final SwerveModuleConstants<?, ?, ?> constants;
@@ -163,6 +164,8 @@ public class ModuleIOTalonFX implements ModuleIO {
 
   @Override
   public void setDriveVelocity(AngularVelocity velocity) {
+    Logger.recordOutput("closed loop mode", constants.DriveMotorClosedLoopOutput);
+    Logger.recordOutput("closed loop velocity", velocity);
     switch (constants.DriveMotorClosedLoopOutput) {
       case TorqueCurrentFOC ->
           driveTalon.setControl(
@@ -201,6 +204,8 @@ public class ModuleIOTalonFX implements ModuleIO {
   @Override
   public void setSteerPosition(Rotation2d position) {
     final Angle angle = position.getMeasure();
+    Logger.recordOutput("steer closed loop output", constants.SteerMotorClosedLoopOutput);
+    Logger.recordOutput("position", position);
 
     switch (constants.SteerMotorClosedLoopOutput) {
       case TorqueCurrentFOC -> steerTalon.setControl(positionTorqueCurrent.withPosition(angle));

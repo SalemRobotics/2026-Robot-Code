@@ -52,7 +52,7 @@ public class Drive extends SubsystemBase implements Drivetrain {
   private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(MODULE_TRANSLATIONS);
   private final RobotState robotState = RobotState.getInstance();
 
-  @Getter public final DrivePID autoDrivePID = new DrivePID("Auto", 5, 0, 0, 5, 0, 0);
+  @Getter public final DrivePID autoDrivePID = new DrivePID("Auto", 7, 0, 0, 4, 0, 0);
 
   public final SysIdRoutine sysId =
       new SysIdRoutine(
@@ -139,7 +139,11 @@ public class Drive extends SubsystemBase implements Drivetrain {
     for (int sampleIdx = 0; sampleIdx < sampleCount; sampleIdx++) {
       final Optional<GyroReadings> gyroReadings =
           gyroInputs.connected
-              ? Optional.of(new GyroReadings(gyroInputs.odometryYawPositions[sampleIdx], gyroInputs.accelerationX, gyroInputs.accelerationY))
+              ? Optional.of(
+                  new GyroReadings(
+                      gyroInputs.odometryYawPositions[sampleIdx],
+                      gyroInputs.accelerationX,
+                      gyroInputs.accelerationY))
               : Optional.empty();
 
       final SwerveModulePosition[] modulePositions = new SwerveModulePosition[modules.length];

@@ -49,7 +49,8 @@ public class RobotState {
           Rotation2d.kZero,
           lastModulePositions,
           STARTING_POSE,
-          Constants.CURRENT_MODE == Mode.SIM,
+          // Constants.CURRENT_MODE == Mode.SIM,
+          true,
           VecBuilder.fill(ODOMETRY_STDDEV, ODOMETRY_STDDEV, 0.1));
 
   public void addOdometryObservation(

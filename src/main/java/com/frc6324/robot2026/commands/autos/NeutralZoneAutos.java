@@ -26,6 +26,8 @@ public final class NeutralZoneAutos {
 
     regularDoublePass(AllianceSide.Right, builder)
         .ifPresent(auto -> chooser.addOption("Right Double Pass", auto));
+
+    testing(AllianceSide.Left, builder).ifPresent(auto -> chooser.addOption("testing path", auto));
   }
 
   /**
@@ -71,6 +73,31 @@ public final class NeutralZoneAutos {
                       secondPass.raceWith(superstructure.passiveIntake()),
                       superstructure.shootCommand(5))
                   .withName(name);
+            }));
+  }
+
+  public static Optional<Auto> testing(AllianceSide side, AutoBuilder<Superstructure> builder) {
+
+    final ChoreoTraj[] trajectories = {Testing};
+    final Optional<List<Trajectory<SwerveSample>>> loaded = builder.load(side, trajectories);
+    if (loaded.isEmpty()) {
+      return Optional.empty();
+    }
+
+    final List<Trajectory<SwerveSample>> loadedTrajectories = loaded.get();
+
+    return Optional.of(
+        new Auto(
+            "testing",
+            loadedTrajectories,
+            () -> {
+              final AutoRoutine routine = builder.getFactory().newRoutine("testing");
+
+              final AutoTrajectory first = routine.trajectory(loadedTrajectories.get(0));
+
+              final TrajectoryFollower firstPass = builder.follow(loadedTrajectories.get(0));
+
+              return Commands.sequence(first.resetOdometry(), firstPass);
             }));
   }
 }

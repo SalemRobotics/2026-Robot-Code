@@ -81,9 +81,9 @@ public class OdometryThreadReal implements OdometryThreadIO {
     private final StatusSignal<Angle> roll;
     private final StatusSignal<AngularVelocity> rollVelocity;
     private final StatusSignal<Angle> pitch;
-    private final StatusSignal<AngularVelocity> pitchVelocity;    
+    private final StatusSignal<AngularVelocity> pitchVelocity;
     private final StatusSignal<Angle> yaw;
-    private final StatusSignal<AngularVelocity> yawVelocity;    
+    private final StatusSignal<AngularVelocity> yawVelocity;
 
     public Gyro(Pigeon2 pigeon) {
       roll = pigeon.getRoll();

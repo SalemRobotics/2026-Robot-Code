@@ -129,9 +129,8 @@ public final class Shooter extends SubsystemBase {
       return;
     }
 
-    final AngularVelocity target = params.drumVelocity().gt(DRUM_IDLE_SPEED)
-      ? DRUM_IDLE_SPEED
-      : params.drumVelocity();
+    final AngularVelocity target =
+        params.drumVelocity().gt(DRUM_IDLE_SPEED) ? DRUM_IDLE_SPEED : params.drumVelocity();
 
     stowHood();
     setDrumVelocity(target, DRUM_SPINUP_SLOT);

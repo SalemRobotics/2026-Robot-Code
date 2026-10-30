@@ -358,7 +358,9 @@ public final class ShooterCommands {
     @Override
     boolean shouldIndex(Rotation2d targetFacing, double distanceToTarget) {
       final double tolerance =
-          Math.max(Units.degreesToRadians(12.5), CLOSE_ANGLE_TOLERANCE + TOLERANCE_DECAY_PER_METER * distanceToTarget);
+          Math.max(
+              Units.degreesToRadians(12.5),
+              CLOSE_ANGLE_TOLERANCE + TOLERANCE_DECAY_PER_METER * distanceToTarget);
 
       final Rotation2d robotYaw = robotState.getPose().getRotation();
       final boolean atRobotAngle =
