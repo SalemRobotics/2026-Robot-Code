@@ -188,6 +188,9 @@ public class Robot extends LoggedRobot {
     SignalCache.refreshAllSignals();
     LoggedTracer.record("Phoenix Refresh");
 
+    robotContainer.updateOdometry();
+    LoggedTracer.record("Odometry");
+
     VirtualSubsystem.allPeriodics();
     LoggedTracer.record("Virtual Subsystems");
 

@@ -422,4 +422,8 @@ public class RobotContainer {
   public void updateFieldWidget() {
     field.setRobotPose(robotState.getPose());
   }
+
+  public void updateOdometry() {
+    drive.updateOdometry();
+  }
 }

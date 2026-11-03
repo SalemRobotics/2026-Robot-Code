@@ -107,8 +107,7 @@ public class Drive extends SubsystemBase implements Drivetrain {
     }
   }
 
-  @Override
-  public void periodic() {
+  public void updateOdometry() {
     ODOMETRY_LOCK.lock();
     try {
       canBus.updateInputs(canBusInputs);
