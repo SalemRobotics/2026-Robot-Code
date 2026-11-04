@@ -19,6 +19,10 @@ import com.ctre.phoenix6.SignalLogger;
 import com.frc6324.lib.util.PhoenixUtil.SignalCache;
 import com.frc6324.lib.util.VirtualSubsystem;
 import com.frc6324.lib.util.logging.LoggedTracer;
+import edu.wpi.first.networktables.BooleanPublisher;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -41,6 +45,12 @@ public class Robot extends LoggedRobot {
   private final RobotContainer robotContainer;
   private final Runtime runtime = Runtime.getRuntime();
 
+  final NetworkTable rewindTable;
+  final BooleanPublisher record;
+  final StringPublisher label;
+
+  double lastEnabledSec = Double.NEGATIVE_INFINITY;
+
   public static void main(String... args) {
     RobotBase.startRobot(Robot::new);
   }
@@ -60,7 +70,7 @@ public class Robot extends LoggedRobot {
           default -> "Unknown";
         });
 
-    // Set up data recievers and replay source
+    // Set up data receivers and replay source
     switch (Constants.CURRENT_MODE) {
       case REAL -> {
         // Real robot, publish to logs and NT
@@ -76,7 +86,7 @@ public class Robot extends LoggedRobot {
         setUseTiming(false);
         String logPath = LogFileUtil.findReplayLog();
 
-        // Replaing a log, set up replay source and log to a file
+        // Replaying a log, set up replay source and log to a file
         Logger.setReplaySource(new WPILOGReader(logPath));
         Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
       }
@@ -94,7 +104,7 @@ public class Robot extends LoggedRobot {
     DriverStation.silenceJoystickConnectionWarning(true);
     SignalLogger.start();
 
-    // Warm up the robot state clas
+    // Warm up the robot state class
     RobotState.getInstance();
 
     // Start the akit logger
@@ -107,6 +117,10 @@ public class Robot extends LoggedRobot {
     // Initialize the robot container
     robotContainer = new RobotContainer();
     SignalCache.synchronizeSignals(2);
+
+    rewindTable = NetworkTableInstance.getDefault().getTable("photonvision").getSubTable("rewind");
+    record = rewindTable.getBooleanTopic("record").publish();
+    label = rewindTable.getStringTopic("label").publish();
   }
 
   /**
@@ -165,6 +179,26 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void robotPeriodic() {
+    double now = Timer.getTimestamp();
+    if (DriverStation.isEnabled()) lastEnabledSec = now; // field, starts at NEGATIVE_INFINITY
+    if (DriverStation.isFMSAttached()) {
+      String type =
+          switch (DriverStation.getMatchType()) {
+            case Practice -> "P";
+            case Qualification -> "Q";
+            case Elimination -> "E";
+            default -> "M";
+          };
+      label.set(
+          String.format(
+              "%s-%s%d-r%d",
+              DriverStation.getEventName(),
+              type,
+              DriverStation.getMatchNumber(),
+              DriverStation.getReplayNumber()));
+      record.set(now - lastEnabledSec < 10.0);
+    }
+
     Logger.runEveryN(
         5,
         () -> {

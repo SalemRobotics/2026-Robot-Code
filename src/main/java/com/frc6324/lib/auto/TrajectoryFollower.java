@@ -236,7 +236,7 @@ public final class TrajectoryFollower extends Command {
     Logger.recordOutput("Odometry/Trajectory", new Pose2d[0]);
     Logger.recordOutput("Odometry/TrajectorySetpoint", new Pose2d());
 
-    Logger.recordOutput("Auto/FollowerCommand/State", "DONE");
+    Logger.recordOutput("Auto/FollowerCommand/TrackingState", "Done");
   }
 
   @Override

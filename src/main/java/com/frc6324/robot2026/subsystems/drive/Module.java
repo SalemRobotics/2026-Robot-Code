@@ -25,6 +25,7 @@ import com.frc6324.robot2026.subsystems.drive.module.ModuleInputsAutoLogged;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -101,8 +102,12 @@ public class Module {
     state.optimize(getAngle());
     state.cosineScale(inputs.facing);
 
+    final AngularVelocity commanded =
+        RadiansPerSecond.of(state.speedMetersPerSecond / constants.WheelRadius);
+    Logger.recordOutput("Swerve/Module" + index + "/CommandedSpeed", commanded);
+
     // Apply setpoints
-    io.setDriveVelocity(RadiansPerSecond.of(state.speedMetersPerSecond / constants.WheelRadius));
+    io.setDriveVelocity(commanded);
     io.setSteerPosition(state.angle);
   }
 
@@ -120,6 +125,8 @@ public class Module {
   public void stop() {
     io.setDriveVoltage(Volts.zero());
     io.setSteerVoltage(Volts.zero());
+
+    Logger.recordOutput("Swerve/Module" + index + "/CommandedSpeed", RadiansPerSecond.zero());
   }
 
   /**
