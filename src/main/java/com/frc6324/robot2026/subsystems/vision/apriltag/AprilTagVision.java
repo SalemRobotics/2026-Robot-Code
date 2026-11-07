@@ -25,13 +25,10 @@ public class AprilTagVision extends VirtualSubsystem {
   private final ArrayList<VisionConsumer> consumers = new ArrayList<>();
   private final VisionRule[] rules;
 
-  private final ArrayList<VisionEstimation> allCameraEstimations = new ArrayList<>();
-  private final ArrayList<VisionEstimation> allEstimationsAccepted = new ArrayList<>();
-  private final ArrayList<VisionEstimation> allEstimationsRejected = new ArrayList<>();
-
-  private final ArrayList<VisionEstimation> cameraEstimations = new ArrayList<>();
-  private final ArrayList<VisionEstimation> estimationsAccepted = new ArrayList<>();
-  private final ArrayList<VisionEstimation> estimationsRejected = new ArrayList<>();
+  // Reused every loop. Poses are logged as Pose2d (WPILib struct, cheap to serialize) instead of
+  // VisionEstimation records, which AdvantageKit packs with reflection and was logging ~6x each.
+  private final ArrayList<Pose2d> posesAccepted = new ArrayList<>();
+  private final ArrayList<Pose2d> posesRejected = new ArrayList<>();
 
   public AprilTagVision(VisionRule[] visionRules, AprilTagIO... io) {
     this.rules = visionRules;
@@ -57,14 +54,9 @@ public class AprilTagVision extends VirtualSubsystem {
 
   @Override
   public void periodic() {
-    allCameraEstimations.clear();
-    allEstimationsAccepted.clear();
-    allEstimationsRejected.clear();
-
     for (int cameraIndex = 0; cameraIndex < io.length; cameraIndex++) {
-      cameraEstimations.clear();
-      estimationsAccepted.clear();
-      estimationsRejected.clear();
+      posesAccepted.clear();
+      posesRejected.clear();
 
       final String logKey = visionBaseKey + CAMERA_NAMES[cameraIndex];
       final VisionInputsAutoLogged currentInputs = inputs[cameraIndex];
@@ -77,22 +69,21 @@ public class AprilTagVision extends VirtualSubsystem {
         boolean rejected = false;
         for (final VisionRule rule : rules) {
           if (!rule.shouldPermit(estimation)) {
-            rule.reject(estimation); // Logs this pose as rejected by the specific rule
+            rule.reject(estimation); // Counts this pose as rejected by the specific rule
             rejected = true;
             // Skip the rest of the rules
             break;
           }
         }
 
+        final Pose2d robotPose = estimation.robotPose().toPose2d();
+
         if (rejected) {
-          estimationsRejected.add(estimation);
+          posesRejected.add(robotPose);
           continue;
-        } else {
-          estimationsAccepted.add(estimation);
         }
 
-        // Add the robot pose to the "all poses" cache
-        cameraEstimations.add(estimation);
+        posesAccepted.add(robotPose);
 
         final double stddevFactor =
             Math.pow(estimation.averageTagDistance(), 2) / estimation.numTagsUsed();
@@ -106,36 +97,15 @@ public class AprilTagVision extends VirtualSubsystem {
         consumers.forEach(
             c ->
                 c.addVisionMeasurement(
-                    estimation.robotPose().toPose2d(),
+                    robotPose,
                     estimation.timestamp(),
                     VecBuilder.fill(linearStddev, linearStddev, angularStddev)));
       }
 
       // Log camera summary data
-      Logger.recordOutput(
-          logKey + "/Summary/Estimations", cameraEstimations.toArray(VisionEstimation[]::new));
-      Logger.recordOutput(
-          logKey + "/Summary/EstimationsAccepted",
-          estimationsAccepted.toArray(VisionEstimation[]::new));
-      Logger.recordOutput(
-          logKey + "/Summary/EstimationsRejected",
-          estimationsRejected.toArray(VisionEstimation[]::new));
-
-      // Add summary data to global summary cache
-      allCameraEstimations.addAll(cameraEstimations);
-      allEstimationsAccepted.addAll(estimationsAccepted);
-      allEstimationsRejected.addAll(estimationsRejected);
+      Logger.recordOutput(logKey + "/PosesAccepted", posesAccepted.toArray(Pose2d[]::new));
+      Logger.recordOutput(logKey + "/PosesRejected", posesRejected.toArray(Pose2d[]::new));
     }
-
-    Logger.recordOutput(
-        visionBaseKey + "Summary/AllEstimations",
-        allCameraEstimations.toArray(VisionEstimation[]::new));
-    Logger.recordOutput(
-        visionBaseKey + "Summary/AllEstimationsAccepted",
-        allEstimationsAccepted.toArray(VisionEstimation[]::new));
-    Logger.recordOutput(
-        visionBaseKey + "Summary/AllEstimationsRejected",
-        allEstimationsRejected.toArray(VisionEstimation[]::new));
 
     for (final VisionRule rule : rules) {
       rule.logRejected();

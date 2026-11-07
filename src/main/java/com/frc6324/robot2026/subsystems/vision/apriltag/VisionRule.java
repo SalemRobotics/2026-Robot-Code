@@ -5,13 +5,12 @@ import com.frc6324.lib.util.PoseExtensions.PoseSupplier;
 import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagIO.VisionEstimation;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import java.util.ArrayList;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 /** Represents a rule that evaluates vision observations. */
 public abstract class VisionRule {
-  private final ArrayList<VisionEstimation> estimationsRejected = new ArrayList<>();
+  private int rejectedCount = 0;
   public final String name;
 
   /** Creates a new VisionRule. Uses the subclass' name as the name for this rule. */
@@ -24,16 +23,18 @@ public abstract class VisionRule {
     return "Vision/AprilTag/Rules/" + name;
   }
 
+  /**
+   * Logs how many estimations this rule rejected since the last call. Only a count is logged: the
+   * rejected poses themselves are logged once per camera by {@link AprilTagVision}.
+   */
   public void logRejected() {
-    Logger.recordOutput(
-        logKey() + "/Rejected", estimationsRejected.toArray(VisionEstimation[]::new));
-
-    Logger.recordOutput(logKey() + "/RejectedAny", estimationsRejected.size() > 0);
-    estimationsRejected.clear();
+    Logger.recordOutput(logKey() + "/RejectedCount", rejectedCount);
+    Logger.recordOutput(logKey() + "/RejectedAny", rejectedCount > 0);
+    rejectedCount = 0;
   }
 
   public void reject(VisionEstimation estimation) {
-    estimationsRejected.add(estimation);
+    rejectedCount++;
   }
 
   public abstract boolean shouldPermit(VisionEstimation estimation);
