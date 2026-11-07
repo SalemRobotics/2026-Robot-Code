@@ -85,7 +85,7 @@ public final class SwerveDrive extends SubsystemBase implements VisionConsumer, 
 
     AutoBuilder.configure(
         this::getPose,
-        this::setPoseIfSim,
+        this::setPose,
         this::getChassisSpeeds,
         (speeds, ff) ->
             setControl(

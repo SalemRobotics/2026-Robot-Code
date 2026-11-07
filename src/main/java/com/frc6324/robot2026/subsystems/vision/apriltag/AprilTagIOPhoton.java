@@ -2,12 +2,7 @@ package com.frc6324.robot2026.subsystems.vision.apriltag;
 
 import static com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagConstants.*;
 
-import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.math.numbers.N8;
 import edu.wpi.first.wpilibj.Timer;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -27,7 +22,6 @@ public class AprilTagIOPhoton implements AprilTagIO {
   private static int cameraIndex = 0;
 
   protected final int index = cameraIndex++;
-  private final OdometryPoseGetter odometryPoseAtTime;
 
   private final Lock updateLock = new ReentrantLock();
   private final AtomicReference<HashSet<Integer>> tagsSeen = new AtomicReference<>(new HashSet<>());
@@ -38,19 +32,16 @@ public class AprilTagIOPhoton implements AprilTagIO {
   private final PhotonPoseEstimator poseEstimator =
       new PhotonPoseEstimator(APRILTAG_LAYOUT, ROBOT_TO_CAMERAS[index]);
 
-  private Matrix<N3, N3> cameraMatrix = camera.getCameraMatrix().orElse(null);
-  private Matrix<N8, N1> distortionCoefficients = camera.getDistCoeffs().orElse(null);
   private final BooleanSupplier enableSignal;
 
-  public AprilTagIOPhoton(OdometryPoseGetter odometryPoseGetter, BooleanSupplier enableSignal) {
-    odometryPoseAtTime = odometryPoseGetter;
+  public AprilTagIOPhoton(BooleanSupplier enableSignal) {
     this.enableSignal = enableSignal;
 
     VisionUpdateThread.addCallback(this::updateOdometry);
   }
 
-  public AprilTagIOPhoton(OdometryPoseGetter odometryPoseGetter) {
-    this(odometryPoseGetter, () -> true);
+  public AprilTagIOPhoton() {
+    this(() -> true);
   }
 
   /**
@@ -60,8 +51,6 @@ public class AprilTagIOPhoton implements AprilTagIO {
    */
   private void updateOdometry() {
     final List<PhotonPipelineResult> allResults;
-    final Matrix<N3, N3> cameraMatrix;
-    final Matrix<N8, N1> distCoeffs;
 
     final ArrayList<VisionEstimation> estimations = new ArrayList<>();
     final HashSet<Integer> tagsSeen = new HashSet<>();
@@ -69,10 +58,6 @@ public class AprilTagIOPhoton implements AprilTagIO {
     updateLock.lock();
     try {
       allResults = camera.getAllUnreadResults();
-
-      // Save the cam matrix & dist coeffs here so that we don't have to lock later on
-      cameraMatrix = this.cameraMatrix;
-      distCoeffs = distortionCoefficients;
     } finally {
       updateLock.unlock();
     }
@@ -98,30 +83,9 @@ public class AprilTagIOPhoton implements AprilTagIO {
         estimatedPose = multitagOpt.get();
         strategy = EstimationStrategy.Multitag;
       } else {
-        final Optional<Pose2d> odomPoseOpt = odometryPoseAtTime.samplePoseAt(timestamp);
-        Optional<EstimatedRobotPose> constrainedSolvePNPOpt = Optional.empty();
-
-        if (cameraMatrix != null && distCoeffs != null && odomPoseOpt.isPresent()) {
-          final Pose2d odomPose = odomPoseOpt.get();
-
-          constrainedSolvePNPOpt =
-              poseEstimator.estimateConstrainedSolvepnpPose(
-                  result,
-                  cameraMatrix,
-                  distCoeffs,
-                  new Pose3d(odomPose),
-                  HEADING_FREE,
-                  HEADING_FACTOR);
-        }
-
-        if (constrainedSolvePNPOpt.isPresent()) {
-          estimatedPose = constrainedSolvePNPOpt.get();
-          strategy = EstimationStrategy.ConstrainedSolvePNP;
-        } else {
-          // It is safe to call `.get` here since we already know that the result has targets
-          estimatedPose = poseEstimator.estimateAverageBestTargetsPose(result).get();
-          strategy = EstimationStrategy.Singletag;
-        }
+        // It is safe to call `.get` here since we already know that the result has targets
+        estimatedPose = poseEstimator.estimateAverageBestTargetsPose(result).get();
+        strategy = EstimationStrategy.Singletag;
       }
 
       final List<PhotonTrackedTarget> targetsUsed = estimatedPose.targetsUsed;
@@ -165,14 +129,6 @@ public class AprilTagIOPhoton implements AprilTagIO {
 
     updateLock.lock();
     try {
-      if (cameraMatrix == null) {
-        cameraMatrix = camera.getCameraMatrix().orElse(null);
-      }
-
-      if (distortionCoefficients == null) {
-        distortionCoefficients = camera.getDistCoeffs().orElse(null);
-      }
-
       inputs.connected = true;
       inputs.estimations = estimations.get().toArray(VisionEstimation[]::new);
       inputs.tagsSeen = tagsSeen.get().stream().mapToInt(i -> i).toArray();

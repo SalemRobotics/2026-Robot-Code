@@ -26,6 +26,7 @@ import com.frc6324.robot2026.commands.AutoCommands.AllianceSide;
 import com.frc6324.robot2026.commands.DriveCommands;
 import com.frc6324.robot2026.commands.ShooterCommands;
 import com.frc6324.robot2026.commands.ShooterCommands.*;
+import com.frc6324.robot2026.subsystems.JetsonDiagnostics;
 import com.frc6324.robot2026.subsystems.drive.*;
 import com.frc6324.robot2026.subsystems.drive.DriveIO.DriveIOReplay;
 import com.frc6324.robot2026.subsystems.indexer.*;
@@ -56,6 +57,7 @@ public class RobotContainer {
   private final Rollers rollers;
   private final Shooter shooter;
   private final SwerveDrive drive;
+  private final JetsonDiagnostics jetson;
 
   private final PowerDistribution pdh = new PowerDistribution();
   private final LoggedPowerDistribution loggedPDH =
@@ -81,15 +83,15 @@ public class RobotContainer {
           new VisionRule.WithinFieldBoundsFilter(),
           new VisionRule.AngularVelocityFilter(drive::getChassisSpeeds),
           new VisionRule.AmbiguityFilter(),
-          new VisionRule.DistanceFilter(),
+          new VisionRule.DistanceFilter(drive::getPose),
         };
 
         apriltag =
             new AprilTagVision(
                     visionRules,
-                    new AprilTagIOPhoton(driveIO),
-                    new AprilTagIOPhoton(driveIO),
-                    new AprilTagIOPhoton(driveIO))
+                    new AprilTagIOPhoton(),
+                    new AprilTagIOPhoton(),
+                    new AprilTagIOPhoton())
                 .withConsumer(drive);
         LoggedTracer.record("Init/AprilTag init");
 
@@ -104,6 +106,8 @@ public class RobotContainer {
 
         shooter = new Shooter(new ShooterIOTalonFX());
         LoggedTracer.record("Init/Shooter init");
+
+        jetson = new JetsonDiagnostics();
       }
       case SIM -> {
         LoggedTracer.reset();
@@ -116,15 +120,15 @@ public class RobotContainer {
           new VisionRule.WithinFieldBoundsFilter(),
           new VisionRule.AngularVelocityFilter(drive::getChassisSpeeds),
           new VisionRule.AmbiguityFilter(),
-          new VisionRule.DistanceFilter(),
+          new VisionRule.DistanceFilter(drive::getPose),
         };
 
         apriltag =
             new AprilTagVision(
                 visionRules,
-                new AprilTagIOSim(driveIO, drive),
-                new AprilTagIOSim(driveIO, drive),
-                new AprilTagIOSim(driveIO, drive));
+                new AprilTagIOSim(drive),
+                new AprilTagIOSim(drive),
+                new AprilTagIOSim(drive));
         LoggedTracer.record("Init/AprilTag init");
 
         indexer = new Indexer(new IndexerIOSim());
@@ -138,6 +142,8 @@ public class RobotContainer {
 
         shooter = new Shooter(new ShooterIOSim());
         LoggedTracer.record("Init/Shooter init");
+
+        jetson = null;
       }
       default -> {
         LoggedTracer.reset();
@@ -149,7 +155,7 @@ public class RobotContainer {
           new VisionRule.WithinFieldBoundsFilter(),
           new VisionRule.AngularVelocityFilter(drive::getChassisSpeeds),
           new VisionRule.AmbiguityFilter(),
-          new VisionRule.DistanceFilter(),
+          new VisionRule.DistanceFilter(drive::getPose),
         };
 
         apriltag =
@@ -167,6 +173,8 @@ public class RobotContainer {
 
         shooter = new Shooter(IOLayer::replay);
         LoggedTracer.record("Init/Shooter init");
+
+        jetson = null;
       }
     }
 

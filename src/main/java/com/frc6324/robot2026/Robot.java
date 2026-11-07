@@ -22,10 +22,15 @@ import com.frc6324.lib.util.VirtualSubsystem;
 import com.frc6324.robot2026.sim.MapleSimManager;
 import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.commands.PathfindingCommand;
+import edu.wpi.first.networktables.BooleanPublisher;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import java.util.Optional;
@@ -37,6 +42,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter.AdvantageScopeOpenBehavior;
 
 public class Robot extends LoggedRobot {
   public static Alliance autoWinner = Alliance.Blue;
@@ -45,6 +51,12 @@ public class Robot extends LoggedRobot {
   private Command autonomousCommand = null;
   private final RobotContainer robotContainer;
   private final Runtime runtime = Runtime.getRuntime();
+
+  final NetworkTable rewindTable;
+  final BooleanPublisher record;
+  final StringPublisher label;
+
+  double lastEnabledSec = Double.NEGATIVE_INFINITY;
 
   public static void main(String... args) {
     RobotBase.startRobot(Robot::new);
@@ -83,7 +95,9 @@ public class Robot extends LoggedRobot {
 
         // Replaing a log, set up replay source and log to a file
         Logger.setReplaySource(new WPILOGReader(logPath));
-        Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
+        Logger.addDataReceiver(
+            new WPILOGWriter(
+                LogFileUtil.addPathSuffix(logPath, "_sim"), AdvantageScopeOpenBehavior.ALWAYS));
       }
     }
 
@@ -109,6 +123,10 @@ public class Robot extends LoggedRobot {
     // Initialize the robot container
     robotContainer = new RobotContainer();
     PhoenixUtil.synchronizeSignals(2);
+
+    rewindTable = NetworkTableInstance.getDefault().getTable("photonvision").getSubTable("rewind");
+    record = rewindTable.getBooleanTopic("record").publish();
+    label = rewindTable.getStringTopic("label").publish();
 
     // Schedule the PathPlanner warmup commands
     CommandScheduler.getInstance()
@@ -171,6 +189,26 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void robotPeriodic() {
+    double now = Timer.getTimestamp();
+    if (DriverStation.isEnabled()) lastEnabledSec = now; // field, starts at NEGATIVE_INFINITY
+    if (DriverStation.isFMSAttached()) {
+      String type =
+          switch (DriverStation.getMatchType()) {
+            case Practice -> "P";
+            case Qualification -> "Q";
+            case Elimination -> "E";
+            default -> "M";
+          };
+      label.set(
+          String.format(
+              "%s-%s%d-r%d",
+              DriverStation.getEventName(),
+              type,
+              DriverStation.getMatchNumber(),
+              DriverStation.getReplayNumber()));
+      record.set(now - lastEnabledSec < 10.0);
+    }
+
     Logger.runEveryN(
         5,
         () -> {

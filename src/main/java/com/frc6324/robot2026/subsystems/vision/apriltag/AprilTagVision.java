@@ -25,13 +25,13 @@ public class AprilTagVision extends VirtualSubsystem {
   private final ArrayList<VisionConsumer> consumers = new ArrayList<>();
   private final VisionRule[] rules;
 
-  private final ArrayList<Pose2d> allRobotPoses = new ArrayList<>();
-  private final ArrayList<Pose2d> allRobotPosesAccepted = new ArrayList<>();
-  private final ArrayList<Pose2d> allRobotPosesRejected = new ArrayList<>();
+  private final ArrayList<VisionEstimation> allCameraEstimations = new ArrayList<>();
+  private final ArrayList<VisionEstimation> allEstimationsAccepted = new ArrayList<>();
+  private final ArrayList<VisionEstimation> allEstimationsRejected = new ArrayList<>();
 
-  private final ArrayList<Pose2d> robotPoses = new ArrayList<>();
-  private final ArrayList<Pose2d> robotPosesAccepted = new ArrayList<>();
-  private final ArrayList<Pose2d> robotPosesRejected = new ArrayList<>();
+  private final ArrayList<VisionEstimation> cameraEstimations = new ArrayList<>();
+  private final ArrayList<VisionEstimation> estimationsAccepted = new ArrayList<>();
+  private final ArrayList<VisionEstimation> estimationsRejected = new ArrayList<>();
 
   public AprilTagVision(VisionRule[] visionRules, AprilTagIO... io) {
     this.rules = visionRules;
@@ -57,14 +57,14 @@ public class AprilTagVision extends VirtualSubsystem {
 
   @Override
   public void periodic() {
-    allRobotPoses.clear();
-    allRobotPosesAccepted.clear();
-    allRobotPosesRejected.clear();
+    allCameraEstimations.clear();
+    allEstimationsAccepted.clear();
+    allEstimationsRejected.clear();
 
     for (int cameraIndex = 0; cameraIndex < io.length; cameraIndex++) {
-      robotPoses.clear();
-      robotPosesAccepted.clear();
-      robotPosesRejected.clear();
+      cameraEstimations.clear();
+      estimationsAccepted.clear();
+      estimationsRejected.clear();
 
       final String logKey = visionBaseKey + CAMERA_NAMES[cameraIndex];
       final VisionInputsAutoLogged currentInputs = inputs[cameraIndex];
@@ -84,18 +84,15 @@ public class AprilTagVision extends VirtualSubsystem {
           }
         }
 
-        final Pose2d robotPose = estimation.robotPose().toPose2d();
-        robotPoses.add(robotPose);
-
         if (rejected) {
-          robotPosesRejected.add(robotPose);
+          estimationsRejected.add(estimation);
           continue;
         } else {
-          robotPosesAccepted.add(robotPose);
+          estimationsAccepted.add(estimation);
         }
 
         // Add the robot pose to the "all poses" cache
-        robotPoses.add(robotPose);
+        cameraEstimations.add(estimation);
 
         final double stddevFactor =
             Math.pow(estimation.averageTagDistance(), 2) / estimation.numTagsUsed();
@@ -109,29 +106,36 @@ public class AprilTagVision extends VirtualSubsystem {
         consumers.forEach(
             c ->
                 c.addVisionMeasurement(
-                    robotPose,
+                    estimation.robotPose().toPose2d(),
                     estimation.timestamp(),
                     VecBuilder.fill(linearStddev, linearStddev, angularStddev)));
       }
 
       // Log camera summary data
-      Logger.recordOutput(logKey + "/Summary/RobotPoses", robotPoses.toArray(Pose2d[]::new));
       Logger.recordOutput(
-          logKey + "/Summary/RobotPosesAccepted", robotPosesAccepted.toArray(Pose2d[]::new));
+          logKey + "/Summary/Estimations", cameraEstimations.toArray(VisionEstimation[]::new));
       Logger.recordOutput(
-          logKey + "/Summary/RobotPosesRejected", robotPosesRejected.toArray(Pose2d[]::new));
+          logKey + "/Summary/EstimationsAccepted",
+          estimationsAccepted.toArray(VisionEstimation[]::new));
+      Logger.recordOutput(
+          logKey + "/Summary/EstimationsRejected",
+          estimationsRejected.toArray(VisionEstimation[]::new));
 
       // Add summary data to global summary cache
-      allRobotPoses.addAll(robotPoses);
-      allRobotPosesAccepted.addAll(robotPosesAccepted);
-      allRobotPosesRejected.addAll(robotPosesRejected);
+      allCameraEstimations.addAll(cameraEstimations);
+      allEstimationsAccepted.addAll(estimationsAccepted);
+      allEstimationsRejected.addAll(estimationsRejected);
     }
 
-    Logger.recordOutput(visionBaseKey + "Summary/AllPoses", allRobotPoses.toArray(Pose2d[]::new));
     Logger.recordOutput(
-        visionBaseKey + "Summary/AllPosesAccepted", allRobotPosesAccepted.toArray(Pose2d[]::new));
+        visionBaseKey + "Summary/AllEstimations",
+        allCameraEstimations.toArray(VisionEstimation[]::new));
     Logger.recordOutput(
-        visionBaseKey + "Summary/AllPosesRejected", allRobotPosesRejected.toArray(Pose2d[]::new));
+        visionBaseKey + "Summary/AllEstimationsAccepted",
+        allEstimationsAccepted.toArray(VisionEstimation[]::new));
+    Logger.recordOutput(
+        visionBaseKey + "Summary/AllEstimationsRejected",
+        allEstimationsRejected.toArray(VisionEstimation[]::new));
 
     for (final VisionRule rule : rules) {
       rule.logRejected();

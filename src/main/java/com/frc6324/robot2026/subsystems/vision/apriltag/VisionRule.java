@@ -1,6 +1,7 @@
 package com.frc6324.robot2026.subsystems.vision.apriltag;
 
 import com.frc6324.lib.util.FieldConstants;
+import com.frc6324.lib.util.PoseExtensions.PoseSupplier;
 import com.frc6324.robot2026.subsystems.vision.apriltag.AprilTagIO.VisionEstimation;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -95,16 +96,31 @@ public abstract class VisionRule {
   /** Checks if the measurement is within an acceptable distance from the robot. */
   public static class DistanceFilter extends VisionRule {
     // A single
-    private static final double DISTANCE_THRESHOLD = 8;
+    private static final double MAX_DISTANCE_FROM_CAMERA = 8;
 
-    public DistanceFilter() {
-      Logger.recordOutput(logKey() + "/MaxDistance", DISTANCE_THRESHOLD);
+    private static final double MAX_DISTANCE_FROM_ODOM_POSE = 4;
+
+    private final PoseSupplier robotPoseSupplier;
+
+    public DistanceFilter(PoseSupplier robotPoseSupplier) {
+      this.robotPoseSupplier = robotPoseSupplier;
+
+      Logger.recordOutput(logKey() + "/MaxDistanceFromCamera", MAX_DISTANCE_FROM_CAMERA);
+      Logger.recordOutput(logKey() + "/MaxDistanceFromOdometry", MAX_DISTANCE_FROM_ODOM_POSE);
     }
 
     @Override
     public boolean shouldPermit(VisionEstimation estimation) {
       if (estimation.numTagsUsed() == 1) {
-        return estimation.averageTagDistance() < DISTANCE_THRESHOLD;
+        double distanceFromOdom =
+            estimation
+                .robotPose()
+                .toPose2d()
+                .getTranslation()
+                .getDistance(robotPoseSupplier.getPose().getTranslation());
+
+        return distanceFromOdom < MAX_DISTANCE_FROM_ODOM_POSE
+            && estimation.averageTagDistance() < MAX_DISTANCE_FROM_CAMERA;
       } else {
         // TODO: determine if we want to filter distance for multitag
       }

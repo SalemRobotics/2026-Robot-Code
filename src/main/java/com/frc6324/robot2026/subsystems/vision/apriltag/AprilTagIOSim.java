@@ -24,9 +24,7 @@ public final class AprilTagIOSim extends AprilTagIOPhoton {
               .setFPS(CAMERA_FPS[index])
               .setExposureTimeMs(10));
 
-  public AprilTagIOSim(OdometryPoseGetter odometryPoseGetter, PoseSupplier robotPoseGetter) {
-    super(odometryPoseGetter);
-
+  public AprilTagIOSim(PoseSupplier robotPoseGetter) {
     if (!system.isInitialized()) {
       VisionSystemSim sim = system.get();
 
