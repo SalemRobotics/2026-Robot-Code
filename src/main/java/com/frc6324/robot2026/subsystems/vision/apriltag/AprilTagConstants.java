@@ -53,7 +53,7 @@ public final class AprilTagConstants {
         new Rotation3d(0, Units.degreesToRadians(10), Units.degreesToRadians(90)))
   };
 
-  public static final Frequency UPDATE_THREAD_FREQUENCY = Hertz.of(120);
+  public static final Frequency UPDATE_THREAD_FREQUENCY = Hertz.of(50);
 
   public static final boolean HEADING_FREE = false;
   public static final double HEADING_FACTOR = 10;

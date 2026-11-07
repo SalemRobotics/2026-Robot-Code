@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BooleanSupplier;
@@ -23,10 +22,12 @@ public class AprilTagIOPhoton implements AprilTagIO {
 
   protected final int index = cameraIndex++;
 
+  // Estimations produced by the vision thread and not yet consumed by updateInputs. The vision
+  // thread appends; updateInputs takes everything and clears it, so a batch is never dropped or
+  // delivered twice no matter how the two loops interleave. Guarded by updateLock.
   private final Lock updateLock = new ReentrantLock();
-  private final AtomicReference<HashSet<Integer>> tagsSeen = new AtomicReference<>(new HashSet<>());
-  private final AtomicReference<ArrayList<VisionEstimation>> estimations =
-      new AtomicReference<>(new ArrayList<>());
+  private final ArrayList<VisionEstimation> pendingEstimations = new ArrayList<>();
+  private final HashSet<Integer> pendingTagsSeen = new HashSet<>();
 
   protected final PhotonCamera camera = new PhotonCamera(CAMERA_NAMES[index]);
   private final PhotonPoseEstimator poseEstimator =
@@ -55,12 +56,8 @@ public class AprilTagIOPhoton implements AprilTagIO {
     final ArrayList<VisionEstimation> estimations = new ArrayList<>();
     final HashSet<Integer> tagsSeen = new HashSet<>();
 
-    updateLock.lock();
-    try {
-      allResults = camera.getAllUnreadResults();
-    } finally {
-      updateLock.unlock();
-    }
+    // Only this thread reads results from the camera, so this needs no lock
+    allResults = camera.getAllUnreadResults();
 
     for (final PhotonPipelineResult result : allResults) {
       final double timestamp = result.getTimestampSeconds();
@@ -113,27 +110,41 @@ public class AprilTagIOPhoton implements AprilTagIO {
               strategy));
     }
 
-    this.tagsSeen.set(tagsSeen);
-    this.estimations.set(estimations);
-  }
-
-  @Override
-  public void updateInputs(VisionInputs inputs) {
-    if (!camera.isConnected() || !enableSignal.getAsBoolean()) {
-      inputs.connected = false;
-      inputs.estimations = new VisionEstimation[0];
-      inputs.tagsSeen = new int[0];
-
+    if (estimations.isEmpty() && tagsSeen.isEmpty()) {
       return;
     }
 
     updateLock.lock();
     try {
-      inputs.connected = true;
-      inputs.estimations = estimations.get().toArray(VisionEstimation[]::new);
-      inputs.tagsSeen = tagsSeen.get().stream().mapToInt(i -> i).toArray();
+      pendingEstimations.addAll(estimations);
+      pendingTagsSeen.addAll(tagsSeen);
     } finally {
       updateLock.unlock();
+    }
+  }
+
+  @Override
+  public void updateInputs(VisionInputs inputs) {
+    final boolean active = camera.isConnected() && enableSignal.getAsBoolean();
+
+    updateLock.lock();
+    try {
+      if (active) {
+        inputs.estimations = pendingEstimations.toArray(VisionEstimation[]::new);
+        inputs.tagsSeen = pendingTagsSeen.stream().mapToInt(i -> i).toArray();
+      }
+
+      // Always clear, so estimations queued while inactive aren't delivered later as stale data
+      pendingEstimations.clear();
+      pendingTagsSeen.clear();
+    } finally {
+      updateLock.unlock();
+    }
+
+    inputs.connected = active;
+    if (!active) {
+      inputs.estimations = new VisionEstimation[0];
+      inputs.tagsSeen = new int[0];
     }
   }
 
