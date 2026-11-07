@@ -107,7 +107,7 @@ public class RobotContainer {
         shooter = new Shooter(new ShooterIOTalonFX());
         LoggedTracer.record("Init/Shooter init");
 
-        jetson = new JetsonDiagnostics();
+        jetson = null;
       }
       case SIM -> {
         LoggedTracer.reset();
